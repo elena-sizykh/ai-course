@@ -397,6 +397,159 @@
       border-radius: 999px;
     }
 
+    /* ── INDIVIDUAL ──────────────────────────────────── */
+    .individual { background: var(--bg2); }
+
+    .indiv-inner {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .indiv-card-main {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 24px;
+      padding: 40px;
+    }
+
+    .indiv-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .indiv-badge {
+      display: inline-block;
+      background: rgba(56,189,248,0.15);
+      border: 1px solid rgba(56,189,248,0.35);
+      color: var(--accent3);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .indiv-card-main > .indiv-top h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .indiv-card-main > .indiv-top p {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .indiv-price-tag {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .indiv-price-num {
+      font-size: 26px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent2), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      white-space: nowrap;
+    }
+
+    .indiv-price-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .indiv-features {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .indiv-feature {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .indiv-feat-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .indiv-feature strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .indiv-feature p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .indiv-sidebar {
+      display: grid;
+      gap: 16px;
+    }
+
+    .indiv-sidebar-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .indiv-sidebar-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .indiv-list {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .indiv-list li {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      line-height: 1.5;
+    }
+
+    .indiv-list li::before {
+      content: '✓';
+      color: #4ade80;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 860px) {
+      .indiv-inner { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .indiv-card-main { padding: 24px; }
+      .indiv-top { flex-direction: column; }
+      .indiv-price-tag { text-align: left; }
+    }
+
     /* ── PRICE ────────────────────────────────────────── */
     .price-section { background: var(--bg2); }
 
@@ -570,10 +723,11 @@
       <span>🎯 Нулевой уровень</span>
     </div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
-      <a href="https://t.me/YOUR_TELEGRAM" class="btn" target="_blank">
+      <a href="https://t.me/taiga_elena" class="btn" target="_blank">
         Записаться в Telegram →
       </a>
       <a href="#program" class="btn btn-secondary">Программа</a>
+      <a href="#individual" class="btn btn-secondary">1:1 консультация</a>
     </div>
   </div>
 </section>
@@ -723,6 +877,84 @@
   </div>
 </section>
 
+<!-- ════════════════════════════════════════ INDIVIDUAL -->
+<section class="individual" id="individual">
+  <div class="container">
+    <div class="section-label">Индивидуально</div>
+    <h2 class="section-title">Личная консультация<br>с разбором под тебя</h2>
+    <p class="section-sub">Если хочешь глубже — работаем один на один: настраиваем ИИ под твою жизнь, задачи и ритм</p>
+
+    <div class="indiv-inner">
+      <div class="indiv-card-main">
+        <div class="indiv-top">
+          <div>
+            <div class="indiv-badge">Формат 1:1</div>
+            <h3>Персональная сессия</h3>
+            <p>Один час только про тебя — твои задачи, твои инструменты, твой темп</p>
+          </div>
+          <div class="indiv-price-tag">
+            <div class="indiv-price-num">по запросу</div>
+            <div class="indiv-price-sub">Цена — при записи</div>
+          </div>
+        </div>
+
+        <div class="indiv-features">
+          <div class="indiv-feature">
+            <div class="indiv-feat-icon">🎯</div>
+            <div>
+              <strong>Глубокий разбор твоих задач</strong>
+              <p>До встречи — анкета. На встрече — детально разбираем каждую задачу, которую ты хочешь делегировать ИИ</p>
+            </div>
+          </div>
+          <div class="indiv-feature">
+            <div class="indiv-feat-icon">⚙️</div>
+            <div>
+              <strong>Настройка инструментов под тебя</strong>
+              <p>Выбираем нужные именно тебе инструменты, настраиваем их, пишем твои первые рабочие промпты</p>
+            </div>
+          </div>
+          <div class="indiv-feature">
+            <div class="indiv-feat-icon">📋</div>
+            <div>
+              <strong>Персональный план</strong>
+              <p>Уходишь с чётким списком: что использовать, для каких задач, и как внедрить в свой режим</p>
+            </div>
+          </div>
+          <div class="indiv-feature">
+            <div class="indiv-feat-icon">💬</div>
+            <div>
+              <strong>Поддержка после встречи</strong>
+              <p>Неделя на вопросы в Telegram — чтобы закрепить и не потеряться на старте</p>
+            </div>
+          </div>
+        </div>
+
+        <a href="https://t.me/taiga_elena" class="btn" target="_blank" style="margin-top:8px;width:fit-content;">
+          Записаться на личную консультацию →
+        </a>
+      </div>
+
+      <div class="indiv-sidebar">
+        <div class="indiv-sidebar-card">
+          <div style="font-size:28px;margin-bottom:12px;">🤝</div>
+          <h4>Подходит, если…</h4>
+          <ul class="indiv-list">
+            <li>Работаешь в узкой сфере и хочешь настройку именно под неё</li>
+            <li>Хочешь быстро и без группы — один на один</li>
+            <li>Уже пробовал(а) ИИ, но не понял(а) как сделать это системой</li>
+            <li>Нужна индивидуальная инструкция, а не общий обзор</li>
+          </ul>
+        </div>
+        <div class="indiv-sidebar-card" style="background: rgba(124,92,252,0.08); border-color: rgba(124,92,252,0.25);">
+          <div style="font-size:28px;margin-bottom:12px;">💡</div>
+          <h4>Можно совместить</h4>
+          <p style="font-size:14px;color:var(--muted);margin-top:8px;line-height:1.6;">Сначала групповой курс — получаешь базу и ориентацию, потом личная сессия — докручиваем под конкретные задачи</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ════════════════════════════════════════ PRICE -->
 <section class="price-section" id="price">
   <div class="container">
@@ -739,7 +971,7 @@
         <li>Запись встреч (остаётся у тебя)</li>
         <li>Чат участников для вопросов после курса</li>
       </ul>
-      <a href="https://t.me/YOUR_TELEGRAM" class="btn" target="_blank" style="width:100%;justify-content:center;">
+      <a href="https://t.me/taiga_elena" class="btn" target="_blank" style="width:100%;justify-content:center;">
         Записаться → Telegram
       </a>
     </div>
@@ -804,7 +1036,7 @@
   <div class="container">
     <h2>Готова начать?</h2>
     <p>Места ограничены — маленькая группа, живой формат. Напиши в Telegram, расскажу детали.</p>
-    <a href="https://t.me/YOUR_TELEGRAM" class="btn" target="_blank">
+    <a href="https://t.me/taiga_elena" class="btn" target="_blank">
       Написать Елене в Telegram →
     </a>
   </div>
@@ -812,7 +1044,7 @@
 
 <!-- ════════════════════════════════════════ FOOTER -->
 <footer>
-  <p>© 2025 Елена Сизых · Все вопросы — <a href="https://t.me/YOUR_TELEGRAM" style="color:var(--accent2);text-decoration:none;">в Telegram</a></p>
+  <p>© 2025 Елена Сизых · Все вопросы — <a href="https://t.me/taiga_elena" style="color:var(--accent2);text-decoration:none;">в Telegram</a></p>
 </footer>
 
 </body>
