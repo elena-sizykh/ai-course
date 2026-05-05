@@ -42,24 +42,6 @@
       padding: 90px 80px 90px;
     }
 
-    .top-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      background: rgba(168,85,247,.12);
-      border: 1.5px solid rgba(168,85,247,.35);
-      color: #c084fc;
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      padding: 14px 34px;
-      border-radius: 999px;
-      align-self: flex-start;
-      margin-bottom: 80px;
-    }
-    .top-badge::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: #c084fc; }
-
     .meme {
       background: rgba(255,255,255,.04);
       border: 1.5px solid rgba(255,255,255,.1);
@@ -80,17 +62,16 @@
     .headline { font-size: 96px; font-weight: 900; line-height: 1.0; letter-spacing: -.03em; margin-bottom: 32px; }
     .grad { background: linear-gradient(135deg, #c084fc 0%, #22d3ee 50%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
-    .subline { font-size: 38px; color: #7c82a8; line-height: 1.55; margin-bottom: 72px; }
+    .subline { font-size: 38px; color: #7c82a8; line-height: 1.55; }
 
-    .price-strip { background: linear-gradient(135deg, rgba(168,85,247,.15), rgba(34,211,238,.08)); border: 1.5px solid rgba(168,85,247,.3); border-radius: 28px; padding: 48px 64px; display: flex; align-items: center; justify-content: space-between; margin-bottom: auto; }
-    .price-left strong { display: block; font-size: 48px; font-weight: 900; margin-bottom: 8px; }
-    .price-left span { font-size: 28px; color: #7c82a8; }
-    .price-val { font-size: 80px; font-weight: 900; background: linear-gradient(135deg, #c084fc, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
-
-    .cta-wrap { margin-top: 64px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-    .cta-btn { width: 100%; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; font-size: 42px; font-weight: 800; padding: 44px 60px; border-radius: 999px; text-align: center; box-shadow: 0 0 80px rgba(168,85,247,.5); letter-spacing: .01em; }
-    .cta-hint { font-size: 28px; color: #7c82a8; text-align: center; }
-    .cta-hint span { color: #c084fc; font-weight: 700; }
+    .cta-wrap { margin-top: auto; display: flex; flex-direction: column; align-items: center; }
+    .cta-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      height: 140px;
+      border-radius: 999px;
+      box-shadow: 0 0 80px rgba(168,85,247,.5);
+    }
   </style>
 </head>
 <body>
@@ -98,7 +79,6 @@
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
   <div class="wrap">
-    <div class="top-badge">Онлайн-курс · Малая группа</div>
     <div class="meme">
       <div class="meme-line">
         <div class="meme-time">Понедельник</div>
@@ -112,16 +92,8 @@
     <div class="divider"></div>
     <div class="headline"><span class="grad">ИИ в жизнь:</span><br>старт с нуля</div>
     <div class="subline">Именно этому и учу — делать<br>быстро, без лишних слов</div>
-    <div class="price-strip">
-      <div class="price-left">
-        <strong>Групповой курс</strong>
-        <span>Специальная цена<br>для первой группы</span>
-      </div>
-      <div class="price-val">6 000 ₽</div>
-    </div>
     <div class="cta-wrap">
-      <div class="cta-btn">Записаться — ссылка в профиле</div>
-      <div class="cta-hint">или найди меня в Telegram <span>@taiga_elena</span></div>
+      <div class="cta-btn"></div>
     </div>
   </div>
 </body>
