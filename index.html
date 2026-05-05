@@ -64,7 +64,12 @@
     .nav-links a:hover { color: var(--text); }
     .nav-cta { background: linear-gradient(135deg,var(--p),#7c3aed) !important; color: white !important; padding: 9px 22px; border-radius: 999px; font-weight: 700 !important; font-size: 13px !important; }
     .nav-cta:hover { opacity: .85; transform: translateY(-1px); }
-    @media (max-width:640px) { nav { padding: 14px 20px; } .nav-links { gap: 16px; } .nav-links a:not(.nav-cta) { display: none; } }
+    @media (max-width:640px) {
+      nav { padding: 14px 18px; }
+      .nav-links { gap: 12px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      .nav-logo { font-size: 15px; }
+    }
 
     /* ── HERO ─────────────────────────────────── */
     .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 120px 20px 80px; position: relative; z-index: 1; }
@@ -82,19 +87,19 @@
     @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeUp   { from{opacity:0;transform:translateY(30px)}  to{opacity:1;transform:translateY(0)} }
 
-    .hero h1 { font-size: clamp(42px,8vw,88px); font-weight: 900; line-height: 1.05; letter-spacing: -.03em; margin-bottom: 28px; animation: fadeUp .9s .1s ease both; }
+    .hero h1 { font-size: clamp(38px,8vw,88px); font-weight: 900; line-height: 1.05; letter-spacing: -.03em; margin-bottom: 28px; animation: fadeUp .9s .1s ease both; }
 
     .grad-text { background: linear-gradient(135deg,var(--p2) 0%,var(--c) 50%,var(--pk) 100%); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradShift 4s ease infinite; }
     @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-    .hero-sub { font-size: clamp(17px,2.5vw,22px); color: var(--muted); max-width: 620px; margin: 0 auto 44px; animation: fadeUp .9s .2s ease both; }
+    .hero-sub { font-size: clamp(16px,2.5vw,22px); color: var(--muted); max-width: 620px; margin: 0 auto 44px; animation: fadeUp .9s .2s ease both; }
     .hero-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 48px; animation: fadeUp .9s .3s ease both; }
     .meta-pill { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(10px); padding: 8px 18px; border-radius: 999px; font-size: 14px; color: var(--text); transition: border-color .2s, background .2s; }
     .meta-pill:hover { border-color: rgba(168,85,247,.5); background: rgba(168,85,247,.08); }
     .hero-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; animation: fadeUp .9s .4s ease both; }
 
     /* ── BUTTONS ──────────────────────────────── */
-    .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 999px; text-decoration: none; transition: transform .2s, box-shadow .2s, opacity .2s; position: relative; overflow: hidden; cursor: pointer; border: none; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 999px; text-decoration: none; transition: transform .2s, box-shadow .2s, opacity .2s; position: relative; overflow: hidden; cursor: pointer; border: none; }
     .btn-primary { background: linear-gradient(135deg,var(--p),#7c3aed); color: white; box-shadow: 0 0 40px rgba(168,85,247,.45), 0 4px 20px rgba(0,0,0,.4); }
     .btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%); transform:translateX(-100%); transition:transform .5s ease; }
     .btn-primary:hover::after { transform: translateX(100%); }
@@ -119,7 +124,7 @@
     .container { max-width: 980px; margin: 0 auto; }
     .s-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--p2); margin-bottom: 14px; }
     .s-label::before { content:''; width:20px; height:2px; background:var(--p2); border-radius:999px; }
-    .s-title { font-size: clamp(30px,5.5vw,52px); font-weight: 900; line-height: 1.1; letter-spacing: -.025em; margin-bottom: 16px; }
+    .s-title { font-size: clamp(26px,5.5vw,52px); font-weight: 900; line-height: 1.1; letter-spacing: -.025em; margin-bottom: 16px; }
     .s-sub { font-size: 18px; color: var(--muted); max-width: 520px; margin-bottom: 52px; }
 
     /* ── GLASS / NEON ─────────────────────────── */
@@ -184,12 +189,18 @@
     .mark-no  { background: rgba(248,113,113,.2); color: var(--r); }
     .scope-list { list-style: none; display: grid; gap: 12px; }
     .scope-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--muted); line-height: 1.5; }
+    .scope-sub { display: block; font-size: 13px; color: var(--muted); opacity: .7; margin-top: 2px; }
 
     /* ── TOOLS ────────────────────────────────── */
     .tools { background: var(--bg); }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 16px; }
     .tool-card { padding: 32px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: var(--text); }
     .tool-card:hover { border-color: rgba(34,211,238,.45) !important; transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 50px rgba(0,0,0,.4), 0 0 25px rgba(34,211,238,.15) !important; }
+    .tool-card.tool-main { border-color: rgba(168,85,247,.4) !important; background: rgba(168,85,247,.06) !important; }
+    .tool-card.tool-main:hover { border-color: rgba(168,85,247,.7) !important; box-shadow: 0 20px 50px rgba(0,0,0,.4), 0 0 40px rgba(168,85,247,.25) !important; }
+    .tool-badge { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; margin-bottom: 10px; display: inline-block; }
+    .tool-badge-main { background: linear-gradient(135deg,var(--p),#7c3aed); color: white; }
+    .tool-badge-overview { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid rgba(255,255,255,.1); }
     .tool-logo { width: 52px; height: 52px; border-radius: 14px; object-fit: contain; margin-bottom: 14px; background: rgba(255,255,255,.06); padding: 6px; transition: transform .3s; }
     .tool-card:hover .tool-logo { transform: scale(1.15); }
     .tool-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
@@ -226,9 +237,11 @@
     .indiv-badge { display: inline-block; background: rgba(34,211,238,.12); border: 1px solid rgba(34,211,238,.35); color: var(--c); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 4px 14px; border-radius: 999px; margin-bottom: 10px; }
     .indiv-main .indiv-header h3 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
     .indiv-main .indiv-header > div:first-child p { font-size: 15px; color: var(--muted); }
-    .indiv-price-box { text-align: right; }
-    .indiv-price-val { font-size: 20px; font-weight: 900; background: linear-gradient(135deg,var(--c),var(--p2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .indiv-price-hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+    .indiv-price-box { text-align: right; flex-shrink: 0; }
+    .indiv-price-row { display: flex; align-items: baseline; justify-content: flex-end; gap: 10px; }
+    .indiv-price-val { font-size: 32px; font-weight: 900; background: linear-gradient(135deg,var(--c),var(--p2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1; }
+    .indiv-price-dur { font-size: 14px; color: var(--muted); white-space: nowrap; }
+    .indiv-price-hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; text-align: right; }
     .indiv-features { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 36px; }
     .i-feat { display: flex; gap: 14px; align-items: flex-start; }
     .i-feat-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(168,85,247,.12); border: 1px solid rgba(168,85,247,.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 16px; }
@@ -247,7 +260,7 @@
     .price-card { padding: 44px 40px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
     .price-card::before { content:''; position:absolute; inset:0; border-radius:var(--rad); background:linear-gradient(135deg,rgba(168,85,247,.08) 0%,transparent 60%); pointer-events:none; }
     .price-card.featured { border-color: rgba(168,85,247,.4) !important; }
-    .price-tag-badge { display: inline-block; background: linear-gradient(135deg,var(--p),#7c3aed); color: white; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 14px; border-radius: 999px; margin-bottom: 16px; align-self: flex-start; }
+    .price-special { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--p2); background: rgba(168,85,247,.12); border: 1px solid rgba(168,85,247,.3); padding: 4px 12px; border-radius: 999px; margin-bottom: 16px; align-self: flex-start; }
     .price-name   { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
     .price-desc   { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
     .price-amount { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 4px; letter-spacing: -.03em; }
@@ -272,7 +285,7 @@
     /* ── CTA FINAL ────────────────────────────── */
     .cta-final { text-align: center; padding: 120px 20px; position: relative; z-index: 1; overflow: hidden; }
     .cta-final::before { content:''; position:absolute; width:800px; height:800px; border-radius:50%; background:radial-gradient(circle,rgba(168,85,247,.2) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
-    .cta-final h2 { font-size: clamp(32px,6vw,60px); font-weight: 900; letter-spacing: -.03em; margin-bottom: 16px; position: relative; }
+    .cta-final h2 { font-size: clamp(28px,6vw,60px); font-weight: 900; letter-spacing: -.03em; margin-bottom: 16px; position: relative; }
     .cta-final p  { font-size: 18px; color: var(--muted); margin-bottom: 44px; max-width: 480px; margin-left: auto; margin-right: auto; position: relative; }
     .cta-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; position: relative; }
 
@@ -282,21 +295,44 @@
 
     /* ── RESPONSIVE ───────────────────────────── */
     @media (max-width:860px) {
-      .about-wrap { grid-template-columns: 1fr; }
+      .about-wrap { grid-template-columns: 1fr; gap: 40px; }
       .about-right { grid-template-columns: repeat(2,1fr); }
       .indiv-wrap { grid-template-columns: 1fr; }
       .price-grid { grid-template-columns: 1fr; }
       .scope-grid { grid-template-columns: 1fr; }
+      .tools-grid { grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); }
+      section { padding: 72px 20px; }
     }
     @media (max-width:640px) {
-      .session { grid-template-columns: 1fr; }
+      section { padding: 60px 16px; }
+      .s-sub { font-size: 16px; margin-bottom: 36px; }
+      .session { grid-template-columns: 1fr; gap: 20px; padding: 28px 24px; }
+      .s-num { width: 48px; height: 48px; font-size: 20px; }
       .indiv-features { grid-template-columns: 1fr; }
-      .indiv-main { padding: 28px; }
-      section { padding: 70px 20px; }
-      .price-card { padding: 32px 24px; }
+      .indiv-main { padding: 24px; }
+      .indiv-header { flex-direction: column; gap: 16px; }
+      .indiv-price-box { text-align: left; }
+      .indiv-price-row { justify-content: flex-start; }
+      .indiv-price-hint { text-align: left; }
+      .price-card { padding: 28px 22px; }
       .price-amount { font-size: 44px; }
-      .modal-box { padding: 32px 24px; }
+      .modal-box { padding: 28px 20px; }
       .modal-meta-grid { grid-template-columns: 1fr; }
+      .about-right { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat-wide { flex-direction: column; gap: 8px; }
+      .hero-btns { flex-direction: column; align-items: center; }
+      .hero-btns .btn { width: 100%; max-width: 320px; }
+      .cta-btns { flex-direction: column; align-items: center; }
+      .cta-btns .btn { width: 100%; max-width: 320px; }
+      .scope-col { padding: 24px 20px; }
+      .fw-grid { grid-template-columns: 1fr; }
+      .tools-grid { grid-template-columns: repeat(2,1fr); gap: 12px; }
+      .tool-card { padding: 22px 14px; }
+    }
+    @media (max-width:400px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      .about-right { grid-template-columns: 1fr; }
+      .stat-wide { grid-column: auto; }
     }
   </style>
 </head>
@@ -313,8 +349,7 @@
     <a href="#program">Программа</a>
     <a href="#individual">1:1</a>
     <a href="#price">Цена</a>
-    <!-- ЗАМЕНИ ссылку на свою Google Forms -->
-    <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM" class="nav-cta" target="_blank">Записаться</a>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="nav-cta" target="_blank">Записаться</a>
   </div>
 </nav>
 
@@ -332,8 +367,7 @@
       <div class="meta-pill">Telegram-чат после</div>
     </div>
     <div class="hero-btns">
-      <!-- ЗАМЕНИ ссылку на свою Google Forms -->
-      <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM" class="btn btn-primary" target="_blank">Записаться и заполнить анкету</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank">Записаться и заполнить анкету</a>
       <a href="#program" class="btn btn-ghost">Программа</a>
       <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
     </div>
@@ -419,11 +453,11 @@
       <div class="session glass neon-border reveal">
         <div class="s-num s-num-2">2</div>
         <div>
-          <h3>Практика: разбираем твои задачи</h3>
+          <h3>Практика: разбираем задачи группы</h3>
           <div class="s-dur" style="color:var(--c)">1.5 часа · Онлайн</div>
           <ul>
-            <li>Разбор анкеты — у каждого участника своя ситуация, разбираем индивидуально</li>
-            <li>Учимся правильно формулировать запросы (промпты) — это меняет всё</li>
+            <li>Разбор анкеты — анализируем средний срез по группе и общие запросы участников</li>
+            <li>Учимся правильно формулировать запросы (промпты)</li>
             <li>Работаем с реальными задачами: тексты, письма, анализ, планирование, поиск информации</li>
             <li>Как встроить ИИ в повседневную работу, чтобы он реально экономил время</li>
             <li>Q&A: задаёшь любые вопросы, разбираем вместе</li>
@@ -471,9 +505,9 @@
     <div class="modal-block">
       <div class="modal-block-title">Блок 2 — Практика · 1.5 часа</div>
       <ul>
-        <li>Разбор анкеты — у каждого участника своя ситуация, разбираем индивидуально</li>
-        <li>Учимся правильно формулировать запросы (промпты) — это меняет всё</li>
-        <li>Работаем с реальными задачами каждого: тексты, письма, планирование, поиск, анализ</li>
+        <li>Разбор анкеты — анализируем средний срез по группе и общие запросы участников</li>
+        <li>Учимся правильно формулировать запросы (промпты)</li>
+        <li>Работаем с реальными задачами: тексты, письма, планирование, поиск, анализ</li>
         <li>Как встроить ИИ в свою жизнь так, чтобы он реально экономил время</li>
         <li>Q&A: задаёшь любые вопросы, разбираем вместе</li>
       </ul>
@@ -510,7 +544,7 @@
       <div class="scope-col no">
         <h3><span class="scope-mark mark-no">✕</span>Не будем разбирать</h3>
         <ul class="scope-list">
-          <li><span class="scope-mark mark-no">✕</span>Генерация изображений и арта (Midjourney, DALL-E)</li>
+          <li><span class="scope-mark mark-no">✕</span><span>Генерация изображений и арта<br><span class="scope-sub">(Midjourney, DALL-E)</span></span></li>
           <li><span class="scope-mark mark-no">✕</span>Создание видеороликов с помощью ИИ</li>
           <li><span class="scope-mark mark-no">✕</span>Сложный мультимедиа-контент</li>
           <li><span class="scope-mark mark-no">✕</span>Программирование и написание кода</li>
@@ -527,33 +561,38 @@
   <div class="container">
     <div class="s-label reveal">Инструменты</div>
     <h2 class="s-title reveal">Что разберём</h2>
-    <p class="s-sub reveal">Пять инструментов, которые закрывают 90% задач</p>
+    <p class="s-sub reveal">Пять инструментов — один глубоко, остальные в обзоре</p>
     <div class="tools-grid">
-      <a href="https://chatgpt.com" target="_blank" class="tool-card glass neon-border reveal">
-        <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="ChatGPT">
-        <h4>ChatGPT</h4>
-        <p>Самый популярный — с него стоит начать</p>
-        <span class="tool-link">chatgpt.com</span>
-      </a>
-      <a href="https://claude.ai" target="_blank" class="tool-card glass neon-border reveal">
+      <a href="https://claude.ai" target="_blank" class="tool-card glass neon-border reveal tool-main">
+        <span class="tool-badge tool-badge-main">Основной инструмент</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="Claude">
         <h4>Claude</h4>
-        <p>Лучший для текстов, анализа и долгих диалогов</p>
+        <p>Изучаем глубоко — тексты, анализ, длинные диалоги, работа с документами</p>
         <span class="tool-link">claude.ai</span>
       </a>
+      <a href="https://chatgpt.com" target="_blank" class="tool-card glass neon-border reveal">
+        <span class="tool-badge tool-badge-overview">Обзор</span>
+        <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="ChatGPT">
+        <h4>ChatGPT</h4>
+        <p>Самый популярный — с него многие начинают</p>
+        <span class="tool-link">chatgpt.com</span>
+      </a>
       <a href="https://www.perplexity.ai" target="_blank" class="tool-card glass neon-border reveal">
+        <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=perplexity.ai&sz=64" alt="Perplexity">
         <h4>Perplexity</h4>
         <p>ИИ-поиск — находит и проверяет источники</p>
         <span class="tool-link">perplexity.ai</span>
       </a>
       <a href="https://gemini.google.com" target="_blank" class="tool-card glass neon-border reveal">
+        <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64" alt="Gemini">
         <h4>Gemini</h4>
         <p>Экосистема Google — удобен в Gmail и Docs</p>
         <span class="tool-link">gemini.google.com</span>
       </a>
       <a href="https://notebooklm.google.com" target="_blank" class="tool-card glass neon-border reveal">
+        <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=64" alt="NotebookLM">
         <h4>NotebookLM</h4>
         <p>Загружаешь документы — ИИ их изучает и отвечает</p>
@@ -626,8 +665,11 @@
             <p>Только твои задачи, твои инструменты, твой темп</p>
           </div>
           <div class="indiv-price-box">
-            <div class="indiv-price-val">от 20 000 ₽</div>
-            <div class="indiv-price-hint">от 2 часов<br>рассчитывается индивидуально<br>под запрос</div>
+            <div class="indiv-price-row">
+              <div class="indiv-price-val">от 20 000 ₽</div>
+              <div class="indiv-price-dur">· от 2 часов</div>
+            </div>
+            <div class="indiv-price-hint">рассчитывается индивидуально<br>под запрос</div>
           </div>
         </div>
         <div class="indiv-features">
@@ -660,8 +702,7 @@
             </div>
           </div>
         </div>
-        <!-- ЗАМЕНИ ссылку на свою Google Forms -->
-        <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM" class="btn btn-cyan" target="_blank">Записаться на личную консультацию</a>
+        <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank">Записаться на личную консультацию</a>
       </div>
       <div class="indiv-sidebar reveal">
         <div class="side-card glass neon-border">
@@ -690,24 +731,23 @@
     <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
     <div class="price-grid">
       <div class="price-card glass neon-border reveal">
+        <div class="price-special">Специальная цена для первой группы</div>
         <div class="price-name">Групповой курс</div>
         <div class="price-desc">2 встречи в малой группе</div>
-        <div class="price-amount grad-text">5 000</div>
+        <div class="price-amount grad-text">6 000</div>
         <div class="price-period">₽ за весь курс</div>
         <ul class="price-list">
           <li>2 встречи по 1.5 часа онлайн</li>
-          <li>Разбор твоих задач на 2-й встрече</li>
+          <li>Разбор общих задач на 2-й встрече</li>
           <li>Анкета участника перед стартом</li>
           <li>Запись встреч остаётся у тебя</li>
           <li>Чат участников после курса</li>
         </ul>
-        <!-- ЗАМЕНИ ссылку на свою Google Forms -->
         <div class="price-btn-wrap">
-          <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM" class="btn btn-primary" target="_blank" style="width:100%;justify-content:center">Записаться</a>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank" style="width:100%;justify-content:center">Записаться</a>
         </div>
       </div>
       <div class="price-card glass neon-border featured reveal">
-        <div class="price-tag-badge">Индивидуально</div>
         <div class="price-name">Личная консультация</div>
         <div class="price-desc">Один на один с Еленой</div>
         <div class="price-amount" style="background:linear-gradient(135deg,var(--c),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:38px">от 20 000</div>
@@ -719,9 +759,8 @@
           <li>Личный план внедрения ИИ</li>
           <li>Поддержка неделю в Telegram</li>
         </ul>
-        <!-- ЗАМЕНИ ссылку на свою Google Forms -->
         <div class="price-btn-wrap">
-          <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Записаться</a>
+          <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Записаться</a>
         </div>
       </div>
     </div>
@@ -739,7 +778,7 @@
       <details class="reveal"><summary>Когда проходят встречи и где?</summary><div class="faq-ans">Онлайн — через Zoom или аналог. Даты согласовываются с группой. Заполни анкету — и я свяжусь с тобой для согласования времени.</div></details>
       <details class="reveal"><summary>Что если у меня нет VPN или зарубежной карты?</summary><div class="faq-ans">Именно для этого есть анкета — отметишь свою ситуацию, и мы разберём её индивидуально. Часть инструментов доступна без VPN, для других помогу с настройкой.</div></details>
       <details class="reveal"><summary>Будет ли запись встреч?</summary><div class="faq-ans">Да, записи остаются у участников. Можно пересматривать в удобное время.</div></details>
-      <details class="reveal"><summary>А если у меня специфическая сфера — поможет ли курс?</summary><div class="faq-ans">Да — именно для этого есть анкета перед курсом и вторая встреча с разбором личных задач. Мы подстраиваемся под реальные запросы каждого участника.</div></details>
+      <details class="reveal"><summary>А если у меня специфическая сфера — поможет ли курс?</summary><div class="faq-ans">Да — именно для этого есть анкета перед курсом и вторая встреча с разбором задач. Мы работаем с общим срезом группы и подбираем примеры, релевантные для большинства участников.</div></details>
     </div>
   </div>
 </section>
@@ -747,11 +786,10 @@
 <!-- ════ CTA FINAL ════ -->
 <section class="cta-final">
   <div class="container">
-    <h2 class="reveal">Готова начать?<br><span class="grad-text">Давай.</span></h2>
+    <h2 class="reveal">Готовы начать?<br><span class="grad-text">Давай.</span></h2>
     <p class="reveal">Места ограничены — маленькая группа, живой формат. Заполни анкету — и я свяжусь с тобой.</p>
     <div class="cta-btns reveal">
-      <!-- ЗАМЕНИ ссылку на свою Google Forms -->
-      <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM" class="btn btn-primary" target="_blank">Заполнить анкету и записаться</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank">Заполнить анкету и записаться</a>
       <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
     </div>
   </div>
