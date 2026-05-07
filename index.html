@@ -98,6 +98,30 @@
     .meta-pill:hover { border-color: rgba(168,85,247,.5); background: rgba(168,85,247,.08); }
     .hero-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; animation: fadeUp .9s .4s ease both; }
 
+    /* ── DATE BANNER ─────────────────────────── */
+    .date-banner {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 36px; animation: fadeUp .9s .25s ease both;
+    }
+    .date-card {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(168,85,247,.1); border: 1.5px solid rgba(168,85,247,.4);
+      backdrop-filter: blur(16px); border-radius: 20px;
+      padding: 18px 28px;
+      box-shadow: 0 0 40px rgba(168,85,247,.15);
+    }
+    .date-card.cyan { background: rgba(34,211,238,.08); border-color: rgba(34,211,238,.35); box-shadow: 0 0 40px rgba(34,211,238,.12); }
+    .date-card-num { font-size: 42px; font-weight: 900; line-height: 1; letter-spacing: -.02em; color: var(--p2); }
+    .date-card.cyan .date-card-num { color: var(--c); }
+    .date-card-info { text-align: left; }
+    .date-card-month { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+    .date-card-time { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.2; }
+    @media (max-width:640px) {
+      .date-card { padding: 14px 20px; }
+      .date-card-num { font-size: 34px; }
+      .date-card-time { font-size: 18px; }
+    }
+
     /* ── BUTTONS ──────────────────────────────── */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 999px; text-decoration: none; transition: transform .2s, box-shadow .2s, opacity .2s; position: relative; overflow: hidden; cursor: pointer; border: none; }
     .btn-primary { background: linear-gradient(135deg,var(--p),#7c3aed); color: white; box-shadow: 0 0 40px rgba(168,85,247,.45), 0 4px 20px rgba(0,0,0,.4); }
@@ -359,10 +383,24 @@
     <div class="hero-badge">Онлайн-интенсив · Малая группа · Старт скоро</div>
     <h1><span class="grad-text">ИИ в жизнь:</span><br>старт с нуля</h1>
     <p class="hero-sub">За 2 встречи освоишь ChatGPT, Claude, Perplexity и другие инструменты — и сразу применишь их к своим реальным задачам</p>
+    <div class="date-banner">
+      <div class="date-card">
+        <div class="date-card-num">15</div>
+        <div class="date-card-info">
+          <div class="date-card-month">Мая · Встреча 1</div>
+          <div class="date-card-time">15:00 МСК</div>
+        </div>
+      </div>
+      <div class="date-card cyan">
+        <div class="date-card-num">19</div>
+        <div class="date-card-info">
+          <div class="date-card-month">Мая · Встреча 2</div>
+          <div class="date-card-time">15:00 МСК</div>
+        </div>
+      </div>
+    </div>
     <div class="hero-meta">
       <div class="meta-pill">2 встречи × 1.5 часа</div>
-      <div class="meta-pill">15 мая · 19 мая</div>
-      <div class="meta-pill">15:00 МСК</div>
       <div class="meta-pill">Онлайн</div>
       <div class="meta-pill">Малая группа</div>
       <div class="meta-pill">Нулевой уровень</div>
