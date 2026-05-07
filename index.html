@@ -33,11 +33,9 @@
       overflow-x: hidden;
     }
 
-    /* ── REVEAL ───────────────────────────────── */
     .reveal { opacity: 0; transform: translateY(32px); transition: opacity .7s ease, transform .7s ease; }
     .reveal.visible { opacity: 1; transform: none; }
 
-    /* ── BLOBS ────────────────────────────────── */
     .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: .15; animation: blobFloat 12s ease-in-out infinite; }
     .blob-1 { width: 600px; height: 600px; background: var(--p);  top: -200px; left: -200px; animation-delay: 0s; }
     .blob-2 { width: 500px; height: 500px; background: var(--c);  top: 40%;   right: -180px; animation-delay: -4s; }
@@ -48,7 +46,6 @@
       66%  { transform: translate(-20px,20px) scale(.97); }
     }
 
-    /* ── NAV ──────────────────────────────────── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       padding: 18px 40px;
@@ -71,7 +68,6 @@
       .nav-logo { font-size: 15px; }
     }
 
-    /* ── HERO ─────────────────────────────────── */
     .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 120px 20px 80px; position: relative; z-index: 1; }
     .hero-inner { max-width: 820px; }
 
@@ -88,7 +84,6 @@
     @keyframes fadeUp   { from{opacity:0;transform:translateY(30px)}  to{opacity:1;transform:translateY(0)} }
 
     .hero h1 { font-size: clamp(38px,8vw,88px); font-weight: 900; line-height: 1.05; letter-spacing: -.03em; margin-bottom: 28px; animation: fadeUp .9s .1s ease both; }
-
     .grad-text { background: linear-gradient(135deg,var(--p2) 0%,var(--c) 50%,var(--pk) 100%); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradShift 4s ease infinite; }
     @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
@@ -98,7 +93,6 @@
     .meta-pill:hover { border-color: rgba(168,85,247,.5); background: rgba(168,85,247,.08); }
     .hero-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; animation: fadeUp .9s .4s ease both; }
 
-    /* ── BUTTONS ──────────────────────────────── */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 999px; text-decoration: none; transition: transform .2s, box-shadow .2s, opacity .2s; position: relative; overflow: hidden; cursor: pointer; border: none; }
     .btn-primary { background: linear-gradient(135deg,var(--p),#7c3aed); color: white; box-shadow: 0 0 40px rgba(168,85,247,.45), 0 4px 20px rgba(0,0,0,.4); }
     .btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%); transform:translateX(-100%); transition:transform .5s ease; }
@@ -111,7 +105,6 @@
     .btn-outline-p { background: transparent; color: var(--p2); border: 1.5px solid rgba(168,85,247,.4); font-size: 14px; padding: 11px 26px; }
     .btn-outline-p:hover { background: rgba(168,85,247,.1); transform: translateY(-2px); }
 
-    /* ── TICKER ───────────────────────────────── */
     .ticker { background: rgba(255,255,255,.03); border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); padding: 14px 0; overflow: hidden; position: relative; z-index: 1; }
     .ticker-track { display: flex; animation: tickerMove 25s linear infinite; width: max-content; }
     .ticker-track:hover { animation-play-state: paused; }
@@ -119,7 +112,6 @@
     .ticker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--p2); flex-shrink: 0; }
     @keyframes tickerMove { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-    /* ── SHARED ───────────────────────────────── */
     section { padding: 90px 20px; position: relative; z-index: 1; }
     .container { max-width: 980px; margin: 0 auto; }
     .s-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--p2); margin-bottom: 14px; }
@@ -127,14 +119,12 @@
     .s-title { font-size: clamp(26px,5.5vw,52px); font-weight: 900; line-height: 1.1; letter-spacing: -.025em; margin-bottom: 16px; }
     .s-sub { font-size: 18px; color: var(--muted); max-width: 520px; margin-bottom: 52px; }
 
-    /* ── GLASS / NEON ─────────────────────────── */
     .glass { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(16px); border-radius: var(--rad); transition: border-color .3s, transform .3s, box-shadow .3s; }
     .glass:hover { border-color: rgba(168,85,247,.35); transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 30px rgba(168,85,247,.12); }
     .neon-border { position: relative; border-radius: var(--rad); }
     .neon-border::before { content:''; position:absolute; inset:-1px; border-radius:calc(var(--rad) + 1px); background:linear-gradient(135deg,rgba(168,85,247,.6),rgba(34,211,238,.3),rgba(244,114,182,.4)); z-index:-1; opacity:0; transition:opacity .3s; }
     .neon-border:hover::before { opacity: 1; }
 
-    /* ── FOR WHOM ─────────────────────────────── */
     .for-whom { background: var(--bg2); }
     .fw-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 18px; }
     .fw-card { padding: 30px; }
@@ -143,7 +133,6 @@
     .fw-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
     .fw-card p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ── PROGRAM ──────────────────────────────── */
     .program { background: var(--bg); }
     .sessions { display: grid; gap: 24px; }
     .session { padding: 40px 44px; display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: start; }
@@ -156,7 +145,6 @@
     .session ul li { font-size: 15px; color: var(--muted); display: flex; gap: 10px; align-items: flex-start; }
     .session ul li::before { content:'▸'; color: var(--p2); flex-shrink: 0; margin-top: 1px; }
 
-    /* ── MODAL ────────────────────────────────── */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity .3s; }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
     .modal-box { background: #0f1120; border: 1px solid rgba(168,85,247,.3); border-radius: 24px; max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 48px; position: relative; }
@@ -175,7 +163,6 @@
     .modal-meta-card .mm-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
     .modal-meta-card .mm-val { font-size: 15px; font-weight: 600; color: var(--text); }
 
-    /* ── NOT / YES SECTION ────────────────────── */
     .scope { background: var(--bg2); }
     .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .scope-col { padding: 36px; border-radius: var(--rad); }
@@ -191,7 +178,6 @@
     .scope-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--muted); line-height: 1.5; }
     .scope-sub { display: block; font-size: 13px; color: var(--muted); opacity: .7; margin-top: 2px; }
 
-    /* ── TOOLS ────────────────────────────────── */
     .tools { background: var(--bg); }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 16px; }
     .tool-card { padding: 32px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: var(--text); }
@@ -208,7 +194,6 @@
     .tool-link { display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--c); letter-spacing: .04em; border-bottom: 1px solid rgba(34,211,238,.3); transition: border-color .2s; }
     .tool-card:hover .tool-link { border-color: var(--c); }
 
-    /* ── ABOUT ────────────────────────────────── */
     .about { background: var(--bg2); }
     .about-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
     .about-name { font-size: clamp(36px,5vw,56px); font-weight: 900; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 8px; }
@@ -229,7 +214,6 @@
     .stat-wide-text strong { display: block; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
     .stat-wide-text p { font-size: 13px; color: var(--muted); }
 
-    /* ── INDIVIDUAL ───────────────────────────── */
     .individual { background: var(--bg); }
     .indiv-wrap { display: grid; grid-template-columns: 1fr 310px; gap: 24px; align-items: start; }
     .indiv-main { padding: 44px; }
@@ -254,7 +238,6 @@
     .check-list li { font-size: 14px; color: var(--muted); display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
     .check-list li::before { content:'✓'; color: var(--g); font-weight: 800; flex-shrink: 0; }
 
-    /* ── PRICE ────────────────────────────────── */
     .price-sec { background: var(--bg2); }
     .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
     .price-card { padding: 44px 40px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
@@ -270,7 +253,6 @@
     .price-list li::before { content:'✓'; color: var(--g); font-weight: 800; flex-shrink: 0; }
     .price-btn-wrap { margin-top: auto; }
 
-    /* ── FAQ ──────────────────────────────────── */
     .faq { background: var(--bg); }
     .faq-grid { display: grid; gap: 10px; max-width: 740px; }
     details { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); border-radius: var(--rad); overflow: hidden; transition: border-color .2s; }
@@ -282,18 +264,15 @@
     details[open] summary::after { transform: rotate(45deg); }
     .faq-ans { padding: 0 24px 20px; font-size: 15px; color: var(--muted); line-height: 1.7; }
 
-    /* ── CTA FINAL ────────────────────────────── */
     .cta-final { text-align: center; padding: 120px 20px; position: relative; z-index: 1; overflow: hidden; }
     .cta-final::before { content:''; position:absolute; width:800px; height:800px; border-radius:50%; background:radial-gradient(circle,rgba(168,85,247,.2) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
     .cta-final h2 { font-size: clamp(28px,6vw,60px); font-weight: 900; letter-spacing: -.03em; margin-bottom: 16px; position: relative; }
     .cta-final p  { font-size: 18px; color: var(--muted); margin-bottom: 44px; max-width: 480px; margin-left: auto; margin-right: auto; position: relative; }
     .cta-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; position: relative; }
 
-    /* ── FOOTER ───────────────────────────────── */
     footer { background: var(--bg); border-top: 1px solid rgba(255,255,255,.05); padding: 28px 20px; text-align: center; font-size: 14px; color: var(--muted); }
     footer a { color: var(--p2); text-decoration: none; }
 
-    /* ── RESPONSIVE ───────────────────────────── */
     @media (max-width:860px) {
       .about-wrap { grid-template-columns: 1fr; gap: 40px; }
       .about-right { grid-template-columns: repeat(2,1fr); }
@@ -342,7 +321,6 @@
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 
-<!-- ════ NAV ════ -->
 <nav>
   <div class="nav-logo">ИИ в жизнь ✦</div>
   <div class="nav-links">
@@ -353,7 +331,6 @@
   </div>
 </nav>
 
-<!-- ════ HERO ════ -->
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-badge">Онлайн-интенсив · Малая группа · Старт скоро</div>
@@ -361,10 +338,11 @@
     <p class="hero-sub">За 2 встречи освоишь ChatGPT, Claude, Perplexity и другие инструменты — и сразу применишь их к своим реальным задачам</p>
     <div class="hero-meta">
       <div class="meta-pill">2 встречи × 1.5 часа</div>
+      <div class="meta-pill">15 мая · 19 мая</div>
+      <div class="meta-pill">15:00 МСК</div>
       <div class="meta-pill">Онлайн</div>
       <div class="meta-pill">Малая группа</div>
       <div class="meta-pill">Нулевой уровень</div>
-      <div class="meta-pill">Telegram-чат после</div>
     </div>
     <div class="hero-btns">
       <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank">Записаться и заполнить анкету</a>
@@ -374,7 +352,6 @@
   </div>
 </section>
 
-<!-- ════ TICKER ════ -->
 <div class="ticker">
   <div class="ticker-track">
     <div class="ticker-item"><span class="ticker-dot"></span>ChatGPT</div>
@@ -382,7 +359,7 @@
     <div class="ticker-item"><span class="ticker-dot"></span>Perplexity</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Gemini</div>
     <div class="ticker-item"><span class="ticker-dot"></span>NotebookLM</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Практика с первого дня</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>15 мая · 19 мая · 15:00 МСК</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Нулевой уровень — OK</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Реальные задачи</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Малая группа</div>
@@ -391,45 +368,27 @@
     <div class="ticker-item"><span class="ticker-dot"></span>Perplexity</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Gemini</div>
     <div class="ticker-item"><span class="ticker-dot"></span>NotebookLM</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Практика с первого дня</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>15 мая · 19 мая · 15:00 МСК</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Нулевой уровень — OK</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Реальные задачи</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Малая группа</div>
   </div>
 </div>
 
-<!-- ════ FOR WHOM ════ -->
 <section class="for-whom">
   <div class="container">
     <div class="s-label reveal">Для кого</div>
     <h2 class="s-title reveal">Это для тебя, если…</h2>
     <p class="s-sub reveal">Ты слышишь об ИИ отовсюду, но ещё не знаешь, с чего начать</p>
     <div class="fw-grid">
-      <div class="fw-card glass neon-border reveal">
-        <div class="fw-num">1</div>
-        <h3>Слышал, но не пробовал</h3>
-        <p>ChatGPT и Claude на слуху, но ты ещё ни разу не заходил — или заходил и не понял, что с этим делать</p>
-      </div>
-      <div class="fw-card glass neon-border reveal">
-        <div class="fw-num">2</div>
-        <h3>Тратишь время на рутину</h3>
-        <p>Есть задачи, которые съедают часы каждую неделю, и ты чувствуешь — это можно автоматизировать</p>
-      </div>
-      <div class="fw-card glass neon-border reveal">
-        <div class="fw-num">3</div>
-        <h3>Боишься запутаться</h3>
-        <p>Инструментов много, платные и бесплатные версии — хочется объяснения человеческим языком</p>
-      </div>
-      <div class="fw-card glass neon-border reveal">
-        <div class="fw-num">4</div>
-        <h3>Хочешь результат сразу</h3>
-        <p>Не теорию, а практику — разобрать свои конкретные задачи и уйти с готовыми решениями</p>
-      </div>
+      <div class="fw-card glass neon-border reveal"><div class="fw-num">1</div><h3>Слышал, но не пробовал</h3><p>ChatGPT и Claude на слуху, но ты ещё ни разу не заходил — или заходил и не понял, что с этим делать</p></div>
+      <div class="fw-card glass neon-border reveal"><div class="fw-num">2</div><h3>Тратишь время на рутину</h3><p>Есть задачи, которые съедают часы каждую неделю, и ты чувствуешь — это можно автоматизировать</p></div>
+      <div class="fw-card glass neon-border reveal"><div class="fw-num">3</div><h3>Боишься запутаться</h3><p>Инструментов много, платные и бесплатные версии — хочется объяснения человеческим языком</p></div>
+      <div class="fw-card glass neon-border reveal"><div class="fw-num">4</div><h3>Хочешь результат сразу</h3><p>Не теорию, а практику — разобрать свои конкретные задачи и уйти с готовыми решениями</p></div>
     </div>
   </div>
 </section>
 
-<!-- ════ PROGRAM ════ -->
 <section class="program" id="program">
   <div class="container">
     <div class="s-label reveal">Программа</div>
@@ -440,7 +399,7 @@
         <div class="s-num s-num-1">1</div>
         <div>
           <h3>Ориентация: кто есть кто и как это работает</h3>
-          <div class="s-dur">1.5 часа · Онлайн</div>
+          <div class="s-dur">15 мая · 15:00 МСК · 1.5 часа · Онлайн</div>
           <ul>
             <li>Что такое ИИ-ассистенты и почему они меняют всё прямо сейчас</li>
             <li>Обзор ChatGPT, Claude, Perplexity, Gemini, NotebookLM — чем отличаются и когда что выбирать</li>
@@ -454,32 +413,29 @@
         <div class="s-num s-num-2">2</div>
         <div>
           <h3>Практика: разбираем задачи группы</h3>
-          <div class="s-dur" style="color:var(--c)">1.5 часа · Онлайн</div>
+          <div class="s-dur" style="color:var(--c)">19 мая · 15:00 МСК · 1.5 часа · Онлайн</div>
           <ul>
             <li>Разбор анкеты — анализируем средний срез по группе и общие запросы участников</li>
             <li>Учимся правильно формулировать запросы (промпты)</li>
             <li>Работаем с реальными задачами: тексты, письма, анализ, планирование, поиск информации</li>
             <li>Как встроить ИИ в повседневную работу, чтобы он реально экономил время</li>
-            <li>Q&A: задаёшь любые вопросы, разбираем вместе</li>
+            <li>Q&amp;A: задаёшь любые вопросы, разбираем вместе</li>
           </ul>
         </div>
       </div>
     </div>
-    <div class="reveal" style="margin-top:32px;">
-      <button class="btn btn-outline-p" onclick="document.getElementById('programModal').classList.add('open')">
-        Посмотреть полную программу
-      </button>
+    <div class="reveal" style="margin-top:32px; display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
+      <button class="btn btn-outline-p" onclick="document.getElementById('programModal').classList.add('open')">Посмотреть полную программу</button>
+      <p style="font-size:14px; color:var(--muted);">Не можете в эти даты? Напишите мне — <a href="https://t.me/taiga_elena" style="color:var(--p2); text-decoration:none; font-weight:600;">@taiga_elena</a></p>
     </div>
   </div>
 </section>
 
-<!-- ════ PROGRAM MODAL ════ -->
 <div class="modal-overlay" id="programModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal-box">
     <button class="modal-close" onclick="document.getElementById('programModal').classList.remove('open')">&times;</button>
     <h2>Полная программа курса</h2>
     <p class="modal-sub">Практическое обучение для тех, кто хочет начать использовать ИИ в работе и жизни — без технического образования и сложных терминов</p>
-
     <div class="modal-block">
       <div class="modal-block-title">Чему научишься</div>
       <ul>
@@ -490,9 +446,8 @@
         <li>Встроить ИИ в повседневную работу: тексты, анализ, планирование, поиск, коммуникации</li>
       </ul>
     </div>
-
     <div class="modal-block">
-      <div class="modal-block-title">Блок 1 — Ориентация · 1.5 часа</div>
+      <div class="modal-block-title">Блок 1 — Ориентация · 15 мая · 15:00 МСК</div>
       <ul>
         <li>Что такое ИИ-ассистенты и почему они меняют всё прямо сейчас</li>
         <li>Обзор ключевых инструментов: ChatGPT, Claude, Perplexity, Gemini, NotebookLM — чем отличаются и когда что выбирать</li>
@@ -501,28 +456,25 @@
         <li>Живые демо: как использую ИИ сама каждый день</li>
       </ul>
     </div>
-
     <div class="modal-block">
-      <div class="modal-block-title">Блок 2 — Практика · 1.5 часа</div>
+      <div class="modal-block-title">Блок 2 — Практика · 19 мая · 15:00 МСК</div>
       <ul>
         <li>Разбор анкеты — анализируем средний срез по группе и общие запросы участников</li>
         <li>Учимся правильно формулировать запросы (промпты)</li>
         <li>Работаем с реальными задачами: тексты, письма, планирование, поиск, анализ</li>
         <li>Как встроить ИИ в свою жизнь так, чтобы он реально экономил время</li>
-        <li>Q&A: задаёшь любые вопросы, разбираем вместе</li>
+        <li>Q&amp;A: задаёшь любые вопросы, разбираем вместе</li>
       </ul>
     </div>
-
     <div class="modal-meta-grid">
-      <div class="modal-meta-card"><div class="mm-label">Длительность</div><div class="mm-val">3 часа (2 блока по 1.5 ч)</div></div>
+      <div class="modal-meta-card"><div class="mm-label">Первая встреча</div><div class="mm-val">15 мая · 15:00 МСК</div></div>
+      <div class="modal-meta-card"><div class="mm-label">Вторая встреча</div><div class="mm-val">19 мая · 15:00 МСК</div></div>
       <div class="modal-meta-card"><div class="mm-label">Формат</div><div class="mm-val">Онлайн, живой эфир</div></div>
-      <div class="modal-meta-card"><div class="mm-label">Участники</div><div class="mm-val">Небольшая группа</div></div>
       <div class="modal-meta-card"><div class="mm-label">Материалы</div><div class="mm-val">Инструкции и шаблоны</div></div>
     </div>
   </div>
 </div>
 
-<!-- ════ SCOPE ════ -->
 <section class="scope">
   <div class="container">
     <div class="s-label reveal">Фокус курса</div>
@@ -556,7 +508,6 @@
   </div>
 </section>
 
-<!-- ════ TOOLS ════ -->
 <section class="tools" id="tools">
   <div class="container">
     <div class="s-label reveal">Инструменты</div>
@@ -566,43 +517,37 @@
       <a href="https://claude.ai" target="_blank" class="tool-card glass neon-border reveal tool-main">
         <span class="tool-badge tool-badge-main">Основной инструмент</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="Claude">
-        <h4>Claude</h4>
-        <p>Изучаем глубоко — тексты, анализ, длинные диалоги, работа с документами</p>
+        <h4>Claude</h4><p>Изучаем глубоко — тексты, анализ, длинные диалоги, работа с документами</p>
         <span class="tool-link">claude.ai</span>
       </a>
       <a href="https://chatgpt.com" target="_blank" class="tool-card glass neon-border reveal">
         <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="ChatGPT">
-        <h4>ChatGPT</h4>
-        <p>Самый популярный — с него многие начинают</p>
+        <h4>ChatGPT</h4><p>Самый популярный — с него многие начинают</p>
         <span class="tool-link">chatgpt.com</span>
       </a>
       <a href="https://www.perplexity.ai" target="_blank" class="tool-card glass neon-border reveal">
         <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=perplexity.ai&sz=64" alt="Perplexity">
-        <h4>Perplexity</h4>
-        <p>ИИ-поиск — находит и проверяет источники</p>
+        <h4>Perplexity</h4><p>ИИ-поиск — находит и проверяет источники</p>
         <span class="tool-link">perplexity.ai</span>
       </a>
       <a href="https://gemini.google.com" target="_blank" class="tool-card glass neon-border reveal">
         <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64" alt="Gemini">
-        <h4>Gemini</h4>
-        <p>Экосистема Google — удобен в Gmail и Docs</p>
+        <h4>Gemini</h4><p>Экосистема Google — удобен в Gmail и Docs</p>
         <span class="tool-link">gemini.google.com</span>
       </a>
       <a href="https://notebooklm.google.com" target="_blank" class="tool-card glass neon-border reveal">
         <span class="tool-badge tool-badge-overview">Обзор</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=64" alt="NotebookLM">
-        <h4>NotebookLM</h4>
-        <p>Загружаешь документы — ИИ их изучает и отвечает</p>
+        <h4>NotebookLM</h4><p>Загружаешь документы — ИИ их изучает и отвечает</p>
         <span class="tool-link">notebooklm.google.com</span>
       </a>
     </div>
   </div>
 </section>
 
-<!-- ════ ABOUT ════ -->
 <section class="about">
   <div class="container">
     <div class="about-wrap">
@@ -623,34 +568,16 @@
         </div>
       </div>
       <div class="about-right reveal">
-        <div class="stat-card glass neon-border">
-          <div class="stat-num grad-text">15+</div>
-          <div class="stat-label">лет в операционном управлении</div>
-        </div>
-        <div class="stat-card glass neon-border">
-          <div class="stat-num" style="background:linear-gradient(135deg,var(--c),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">2+</div>
-          <div class="stat-label">года интеграции ИИ в работу</div>
-        </div>
-        <div class="stat-card glass neon-border">
-          <div class="stat-num" style="background:linear-gradient(135deg,var(--pk),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">5</div>
-          <div class="stat-label">инструментов в ежедневном использовании</div>
-        </div>
-        <div class="stat-card glass neon-border">
-          <div class="stat-num" style="background:linear-gradient(135deg,var(--g),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">∞</div>
-          <div class="stat-label">часов сэкономлено на рутине</div>
-        </div>
-        <div class="stat-wide glass neon-border">
-          <div class="stat-wide-text">
-            <strong>Только практика</strong>
-            <p>Никакой теории ради теории — только то, что реально работает в жизни</p>
-          </div>
-        </div>
+        <div class="stat-card glass neon-border"><div class="stat-num grad-text">15+</div><div class="stat-label">лет в операционном управлении</div></div>
+        <div class="stat-card glass neon-border"><div class="stat-num" style="background:linear-gradient(135deg,var(--c),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">2+</div><div class="stat-label">года интеграции ИИ в работу</div></div>
+        <div class="stat-card glass neon-border"><div class="stat-num" style="background:linear-gradient(135deg,var(--pk),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">5</div><div class="stat-label">инструментов в ежедневном использовании</div></div>
+        <div class="stat-card glass neon-border"><div class="stat-num" style="background:linear-gradient(135deg,var(--g),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">∞</div><div class="stat-label">часов сэкономлено на рутине</div></div>
+        <div class="stat-wide glass neon-border"><div class="stat-wide-text"><strong>Только практика</strong><p>Никакой теории ради теории — только то, что реально работает в жизни</p></div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ════ INDIVIDUAL ════ -->
 <section class="individual" id="individual">
   <div class="container">
     <div class="s-label reveal">Индивидуально</div>
@@ -673,34 +600,10 @@
           </div>
         </div>
         <div class="indiv-features">
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Глубокий разбор задач</strong>
-              <p>До встречи — анкета, на встрече — разбираем каждую задачу, которую хочешь делегировать ИИ</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Настройка под тебя</strong>
-              <p>Выбираем нужные инструменты, настраиваем, пишем твои первые рабочие промпты</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Персональный план</strong>
-              <p>Уходишь с чётким списком: что использовать, для каких задач, как встроить в режим</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Поддержка неделю</strong>
-              <p>Вопросы в Telegram после встречи — чтобы закрепить и не потеряться на старте</p>
-            </div>
-          </div>
+          <div class="i-feat"><div class="i-feat-icon">→</div><div><strong>Глубокий разбор задач</strong><p>До встречи — анкета, на встрече — разбираем каждую задачу, которую хочешь делегировать ИИ</p></div></div>
+          <div class="i-feat"><div class="i-feat-icon">→</div><div><strong>Настройка под тебя</strong><p>Выбираем нужные инструменты, настраиваем, пишем твои первые рабочие промпты</p></div></div>
+          <div class="i-feat"><div class="i-feat-icon">→</div><div><strong>Персональный план</strong><p>Уходишь с чётким списком: что использовать, для каких задач, как встроить в режим</p></div></div>
+          <div class="i-feat"><div class="i-feat-icon">→</div><div><strong>Поддержка неделю</strong><p>Вопросы в Telegram после встречи — чтобы закрепить и не потеряться на старте</p></div></div>
         </div>
         <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank">Записаться на личную консультацию</a>
       </div>
@@ -723,7 +626,6 @@
   </div>
 </section>
 
-<!-- ════ PRICE ════ -->
 <section class="price-sec" id="price">
   <div class="container">
     <div class="s-label reveal" style="justify-content:center">Стоимость</div>
@@ -768,7 +670,6 @@
   </div>
 </section>
 
-<!-- ════ FAQ ════ -->
 <section class="faq">
   <div class="container">
     <div class="s-label reveal">Вопросы</div>
@@ -776,7 +677,7 @@
     <div class="faq-grid">
       <details class="reveal"><summary>Нужен ли опыт или технические знания?</summary><div class="faq-ans">Совсем нет. Курс создан именно для нулевого уровня. Если ты умеешь пользоваться браузером и мессенджером — этого достаточно.</div></details>
       <details class="reveal"><summary>Нужно ли что-то устанавливать или платить заранее?</summary><div class="faq-ans">Для начала — ничего. Большинство инструментов работают в браузере и имеют бесплатные версии. Разберём, что стоит попробовать бесплатно, а где платная подписка реально окупается.</div></details>
-      <details class="reveal"><summary>Когда проходят встречи и где?</summary><div class="faq-ans">Онлайн — через Zoom или аналог. Даты согласовываются с группой. Заполни анкету — и я свяжусь с тобой для согласования времени.</div></details>
+      <details class="reveal"><summary>Когда проходят встречи и где?</summary><div class="faq-ans">Онлайн — через Zoom или аналог. Первая встреча 15 мая в 15:00 МСК, вторая — 19 мая в 15:00 МСК. Заполни анкету — и я пришлю ссылку.</div></details>
       <details class="reveal"><summary>Что если у меня нет VPN или зарубежной карты?</summary><div class="faq-ans">Именно для этого есть анкета — отметишь свою ситуацию, и мы разберём её индивидуально. Часть инструментов доступна без VPN, для других помогу с настройкой.</div></details>
       <details class="reveal"><summary>Будет ли запись встреч?</summary><div class="faq-ans">Да, записи остаются у участников. Можно пересматривать в удобное время.</div></details>
       <details class="reveal"><summary>А если у меня специфическая сфера — поможет ли курс?</summary><div class="faq-ans">Да — именно для этого есть анкета перед курсом и вторая встреча с разбором задач. Мы работаем с общим срезом группы и подбираем примеры, релевантные для большинства участников.</div></details>
@@ -784,7 +685,6 @@
   </div>
 </section>
 
-<!-- ════ CTA FINAL ════ -->
 <section class="cta-final">
   <div class="container">
     <h2 class="reveal">Готовы начать?<br><span class="grad-text">Давай.</span></h2>
@@ -796,7 +696,6 @@
   </div>
 </section>
 
-<!-- ════ FOOTER ════ -->
 <footer>
   <p>© 2026 Елена Сизых · <a href="https://t.me/taiga_elena">@taiga_elena</a></p>
 </footer>
