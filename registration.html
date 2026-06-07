@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23c084fc'/><stop offset='50%25' stop-color='%2322d3ee'/><stop offset='100%25' stop-color='%23f472b6'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='%2307080f'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='url(%23g)'>✦</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Регистрация в ИИ-инструментах · ИИ в жизнь</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --light-bg:       #F2F0EB;
+    --light-bg-card:  #FFFFFF;
+    --light-text:     #1C1C1C;
+    --light-muted:    #9B9B9B;
+    --light-border:   #E5E3DD;
+    --light-hover-bg: #F5F5F2;
+    --purple:         #4A3FD4;
+    --orange-red:     #E8472A;
+    --green:          #2DB88A;
+    --blue:           #4A9FD4;
+    --card-purple-bg: #EEEAF8;
+    --card-green-bg:  #E8F8F3;
+    --card-red-bg:    #FEF0EE;
+    --radius:    12px;
+    --radius-sm:  8px;
+    --radius-pill: 999px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F0EEE9;
+    color: #1C1C1C;
+    line-height: 1.6;
+  }
+
+  a.demo-tool-pill { color: #1C1C1C; }
+  a.demo-tool-pill:hover { border-color: var(--purple); text-decoration: none; }
+  a { color: var(--purple); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: var(--light-bg);
+    border-bottom: 1px solid var(--light-border);
+    padding: 48px 64px;
+  }
+  .page-header .breadcrumb {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--light-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-header .breadcrumb::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1.5px;
+    background: var(--light-muted);
+  }
+  .page-header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+  }
+  .page-header h1 span { color: var(--purple); }
+  .page-header .subtitle {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--light-muted);
+    max-width: 600px;
+  }
+  .page-header .tool-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  /* ── LAYOUT ── */
+  .section {
+    padding: 64px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .section + .section { border-top: 1px solid var(--light-border); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1.5px;
+    background: currentColor;
+  }
+
+  .section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    margin-bottom: 8px;
+  }
+  .section-title span { color: var(--purple); }
+
+  .section-desc {
+    font-size: 15px;
+    color: var(--light-muted);
+    margin-bottom: 40px;
+    max-width: 640px;
+  }
+
+  /* ── DEMO COMPONENTS (from guide) ── */
+  .demo-tool-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--light-border);
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    background: white;
+    color: #1C1C1C;
+  }
+  .demo-tool-pill .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .demo-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid var(--light-border);
+    border-radius: var(--radius-sm);
+    width: 100%;
+    font-size: 13px;
+  }
+  .demo-list-item .item-num { color: var(--light-muted); font-size: 12px; min-width: 20px; flex-shrink: 0; }
+  .demo-list-item .item-body { flex: 1; }
+  .demo-list-item .item-title { font-weight: 700; font-size: 14px; color: #1C1C1C; margin-bottom: 2px; }
+  .demo-list-item .item-desc  { font-size: 12px; color: #4A4A4A; line-height: 1.5; }
+  .demo-list-item.accent { background: var(--card-purple-bg); border-color: #C5BCF0; }
+  .demo-list-item.accent .item-num { color: var(--purple); }
+  .demo-list-item.accent .item-title { color: var(--purple); }
+  .demo-list-item.green-item { border-left: 3px solid var(--green); }
+  .demo-list-item.green-item .item-num { color: var(--green); }
+  .demo-list-item.orange-item { border-left: 3px solid var(--orange-red); }
+  .demo-list-item.orange-item .item-num { color: var(--orange-red); }
+  .demo-list-item.blue-item { border-left: 3px solid var(--blue); }
+  .demo-list-item.blue-item .item-num { color: var(--blue); }
+  .demo-list-item.purple-item { border-left: 3px solid var(--purple); }
+
+  .demo-content-card {
+    background: white;
+    border: 1px solid var(--light-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    width: 100%;
+  }
+  .demo-content-card.highlighted { background: var(--card-purple-bg); border-color: #C5BCF0; }
+  .demo-content-card.green { background: var(--card-green-bg); border-color: #A8E8D4; }
+  .demo-content-card.red-light { background: var(--card-red-bg); border-color: #F5C4BC; }
+  .demo-content-card.info-bar { background: #F5F5F2; border-color: var(--light-border); }
+  .demo-num { font-size: 12px; color: var(--light-muted); font-weight: 500; margin-bottom: 4px; }
+  .demo-card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .demo-card-body { font-size: 13px; color: #4A4A4A; line-height: 1.6; }
+
+  .demo-breadcrumb {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--light-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .demo-breadcrumb::before {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 1.5px;
+    background: var(--light-muted);
+  }
+  .demo-breadcrumb.purple { color: var(--purple); }
+  .demo-breadcrumb.purple::before { background: var(--purple); }
+
+  /* ── COMP-BOX (from guide) ── */
+  .comp-box {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--light-border);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .comp-header {
+    padding: 12px 16px;
+    background: var(--light-bg);
+    border-bottom: 1px solid var(--light-border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--light-muted);
+  }
+  .comp-preview {
+    padding: 24px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .comp-preview.col { flex-direction: column; }
+
+  /* ── TOOL HEADER ── */
+  .tool-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--light-border);
+    margin-bottom: 0;
+  }
+  .tool-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .tool-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    line-height: 1;
+  }
+  .tool-url {
+    font-size: 13px;
+    color: var(--light-muted);
+    font-style: italic;
+  }
+  a.tool-url:hover { text-decoration: underline; }
+  a.meta-tag { text-decoration: none; cursor: pointer; }
+  a.meta-tag:hover { opacity: .8; text-decoration: none; }
+  .tool-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .meta-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--light-border);
+    background: var(--light-bg);
+    color: #4A4A4A;
+  }
+  .meta-tag.vpn-no   { color: var(--green); border-color: #A8E8D4; background: var(--card-green-bg); }
+  .meta-tag.vpn-yes  { color: var(--orange-red); border-color: #F5C4BC; background: var(--card-red-bg); }
+  .meta-tag.easy     { color: var(--green); border-color: #A8E8D4; background: var(--card-green-bg); }
+  .meta-tag.medium   { color: #A07800; border-color: #F5E0A0; background: #FEFAED; }
+  .meta-tag.hard     { color: var(--orange-red); border-color: #F5C4BC; background: var(--card-red-bg); }
+  .tool-desc-text {
+    font-size: 14px;
+    color: #4A4A4A;
+    line-height: 1.65;
+    max-width: 640px;
+  }
+
+  /* ── STEP LIST ── */
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 4px 20px 8px;
+  }
+  .step-row {
+    display: flex;
+    gap: 0;
+    position: relative;
+  }
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 36px;
+    flex-shrink: 0;
+  }
+  .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    margin-top: 13px;
+  }
+  .step-line {
+    width: 1px;
+    flex: 1;
+    min-height: 12px;
+    margin-top: 4px;
+    background: var(--light-border);
+  }
+  .step-body {
+    padding: 12px 0 16px 12px;
+    flex: 1;
+  }
+  .step-title { font-size: 14px; font-weight: 700; color: #1C1C1C; margin-bottom: 3px; }
+  .step-text  { font-size: 13px; color: #4A4A4A; line-height: 1.6; }
+  .step-text a { color: var(--purple); }
+
+  /* ── CALLOUT (info bar style from guide) ── */
+  .callout-row {
+    background: #F5F5F2;
+    border: 1px solid var(--light-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #4A4A4A;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .callout-row strong { color: #1C1C1C; }
+  .callout-row.warn   { background: var(--card-red-bg); border-color: #F5C4BC; }
+  .callout-row.tip    { background: var(--card-green-bg); border-color: #A8E8D4; }
+  .callout-row.purple { background: var(--card-purple-bg); border-color: #C5BCF0; }
+
+  /* ── PREP TABLE ── */
+  .prep-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--light-border); }
+  .prep-table th { background: var(--light-bg); padding: 11px 16px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--light-muted); text-align: left; border-bottom: 1px solid var(--light-border); }
+  .prep-table td { padding: 14px 16px; border-bottom: 1px solid var(--light-border); font-size: 13px; vertical-align: top; color: #1C1C1C; }
+  .prep-table tr:last-child td { border-bottom: none; }
+  .prep-table td:first-child { font-weight: 700; width: 20%; }
+  .prep-table td:nth-child(2) { width: 46%; color: #4A4A4A; line-height: 1.7; }
+  .prep-table td:last-child { width: 34%; color: var(--light-muted); font-size: 12px; }
+  .prep-table .warn-note { color: var(--orange-red); font-size: 12px; margin-top: 4px; font-weight: 600; }
+  .prep-table a { color: var(--purple); }
+
+  /* ── SUMMARY TABLE ── */
+  .sum-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--light-border); }
+  .sum-table th { background: var(--light-bg); padding: 11px 16px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--light-muted); text-align: left; border-bottom: 1px solid var(--light-border); }
+  .sum-table td { padding: 14px 16px; border-bottom: 1px solid var(--light-border); font-size: 13px; vertical-align: middle; }
+  .sum-table tr:last-child td { border-bottom: none; }
+  .sum-table .svc-name { font-weight: 800; font-size: 14px; }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 11px;
+    border-radius: var(--radius-pill);
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .badge-no       { color: var(--green); border-color: #A8E8D4; background: var(--card-green-bg); }
+  .badge-yes      { color: var(--orange-red); border-color: #F5C4BC; background: var(--card-red-bg); }
+  .badge-sometimes { color: #A07800; border-color: #F5E0A0; background: #FEFAED; }
+  .badge-always   { color: var(--orange-red); border-color: #F5C4BC; background: var(--card-red-bg); }
+
+  /* ── FOOTER ── */
+  .guide-footer {
+    background: var(--light-bg);
+    border-top: 1px solid var(--light-border);
+    color: var(--light-muted);
+    padding: 36px 64px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .guide-footer strong { color: #1C1C1C; }
+  .guide-footer a { color: var(--purple); }
+
+  .label-row {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--light-muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--light-border);
+  }
+
+  @media(max-width:768px){
+    .page-header, .section { padding: 32px 24px; }
+    .page-header h1 { font-size: 32px; }
+    .section-title { font-size: 24px; }
+    .guide-footer { padding: 28px 24px; flex-direction: column; text-align: center; }
+    .prep-table td:last-child, .prep-table th:last-child { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="page-header">
+  <div class="breadcrumb">Курс «ИИ в жизнь» · Елена Сизых</div>
+  <h1>Регистрация<br>в <span>ИИ-инструментах</span></h1>
+  <p class="subtitle">Пошаговые инструкции с учётом ограничений из России. Один раз настроишь — всё работает.</p>
+  <div class="tool-pills">
+    <a href="https://www.perplexity.ai" target="_blank" class="demo-tool-pill"><span class="dot" style="background:#4A9FD4"></span> Perplexity</a>
+    <a href="https://gemini.google.com" target="_blank" class="demo-tool-pill"><span class="dot" style="background:#2DB88A"></span> Gemini</a>
+    <a href="https://notebooklm.google.com" target="_blank" class="demo-tool-pill"><span class="dot" style="background:#2DB88A"></span> NotebookLM</a>
+    <a href="https://chat.openai.com" target="_blank" class="demo-tool-pill"><span class="dot" style="background:#E8472A"></span> ChatGPT</a>
+    <a href="https://claude.ai" target="_blank" class="demo-tool-pill"><span class="dot" style="background:#4A3FD4"></span> Claude</a>
+  </div>
+</header>
+
+
+<!-- ═══ ПОДГОТОВКА ═══ -->
+<section class="section">
+  <div class="section-label">Перед стартом</div>
+  <h2 class="section-title">Что подготовить <span>заранее</span></h2>
+  <p class="section-desc">Займёт 10–15 минут — зато регистрация пройдёт без остановок.</p>
+
+  <table class="prep-table">
+    <thead>
+      <tr>
+        <th>Что нужно</th>
+        <th>Где взять</th>
+        <th>Для каких сервисов</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>VPN</td>
+        <td>
+          Бесплатные: <a href="https://protonvpn.com" target="_blank">ProtonVPN</a> · <a href="https://getoutline.org" target="_blank">Outline VPN</a> · <a href="https://lantern.io" target="_blank">Lantern</a><br>
+          Со скидкой: <a href="https://blancvpn.bond/ru/" target="_blank">BlancVPN</a> — промокод <strong>web3nity</strong>
+        </td>
+        <td>ChatGPT, Claude, Gemini, NotebookLM</td>
+      </tr>
+      <tr>
+        <td>Иностранный e-mail</td>
+        <td>
+          <a href="https://gmail.com" target="_blank">Gmail</a> · <a href="https://outlook.com" target="_blank">Outlook</a> · <a href="https://proton.me" target="_blank">ProtonMail</a>
+          <div class="warn-note">⚠ Mail.ru и Яндекс не рекомендуются</div>
+        </td>
+        <td>Все сервисы</td>
+      </tr>
+      <tr>
+        <td>Оплата сервисов</td>
+        <td>
+          <a href="https://platipomiru.com" target="_blank">Плати по миру</a> · <a href="https://wanttopay.net" target="_blank">Want to Pay</a> · <a href="https://t.me/migpaybot" target="_blank">MIG Pay</a>
+        </td>
+        <td>ChatGPT Pro, Claude Pro</td>
+      </tr>
+      <tr>
+        <td>Виртуальный номер</td>
+        <td>
+          <a href="https://5sim.net" target="_blank">5sim.net</a> · <a href="https://onlinesim.ru" target="_blank">OnlineSIM.ru</a> · <a href="https://hushed.com" target="_blank">hushed.com</a>
+          <div class="warn-note">⚠ Номер — той же страны, что и карта</div>
+        </td>
+        <td>Claude (всегда), ChatGPT (иногда)</td>
+      </tr>
+      <tr>
+        <td>Google-аккаунт</td>
+        <td>Есть Gmail — уже подходит. Нет — <a href="https://accounts.google.com" target="_blank">создать</a> за 3 минуты.</td>
+        <td>Gemini, NotebookLM</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;">
+    <div class="callout-row warn">
+      <strong>⚠️ Связка — всегда одна страна:</strong> VPN + номер телефона + банковская карта = одна страна. Не переключайте страну VPN. Сломалось — меняйте город, не страну.
+    </div>
+    <div class="callout-row">
+      <strong>📧 Отдельный e-mail для ИИ:</strong> заведите отдельный адрес — Gmail или ProtonMail. Все коды в одном месте, основная почта остаётся чистой.
+    </div>
+    <div class="callout-row">
+      <strong>📱 Виртуальные номера:</strong> иногда блокируются — это нормально. Если есть знакомые с иностранным номером — попросите помочь один раз. Номер нужен только при регистрации.
+    </div>
+    <div class="callout-row">
+      <strong>🌐 Перевести страницу:</strong> правая кнопка мыши → «Перевести на русский» (Chrome/Opera).
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ PERPLEXITY ═══ -->
+<section class="section">
+  <div class="section-label" style="color:var(--blue)">Инструмент 1</div>
+
+  <div class="comp-box">
+    <div class="tool-header">
+      <div class="tool-name-row">
+        <span class="tool-name" style="color:var(--blue)">Perplexity AI</span>
+        <a href="https://www.perplexity.ai" target="_blank" class="tool-url">perplexity.ai ↗</a>
+      </div>
+      <div class="tool-meta-row">
+        <span class="meta-tag vpn-no">✓ VPN не нужен</span>
+        <span class="meta-tag easy">★☆☆ Лёгкая</span>
+        <span class="meta-tag">⏱ 2–3 мин</span>
+        <a href="https://www.perplexity.ai/platforms" target="_blank" class="meta-tag" style="color:var(--blue);border-color:rgba(74,159,212,.3);background:rgba(74,159,212,.07)">↓ Скачать приложение</a>
+      </div>
+      <p class="tool-desc-text">ИИ-поисковик с источниками. Самая простая регистрация из всех пяти — работает из России напрямую без VPN.</p>
+    </div>
+    <div class="step-list">
+      <div class="step-row">
+        <div class="step-left">
+          <div class="step-num" style="background:rgba(74,159,212,.12);color:var(--blue);border:1.5px solid rgba(74,159,212,.3)">1</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Откройте perplexity.ai</div>
+          <div class="step-text">VPN не нужен — сайт работает из России напрямую.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-left">
+          <div class="step-num" style="background:rgba(74,159,212,.12);color:var(--blue);border:1.5px solid rgba(74,159,212,.3)">2</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">«Sign in» → «Sign up»</div>
+          <div class="step-text">Кнопка в правом верхнем углу.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-left">
+          <div class="step-num" style="background:rgba(74,159,212,.12);color:var(--blue);border:1.5px solid rgba(74,159,212,.3)">3</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Войдите через Google</div>
+          <div class="step-text">«Continue with Google» → выберите аккаунт. Или через email — введите почту, затем код из письма.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-left">
+          <div class="step-num" style="background:rgba(74,159,212,.12);color:var(--blue);border:1.5px solid rgba(74,159,212,.3)">4</div>
+          <div class="step-line" style="background:transparent"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Готово</div>
+          <div class="step-text">Perplexity не просит телефон и карту. Можно сразу работать.</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 20px 16px">
+      <div class="callout-row tip">
+        <strong>💡 Первый запрос:</strong> «Что нового в сфере ИИ за последнюю неделю?» — посмотрите, как Perplexity показывает источники.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ GEMINI ═══ -->
+<section class="section">
+  <div class="section-label" style="color:var(--green)">Инструмент 2</div>
+
+  <div class="comp-box">
+    <div class="tool-header">
+      <div class="tool-name-row">
+        <span class="tool-name" style="color:var(--green)">Gemini</span>
+        <a href="https://gemini.google.com" target="_blank" class="tool-url">gemini.google.com ↗</a>
+      </div>
+      <div class="tool-meta-row">
+        <span class="meta-tag vpn-yes">✕ VPN нужен</span>
+        <span class="meta-tag easy">★☆☆ Лёгкая</span>
+        <span class="meta-tag">⏱ 2–5 мин</span>
+        <a href="https://gemini.google.com/app" target="_blank" class="meta-tag" style="color:var(--green);border-color:rgba(45,184,138,.3);background:rgba(45,184,138,.08)">↓ Скачать приложение</a>
+      </div>
+      <p class="tool-desc-text">ИИ от Google. Работает с Google Docs, Gmail, Drive — удобно, если уже в экосистеме Google.</p>
+    </div>
+    <div class="step-list">
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">1</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Включите VPN</div><div class="step-text">Страна вашей карты. Проверьте на <a href="https://2ip.ru" target="_blank">2ip.ru</a> — должен показать иностранный IP.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">2</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Убедитесь, что есть Google-аккаунт</div><div class="step-text">Gmail = Google-аккаунт. Нет — создайте на <a href="https://accounts.google.com" target="_blank">accounts.google.com</a> (3 минуты).</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">3</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Откройте gemini.google.com → «Войти»</div><div class="step-text">Войдите через Google-аккаунт, примите условия.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">4</div><div class="step-line" style="background:transparent"></div></div>
+        <div class="step-body"><div class="step-title">Начните работу</div><div class="step-text">Введите первый вопрос — Gemini отвечает на русском.</div></div>
+      </div>
+    </div>
+    <div style="padding:0 20px 16px">
+      <div class="callout-row tip">
+        <strong>🔗 Интеграция:</strong> Значок «Приложения» вверху справа — подключите Google Docs, Gmail, Drive.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ NOTEBOOKLM ═══ -->
+<section class="section">
+  <div class="section-label" style="color:var(--green)">Инструмент 3</div>
+
+  <div class="comp-box">
+    <div class="tool-header">
+      <div class="tool-name-row">
+        <span class="tool-name" style="color:var(--green)">NotebookLM</span>
+        <a href="https://notebooklm.google.com" target="_blank" class="tool-url">notebooklm.google.com ↗</a>
+      </div>
+      <div class="tool-meta-row">
+        <span class="meta-tag vpn-yes">✕ VPN нужен</span>
+        <span class="meta-tag medium">★★☆ Средняя</span>
+        <span class="meta-tag">⏱ 3–5 мин</span>
+      </div>
+      <p class="tool-desc-text">Загружаете свои документы — NotebookLM становится экспертом по ним. Не придумывает, отвечает только по вашим материалам. Бесплатный.</p>
+    </div>
+    <div class="step-list">
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">1</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">VPN включён → откройте notebooklm.google.com</div><div class="step-text">«Try NotebookLM» → войдите через Google-аккаунт (тот же, что для Gmail).</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">2</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Создайте первый Notebook</div><div class="step-text">«+ New notebook» → дайте название, например «Мой первый проект».</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">3</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Добавьте источник</div><div class="step-text">«+ Add source» — PDF, DOCX, Google Docs, ссылка на YouTube или сайт.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">4</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Задайте вопрос</div><div class="step-text">NotebookLM отвечает только по загруженным материалам — без додумывания.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(45,184,138,.12);color:var(--green);border:1.5px solid rgba(45,184,138,.3)">5</div><div class="step-line" style="background:transparent"></div></div>
+        <div class="step-body"><div class="step-title">Попробуйте Audio Overview</div><div class="step-text">NotebookLM создаст аудиоподкаст по вашим материалам за 1–2 минуты.</div></div>
+      </div>
+    </div>
+    <div style="padding:0 20px 16px">
+      <div class="callout-row tip">
+        <strong>✅ Идея для старта:</strong> загрузите презентацию или отчёт → спросите: «Какие главные идеи в этом документе?»
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ CHATGPT ═══ -->
+<section class="section">
+  <div class="section-label" style="color:var(--orange-red)">Инструмент 4</div>
+
+  <div class="comp-box">
+    <div class="tool-header">
+      <div class="tool-name-row">
+        <span class="tool-name" style="color:var(--orange-red)">ChatGPT</span>
+        <a href="https://chat.openai.com" target="_blank" class="tool-url">chat.openai.com ↗</a>
+      </div>
+      <div class="tool-meta-row">
+        <span class="meta-tag vpn-yes">✕ VPN нужен</span>
+        <span class="meta-tag medium">★★☆ Средняя</span>
+        <span class="meta-tag">⏱ 5–15 мин</span>
+        <a href="https://openai.com/chatgpt/download/" target="_blank" class="meta-tag" style="color:var(--orange-red);border-color:rgba(232,71,42,.3);background:rgba(232,71,42,.07)">↓ Mac</a>
+        <a href="https://apps.microsoft.com/detail/9nt1r1c2hh7j" target="_blank" class="meta-tag" style="color:var(--orange-red);border-color:rgba(232,71,42,.3);background:rgba(232,71,42,.07)">↓ Windows</a>
+      </div>
+      <p class="tool-desc-text">Самый известный ИИ-ассистент от OpenAI. Для регистрации нужен VPN. Карта для бесплатной версии не нужна.</p>
+    </div>
+    <div class="step-list">
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">1</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Включите VPN</div><div class="step-text">Страна карты или США. Проверьте IP на <a href="https://2ip.ru" target="_blank">2ip.ru</a>.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">2</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Очистите cookies, если заходили без VPN</div><div class="step-text">Настройки браузера → Очистить данные → Cookies → только для openai.com.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">3</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Откройте chat.openai.com → «Sign up»</div><div class="step-text">Не открывается — смените сервер VPN.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">4</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Зарегистрируйтесь</div><div class="step-text">Через Google/Microsoft — быстро. Или через email → подтвердите письмо от OpenAI.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">5</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Укажите имя и дату рождения</div><div class="step-text">Нужно быть старше 18 лет.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">6</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Телефон — если запросит</div><div class="step-text">Виртуальный номер той же страны, что VPN. Выберите сервис «OpenAI».</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(232,71,42,.1);color:var(--orange-red);border:1.5px solid rgba(232,71,42,.3)">7</div><div class="step-line" style="background:transparent"></div></div>
+        <div class="step-body"><div class="step-title">Выберите план «Free»</div><div class="step-text">ChatGPT предложит Plus — пока пропустите.</div></div>
+      </div>
+    </div>
+    <div style="padding:0 20px 16px">
+      <div class="callout-row warn">
+        <strong>⚠️ Важно:</strong> не выключайте VPN во время использования ChatGPT — могут попросить повторную верификацию.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ CLAUDE ═══ -->
+<section class="section">
+  <div class="section-label" style="color:var(--purple)">Инструмент 5 · Главный</div>
+
+  <div class="comp-box" style="border-color:#C5BCF0">
+    <div class="tool-header" style="background:var(--card-purple-bg);border-bottom-color:#C5BCF0">
+      <div class="tool-name-row">
+        <span class="tool-name" style="color:var(--purple)">Claude</span>
+        <a href="https://claude.ai" target="_blank" class="tool-url">claude.ai ↗</a>
+      </div>
+      <div class="tool-meta-row">
+        <span class="meta-tag vpn-yes">✕ VPN нужен</span>
+        <span class="meta-tag hard">★★★ Высокая</span>
+        <span class="meta-tag">⏱ 5–10 мин</span>
+        <a href="https://claude.com/download" target="_blank" class="meta-tag" style="color:var(--purple);border-color:#C5BCF0;background:var(--card-purple-bg)">↓ Mac / Windows</a>
+      </div>
+      <p class="tool-desc-text">Главный инструмент курса. Разработан Anthropic. Лучшее качество текста, работа с большими документами, Projects с памятью.</p>
+    </div>
+
+    <div style="padding:16px 20px 0">
+      <div class="callout-row purple">
+        <strong>⚡ Быстрый вариант:</strong> зарегистрироваться через бот <a href="https://t.me/claude_reg_bot?start=_tgr_Hlj8Oys3ODNi" target="_blank">@claude_reg_bot</a> — дороже, но всё сделают за вас.
+      </div>
+    </div>
+
+    <div class="step-list">
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">1</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Включите VPN</div><div class="step-text">Страна, где выпущены карта и номер телефона. Проверьте: <a href="https://2ip.ru" target="_blank">2ip.ru</a>.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">2</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Откройте claude.ai → «Sign up»</div><div class="step-text">Убедитесь, что сайт загрузился. Кнопка в правом верхнем углу.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">3</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Выберите способ входа</div><div class="step-text"><strong>Рекомендуем:</strong> «Continue with Google». Или через email → Continue.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">4</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Подтвердите email</div><div class="step-text">Откройте почту → письмо от Anthropic → кнопка подтверждения.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">5</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-title">Введите номер телефона</div>
+          <div class="step-text">
+            Российский не подойдёт.<br>
+            → Виртуальный номер на <a href="https://5sim.net" target="_blank">5sim.net</a> или <a href="https://onlinesim.ru" target="_blank">onlinesim.ru</a> — той же страны, что карта.<br>
+            → Или знакомые с иностранным номером — он нужен только один раз.
+          </div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">6</div><div class="step-line"></div></div>
+        <div class="step-body"><div class="step-title">Выберите план Free</div><div class="step-text">Pro за $20/мес — при необходимости потом.</div></div>
+      </div>
+      <div class="step-row">
+        <div class="step-left"><div class="step-num" style="background:rgba(74,63,212,.1);color:var(--purple);border:1.5px solid rgba(74,63,212,.3)">7</div><div class="step-line" style="background:transparent"></div></div>
+        <div class="step-body"><div class="step-title">Заполните профиль</div><div class="step-text">Settings → Profile → «What would you like Claude to know about you» — улучшит качество ответов.</div></div>
+      </div>
+    </div>
+    <div style="padding:0 20px 16px">
+      <div class="callout-row tip">
+        <strong>✅ Вы внутри!</strong> Напишите: «Привет, я только что зарегистрировалась. Что ты умеешь делать?»
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ ШПАРГАЛКА ═══ -->
+<section class="section">
+  <div class="section-label">Итог</div>
+  <h2 class="section-title">Итоговая <span>шпаргалка</span></h2>
+  <p class="section-desc">Краткий справочник по требованиям каждого сервиса.</p>
+
+  <table class="sum-table">
+    <thead>
+      <tr>
+        <th>Сервис</th>
+        <th>VPN</th>
+        <th>Телефон</th>
+        <th>Как войти</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="svc-name" style="color:var(--blue)">Perplexity</td>
+        <td><span class="status-badge badge-no">✓ Не нужен</span></td>
+        <td style="color:var(--light-muted);font-size:12px">Нет</td>
+        <td style="color:#4A4A4A;font-size:13px">Google или email</td>
+      </tr>
+      <tr>
+        <td class="svc-name" style="color:var(--green)">Gemini</td>
+        <td><span class="status-badge badge-yes">✕ Нужен</span></td>
+        <td style="color:var(--light-muted);font-size:12px">Нет</td>
+        <td style="color:#4A4A4A;font-size:13px">Google-аккаунт</td>
+      </tr>
+      <tr>
+        <td class="svc-name" style="color:var(--green)">NotebookLM</td>
+        <td><span class="status-badge badge-yes">✕ Нужен</span></td>
+        <td style="color:var(--light-muted);font-size:12px">Нет</td>
+        <td style="color:#4A4A4A;font-size:13px">Google-аккаунт</td>
+      </tr>
+      <tr>
+        <td class="svc-name" style="color:var(--orange-red)">ChatGPT</td>
+        <td><span class="status-badge badge-yes">✕ Нужен</span></td>
+        <td><span class="status-badge badge-sometimes">⚡ Иногда</span></td>
+        <td style="color:#4A4A4A;font-size:13px">Email или Google</td>
+      </tr>
+      <tr>
+        <td class="svc-name" style="color:var(--purple)">Claude</td>
+        <td><span class="status-badge badge-yes">✕ Нужен</span></td>
+        <td><span class="status-badge badge-always">⚠ Всегда</span></td>
+        <td style="color:#4A4A4A;font-size:13px">Email или Google</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="guide-footer">
+  <div>
+    <strong>«ИИ в жизнь: старт с нуля»</strong> · Регистрация в инструментах<br>
+    Елена Сизых · <a href="https://t.me/taiga_elena" target="_blank">@taiga_elena</a>
+  </div>
+  <div style="text-align:right;font-size:12px">
+    Для участников курса
+  </div>
+</footer>
+
+</body>
+</html>
