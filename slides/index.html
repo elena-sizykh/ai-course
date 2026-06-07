@@ -17,15 +17,12 @@ input[type=password]:focus{border-color:#a855f7}
 input[type=password]::placeholder{letter-spacing:normal;font-size:14px;color:#5a5875}
 .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,#a855f7,#7c3aed);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-primary:hover{opacity:.85}
-.btn-primary:disabled{opacity:.5;cursor:default}
-.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
 .err{color:#f472b6;font-size:13px;margin-top:12px;min-height:20px}
 .menu{display:none;flex-direction:column;gap:12px;margin-top:4px}
-.menu-btn{width:100%;padding:16px 20px;background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.25);border-radius:14px;color:#f5f0ff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;text-align:left;display:flex;align-items:center;gap:14px}
+.menu-btn{width:100%;padding:16px 20px;background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.25);border-radius:14px;color:#f5f0ff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;text-align:left;display:flex;align-items:center;gap:16px}
 .menu-btn:hover{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.5)}
 .menu-btn:disabled{opacity:.5;cursor:default}
-.menu-btn .icon{font-size:22px;flex-shrink:0}
+.menu-btn svg{flex-shrink:0;opacity:.85}
 .menu-loading{color:#9b99b5;font-size:13px;margin-top:8px;display:none}
 </style>
 </head>
@@ -36,10 +33,7 @@ input[type=password]::placeholder{letter-spacing:normal;font-size:14px;color:#5a
     <h1>Закрытые материалы</h1>
     <p>Введи пароль, чтобы получить доступ</p>
     <input type="password" id="pw" placeholder="Пароль" maxlength="20" autofocus />
-    <button class="btn-primary" id="btn" onclick="unlock()">
-      <span id="label">Войти</span>
-      <span class="spinner" id="spin"></span>
-    </button>
+    <button class="btn-primary" onclick="unlock()">Войти</button>
     <div class="err" id="err"></div>
   </div>
   <div id="menu-wrap" style="display:none">
@@ -47,11 +41,21 @@ input[type=password]::placeholder{letter-spacing:normal;font-size:14px;color:#5a
     <p style="margin-bottom:24px">Нажми — файл загрузится и откроется</p>
     <div class="menu" id="menu">
       <button class="menu-btn" onclick="open_file('guide')">
-        <span class="icon">📄</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <line x1="10" y1="9" x2="8" y2="9"/>
+        </svg>
         Гайд: HTML от идеи до сайта
       </button>
       <button class="menu-btn" onclick="open_file('deck')">
-        <span class="icon">🎞️</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
         Презентация «ИИ в жизнь»
       </button>
     </div>
@@ -59,34 +63,31 @@ input[type=password]::placeholder{letter-spacing:normal;font-size:14px;color:#5a
   </div>
 </div>
 <script>
-const BASE = "https://raw.githubusercontent.com/elena-sizykh/ai-course/claude/ai-course-landing-page-4kzDA/slides/";
-const FILES = { guide: "guide.html", deck: "deck.html" };
-function unlock() {
-  if (document.getElementById("pw").value !== "0000") {
-    document.getElementById("err").textContent = "Неверный пароль";
-    document.getElementById("pw").focus();
-    return;
+const BASE="https://raw.githubusercontent.com/elena-sizykh/ai-course/claude/ai-course-landing-page-4kzDA/slides/";
+const FILES={guide:"guide.html",deck:"deck.html"};
+function unlock(){
+  if(document.getElementById("pw").value!=="0000"){
+    document.getElementById("err").textContent="Неверный пароль";
+    document.getElementById("pw").focus();return;
   }
-  document.getElementById("gate").style.display = "none";
-  document.getElementById("menu-wrap").style.display = "block";
-  document.getElementById("menu").style.display = "flex";
+  document.getElementById("gate").style.display="none";
+  document.getElementById("menu-wrap").style.display="block";
+  document.getElementById("menu").style.display="flex";
 }
-async function open_file(key) {
-  const btns = document.querySelectorAll(".menu-btn");
-  btns.forEach(b => b.disabled = true);
-  document.getElementById("menu-loading").style.display = "block";
-  try {
-    const res = await fetch(BASE + FILES[key]);
-    if (!res.ok) throw new Error("fetch failed");
-    const html = await res.text();
-    const blob = new Blob([html], { type: "text/html" });
-    location.href = URL.createObjectURL(blob);
-  } catch(e) {
-    btns.forEach(b => b.disabled = false);
-    document.getElementById("menu-loading").textContent = "Ошибка загрузки, попробуй снова";
+async function open_file(key){
+  document.querySelectorAll(".menu-btn").forEach(b=>b.disabled=true);
+  document.getElementById("menu-loading").style.display="block";
+  try{
+    const res=await fetch(BASE+FILES[key]);
+    if(!res.ok)throw new Error();
+    const blob=new Blob([await res.text()],{type:"text/html"});
+    location.href=URL.createObjectURL(blob);
+  }catch(e){
+    document.querySelectorAll(".menu-btn").forEach(b=>b.disabled=false);
+    document.getElementById("menu-loading").textContent="Ошибка загрузки, попробуй снова";
   }
 }
-document.getElementById("pw").addEventListener("keydown", e => { if (e.key === "Enter") unlock(); });
+document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")unlock();});
 </script>
 </body>
 </html>
