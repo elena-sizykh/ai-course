@@ -302,7 +302,8 @@
 
     /* ── MATERIALS ───────────────────────────── */
     .materials-section { padding: 0 20px 60px; }
-    .materials-card { display: flex; align-items: center; gap: 20px; background: rgba(168,85,247,.05); border: 1px solid rgba(168,85,247,.18); border-radius: 18px; padding: 24px 32px; max-width: 680px; margin: 0 auto; flex-wrap: wrap; }
+    .materials-inner { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+    .materials-card { display: flex; align-items: center; gap: 20px; background: rgba(168,85,247,.05); border: 1px solid rgba(168,85,247,.18); border-radius: 18px; padding: 24px 32px; flex-wrap: wrap; }
     .materials-card .mat-icon { width: 44px; height: 44px; background: rgba(168,85,247,.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .materials-card .mat-text { flex: 1; min-width: 180px; }
     .materials-card .mat-text h3 { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
@@ -825,18 +826,35 @@
 
 <!-- ════ МАТЕРИАЛЫ КУРСА ════ -->
 <section class="materials-section">
-  <div class="materials-card reveal">
-    <div class="mat-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
+  <div class="materials-inner">
+    <div class="materials-card reveal">
+      <div class="mat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <div class="mat-text">
+        <h3>Регистрация в ИИ-инструментах</h3>
+        <p>Пошаговые инструкции для Perplexity, Gemini, ChatGPT и Claude</p>
+      </div>
+      <a href="registration.html" class="btn btn-ghost" style="white-space:nowrap">Открыть →</a>
     </div>
-    <div class="mat-text">
-      <h3>Материалы курса</h3>
-      <p>Гайды и презентации — только для участников</p>
+    <div class="materials-card reveal">
+      <div class="mat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div class="mat-text">
+        <h3>Гайды и презентация</h3>
+        <p>Закрытые материалы — только для участников</p>
+      </div>
+      <a href="slides/" class="btn btn-ghost" style="white-space:nowrap">Открыть →</a>
     </div>
-    <a href="slides/" class="btn btn-ghost" style="white-space:nowrap">Открыть →</a>
   </div>
 </section>
 
