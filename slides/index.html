@@ -22,13 +22,10 @@ input[type=password]::placeholder{letter-spacing:normal;font-size:14px;color:#5a
 @keyframes spin{to{transform:rotate(360deg)}}
 .err{color:#f472b6;font-size:13px;margin-top:12px;min-height:20px}
 .menu{display:none;flex-direction:column;gap:12px;margin-top:4px}
-.menu-btn{width:100%;padding:16px 20px;background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.25);border-radius:14px;color:#f5f0ff;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;text-align:left;display:flex;align-items:center;gap:14px}
+.menu-btn{width:100%;padding:16px 20px;background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.25);border-radius:14px;color:#f5f0ff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;text-align:left;display:flex;align-items:center;gap:14px}
 .menu-btn:hover{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.5)}
 .menu-btn:disabled{opacity:.5;cursor:default}
 .menu-btn .icon{font-size:22px;flex-shrink:0}
-.menu-btn .meta{display:flex;flex-direction:column;gap:2px}
-.menu-btn .label{font-size:15px;font-weight:700;color:#f5f0ff}
-.menu-btn .sub{font-size:12px;color:#9b99b5;font-weight:400}
 .menu-loading{color:#9b99b5;font-size:13px;margin-top:8px;display:none}
 </style>
 </head>
@@ -51,17 +48,11 @@ input[type=password]::placeholder{letter-spacing:normal;font-size:14px;color:#5a
     <div class="menu" id="menu">
       <button class="menu-btn" onclick="open_file('guide')">
         <span class="icon">📄</span>
-        <span class="meta">
-          <span class="label">Гайд: HTML от идеи до сайта</span>
-          <span class="sub">Пошаговый текстовый гайд</span>
-        </span>
+        Гайд: HTML от идеи до сайта
       </button>
       <button class="menu-btn" onclick="open_file('deck')">
         <span class="icon">🎞️</span>
-        <span class="meta">
-          <span class="label">Презентация «ИИ в жизнь»</span>
-          <span class="sub">Слайддек v3</span>
-        </span>
+        Презентация «ИИ в жизнь»
       </button>
     </div>
     <div class="menu-loading" id="menu-loading">Загружаю файл…</div>
