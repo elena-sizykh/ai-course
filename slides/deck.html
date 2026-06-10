@@ -1,0 +1,2809 @@
+<!DOCTYPE html><html lang="ru"><head>
+
+
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23c084fc'/><stop offset='50%25' stop-color='%2322d3ee'/><stop offset='100%25' stop-color='%23f472b6'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='%2307080f'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='url(%23g)'>✦</text></svg>" />
+<title>ИИ в жизнь — Елена Сизых</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script>
+/**
+ * <deck-stage> — reusable web component for HTML decks.
+ *
+ * Handles:
+ *  (a) speaker notes — reads <script type="application/json" id="speaker-notes">
+ *      and posts {slideIndexChanged: N} to the parent window on nav.
+ *  (b) keyboard navigation — ←/→, PgUp/PgDn, Space, Home/End, number keys.
+ *  (c) press R to reset to slide 0 (with a tasteful keyboard hint).
+ *  (d) bottom-center overlay showing slide count + hints, fades out on idle.
+ *  (e) auto-scaling — inner canvas is a fixed design size (default 1920×1080)
+ *      scaled with `transform: scale()` to fit the viewport, letterboxed.
+ *      Set the `noscale` attribute to render at authored size (1:1) — the
+ *      PPTX exporter sets this so its DOM capture sees unscaled geometry.
+ *  (f) print — `@media print` lays every slide out as its own page at the
+ *      design size, so the browser's Print → Save as PDF produces a clean
+ *      one-page-per-slide PDF with no extra setup.
+ *  (g) thumbnail rail — resizable left-hand column of per-slide thumbnails
+ *      (static clones). Click to navigate; ↑/↓ with a thumbnail focused to
+ *      step between slides; drag to reorder; right-click for
+ *      Skip / Move up / Move down / Delete (opens a Cancel/Delete confirm
+ *      dialog). Drag the rail's right edge to resize; width persists to
+ *      localStorage. Skipped slides carry `data-deck-skip`, are dimmed in
+ *      the rail, omitted from prev/next navigation, and hidden at print.
+ *      The rail is suppressed in presenting mode, on `noscale`, and via
+ *      the `no-rail` attribute. Rail mutations dispatch a `deckchange`
+ *      CustomEvent on the element: detail = {action, from, to, slide}.
+ *
+ * Slides are HIDDEN, not unmounted. Non-active slides stay in the DOM with
+ * `visibility: hidden` + `opacity: 0`, so their state (videos, iframes,
+ * form inputs, React trees) is preserved across navigation.
+ *
+ * Lifecycle event — the component dispatches a `slidechange` CustomEvent on
+ * itself whenever the active slide changes (including the initial mount).
+ * The event bubbles and composes out of shadow DOM, so you can listen on
+ * the <deck-stage> element or on document:
+ *
+ *   document.querySelector('deck-stage').addEventListener('slidechange', (e) => {
+ *     e.detail.index         // new 0-based index
+ *     e.detail.previousIndex // previous index, or -1 on init
+ *     e.detail.total         // total slide count
+ *     e.detail.slide         // the new active slide element
+ *     e.detail.previousSlide // the prior slide element, or null on init
+ *     e.detail.reason        // 'init' | 'keyboard' | 'click' | 'tap' | 'api'
+ *   });
+ *
+ * Persistence: none at the deck level. The host app keeps the current slide
+ * in its own URL (?slide=) and re-delivers it via location.hash on load, so a
+ * bare load with no hash always starts at slide 1.
+ *
+ * Usage:
+ *   <style>deck-stage:not(:defined){visibility:hidden}</style>
+ *   <deck-stage width="1920" height="1080">
+ *     <section data-label="Title">...</section>
+ *     <section data-label="Agenda">...</section>
+ *   </deck-stage>
+ *   <script src="deck-stage.js"><\/script>
+ *
+ * The :not(:defined) rule prevents a flash of the first slide at its
+ * authored styles before this script runs and attaches the shadow root.
+ *
+ * Slides are the direct element children of <deck-stage>. Each slide is
+ * automatically tagged with:
+ *   - data-screen-label="NN Label"   (1-indexed, for comment flow)
+ *   - data-om-validate="no_overflowing_text,no_overlapping_text,slide_sized_text"
+ */
+
+(() => {
+  const DESIGN_W_DEFAULT = 1920;
+  const DESIGN_H_DEFAULT = 1080;
+  const OVERLAY_HIDE_MS = 1800;
+  const VALIDATE_ATTR = 'no_overflowing_text,no_overlapping_text,slide_sized_text';
+
+  const pad2 = (n) => String(n).padStart(2, '0');
+
+  const stylesheet = `
+    :host {
+      position: fixed;
+      inset: 0;
+      display: block;
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+    /* connectedCallback holds this until document.fonts.ready (capped 2s) so
+     * the first visible paint has the deck's real typography + final rail
+     * layout. opacity (not visibility) so the active slide can't un-hide
+     * itself via the ::slotted([data-deck-active]) visibility:visible rule.
+     * Only the stage/rail hide — the black :host background stays, so the
+     * iframe doesn't flash the page's default white. */
+    :host([data-fonts-pending]) .stage,
+    :host([data-fonts-pending]) .rail { opacity: 0; pointer-events: none; }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas {
+      position: relative;
+      transform-origin: center center;
+      flex-shrink: 0;
+      background: #fff;
+      will-change: transform;
+    }
+
+    /* Slides live in light DOM (via <slot>) so authored CSS still applies.
+       We absolutely position each slotted child to stack them. */
+    ::slotted(*) {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+    ::slotted([data-deck-active]) {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    /* Tap zones for mobile — back/forward thirds like Stories.
+       Transparent, no visible UI, don't block the overlay. */
+    .tapzones {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      z-index: 2147482000;
+      pointer-events: none;
+    }
+    .tapzone {
+      flex: 1;
+      pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Only activate tap zones on coarse pointers (touch devices). */
+    @media (hover: hover) and (pointer: fine) {
+      .tapzones { display: none; }
+    }
+
+    .overlay {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translate(-50%, 6px) scale(0.92);
+      filter: blur(6px);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: #000;
+      color: #fff;
+      border-radius: 999px;
+      font-size: 12px;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: 0.01em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 260ms ease, transform 260ms cubic-bezier(.2,.8,.2,1), filter 260ms ease;
+      transform-origin: center bottom;
+      z-index: 2147483000;
+      user-select: none;
+    }
+    .overlay[data-visible] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0) scale(1);
+      filter: blur(0);
+    }
+
+    .btn {
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+      cursor: default;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 999px;
+      color: rgba(255,255,255,0.72);
+      transition: background 140ms ease, color 140ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn:active { background: rgba(255,255,255,0.18); }
+    .btn:focus { outline: none; }
+    .btn:focus-visible { outline: none; }
+    .btn::-moz-focus-inner { border: 0; }
+    .btn svg { width: 14px; height: 14px; display: block; }
+    .btn.reset {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 0 10px 0 12px;
+      gap: 6px;
+      color: rgba(255,255,255,0.72);
+    }
+    .btn.reset .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 10px;
+      line-height: 1;
+      color: rgba(255,255,255,0.88);
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+    }
+
+    .count {
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+      font-weight: 500;
+      padding: 0 8px;
+      min-width: 42px;
+      text-align: center;
+      font-size: 12px;
+    }
+    .count .sep { color: rgba(255,255,255,0.45); margin: 0 3px; font-weight: 400; }
+    .count .total { color: rgba(255,255,255,0.55); }
+
+    .divider {
+      width: 1px;
+      height: 14px;
+      background: rgba(255,255,255,0.18);
+      margin: 0 2px;
+    }
+
+    /* ── Thumbnail rail ──────────────────────────────────────────────────
+       Fixed column on the left; each thumbnail is a static deep-clone of
+       the light-DOM slide scaled into a 16:9 (or design-aspect) frame. The
+       stage re-fits around it (see _fit); hidden during present / noscale
+       / print so capture geometry and fullscreen output are unchanged. */
+    .rail {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--deck-rail-w, 188px);
+      background: #141414;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 2147482500;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.18) transparent;
+    }
+    .rail::-webkit-scrollbar { width: 8px; }
+    .rail::-webkit-scrollbar-track { background: transparent; margin: 2px; }
+    .rail::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.18);
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    .rail::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.28);
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    :host([no-rail]) .rail,
+    :host([noscale]) .rail { display: none; }
+    .rail[data-presenting] { display: none; }
+    /* User-driven show/hide (the TweaksPanel toggle) slides instead of
+       popping. Transitions are gated on :host([data-rail-anim]) — set only
+       for the 200ms around the toggle — so window-resize and rail-width
+       drag (which also call _fit) don't lag behind the cursor. */
+    .rail[data-user-hidden] { transform: translateX(-100%); }
+    :host([data-rail-anim]) .rail { transition: transform 200ms cubic-bezier(.3,.7,.4,1); }
+    :host([data-rail-anim]) .stage { transition: left 200ms cubic-bezier(.3,.7,.4,1); }
+    :host([data-rail-anim]) .canvas { transition: transform 200ms cubic-bezier(.3,.7,.4,1); }
+    /* transition shorthand replaces rather than merges — repeat the base
+       .overlay opacity/transform/filter transitions so visibility changes
+       during the 200ms toggle window still fade instead of popping. */
+    :host([data-rail-anim]) .overlay {
+      transition: margin-left 200ms cubic-bezier(.3,.7,.4,1),
+                  opacity 260ms ease,
+                  transform 260ms cubic-bezier(.2,.8,.2,1),
+                  filter 260ms ease;
+    }
+    :host([data-rail-anim]) .tapzones { transition: left 200ms cubic-bezier(.3,.7,.4,1); }
+
+    .thumb {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .thumb .num {
+      width: 16px;
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: right;
+      color: rgba(255,255,255,0.55);
+      padding-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .thumb .frame {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      aspect-ratio: var(--deck-aspect);
+      background: #fff;
+      border-radius: 4px;
+      outline: 2px solid transparent;
+      outline-offset: 0;
+      overflow: hidden;
+      transition: outline-color 120ms ease;
+    }
+    .thumb:hover .frame { outline-color: rgba(255,255,255,0.25); }
+    .thumb { outline: none; }
+    .thumb:focus-visible .frame { outline-color: rgba(255,255,255,0.5); }
+    .thumb[data-current] .num { color: #fff; }
+    .thumb[data-current] .frame { outline-color: #D97757; }
+    .thumb[data-dragging] { opacity: 0.35; }
+    .thumb::before {
+      content: '';
+      position: absolute;
+      left: 24px;
+      right: 0;
+      height: 3px;
+      border-radius: 2px;
+      background: #D97757;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .thumb[data-drop="before"]::before { top: -8px; opacity: 1; }
+    .thumb[data-drop="after"]::before { bottom: -8px; opacity: 1; }
+    .thumb[data-skip] .frame { opacity: 0.35; }
+    .thumb[data-skip] .frame::after {
+      content: 'Skipped';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .ctxmenu {
+      position: fixed;
+      min-width: 150px;
+      padding: 4px;
+      background: #242424;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 7px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      z-index: 2147483100;
+      display: none;
+      font-size: 12px;
+    }
+    .ctxmenu[data-open] { display: block; }
+    .ctxmenu button {
+      display: block;
+      width: 100%;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #e8e8e8;
+      font: inherit;
+      text-align: left;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .ctxmenu button:hover:not(:disabled) { background: rgba(255,255,255,0.08); }
+    .ctxmenu button:disabled { opacity: 0.35; cursor: default; }
+    .ctxmenu hr {
+      border: 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin: 4px 2px;
+    }
+
+    .rail-resize {
+      position: fixed;
+      left: calc(var(--deck-rail-w, 188px) - 3px);
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      z-index: 2147482600;
+      touch-action: none;
+    }
+    .rail-resize:hover,
+    .rail-resize[data-dragging] { background: rgba(255,255,255,0.12); }
+    :host([no-rail]) .rail-resize,
+    :host([noscale]) .rail-resize,
+    .rail[data-presenting] + .rail-resize,
+    .rail[data-user-hidden] + .rail-resize { display: none; }
+
+    /* Delete-confirm popup — matches the SPA's ConfirmDialog layout
+       (title + message body, depressed footer with Cancel / Delete). */
+    .confirm-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 2147483200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-backdrop[data-open] { display: flex; }
+    .confirm {
+      width: 320px;
+      max-width: calc(100vw - 32px);
+      background: #2a2a2a;
+      color: #e8e8e8;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      overflow: hidden;
+      font-family: inherit;
+      animation: deck-confirm-in 0.18s ease;
+    }
+    @keyframes deck-confirm-in {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .confirm .body { padding: 20px 20px 16px; }
+    .confirm .title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .confirm .msg { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.65); }
+    .confirm .footer {
+      padding: 14px 20px;
+      background: #1f1f1f;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .confirm button {
+      appearance: none;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .confirm .cancel {
+      background: transparent;
+      border: 0;
+      color: rgba(255,255,255,0.8);
+    }
+    .confirm .cancel:hover { background: rgba(255,255,255,0.08); }
+    .confirm .danger {
+      background: #c96442;
+      border: 1px solid rgba(0,0,0,0.15);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(166,50,68,0.3), 0 2px 6px rgba(166,50,68,0.18);
+    }
+    .confirm .danger:hover { background: #b5563a; }
+
+    /* ── Print: one page per slide, no chrome ────────────────────────────
+       The screen layout stacks every slide at inset:0 inside a scaled
+       canvas; for print we want them in document flow at the authored
+       design size so the browser paginates one slide per sheet. The
+       @page size is set from the width/height attributes via the inline
+       <style id="deck-stage-print-page"> that connectedCallback injects
+       into <head> (the @page at-rule has no effect inside shadow DOM). */
+    @media print {
+      :host {
+        position: static;
+        inset: auto;
+        background: none;
+        overflow: visible;
+        color: inherit;
+      }
+      .stage { position: static; display: block; }
+      .canvas {
+        transform: none !important;
+        width: auto !important;
+        height: auto !important;
+        background: none;
+        will-change: auto;
+      }
+      ::slotted(*) {
+        position: relative !important;
+        inset: auto !important;
+        width: var(--deck-design-w) !important;
+        height: var(--deck-design-h) !important;
+        box-sizing: border-box !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto;
+        break-after: page;
+        page-break-after: always;
+        break-inside: avoid;
+        overflow: hidden;
+      }
+      /* :last-child alone isn't enough once data-deck-skip hides the
+         trailing slide(s) — the last *visible* slide still carries
+         break-after:page and prints a blank sheet. _markLastVisible()
+         maintains data-deck-last-visible on the last non-skipped slide. */
+      ::slotted(*:last-child),
+      ::slotted([data-deck-last-visible]) {
+        break-after: auto;
+        page-break-after: auto;
+      }
+      ::slotted([data-deck-skip]) { display: none !important; }
+      .overlay, .tapzones, .rail, .rail-resize, .ctxmenu, .confirm-backdrop { display: none !important; }
+    }
+  `;
+
+  class DeckStage extends HTMLElement {
+    static get observedAttributes() { return ['width', 'height', 'noscale', 'no-rail']; }
+
+    constructor() {
+      super();
+      this._root = this.attachShadow({ mode: 'open' });
+      this._index = 0;
+      this._slides = [];
+      this._notes = [];
+      this._hideTimer = null;
+      this._mouseIdleTimer = null;
+      this._menuIndex = -1;
+
+      this._onKey = this._onKey.bind(this);
+      this._onResize = this._onResize.bind(this);
+      this._onSlotChange = this._onSlotChange.bind(this);
+      this._onMouseMove = this._onMouseMove.bind(this);
+      this._onTapBack = this._onTapBack.bind(this);
+      this._onTapForward = this._onTapForward.bind(this);
+      this._onMessage = this._onMessage.bind(this);
+      // Capture-phase close so a click anywhere dismisses the menu, but
+      // ignore clicks that land inside the menu itself — otherwise the
+      // capture handler runs before the menu's own (bubble) handler and
+      // clears _menuIndex out from under it.
+      this._onDocClick = (e) => {
+        if (this._menu && e.composedPath && e.composedPath().includes(this._menu)) return;
+        this._closeMenu();
+      };
+    }
+
+    get designWidth() {
+      return parseInt(this.getAttribute('width'), 10) || DESIGN_W_DEFAULT;
+    }
+    get designHeight() {
+      return parseInt(this.getAttribute('height'), 10) || DESIGN_H_DEFAULT;
+    }
+
+    connectedCallback() {
+      // Presenter-view popup loads deckUrl?_snthumb=...#N for its prev/cur/
+      // next thumbnails — the rail has no business rendering inside those
+      // (wrong scale, and it offsets the stage so the thumb shows a gutter).
+      if (/[?&]_snthumb=/.test(location.search)) this.setAttribute('no-rail', '');
+      this._render();
+      this._loadNotes();
+      this._syncPrintPageRule();
+      window.addEventListener('keydown', this._onKey);
+      window.addEventListener('resize', this._onResize);
+      window.addEventListener('mousemove', this._onMouseMove, { passive: true });
+      window.addEventListener('message', this._onMessage);
+      window.addEventListener('click', this._onDocClick, true);
+      // Initial collection + layout happens via slotchange, which fires on mount.
+      this._enableRail();
+      // Hold the stage hidden until webfonts are ready so the first visible
+      // paint has the deck's real typography — the :not(:defined) guard in
+      // the page HTML only covers custom-element upgrade, not font load.
+      // Capped so a 404'd font URL can't blank the deck indefinitely.
+      this.setAttribute('data-fonts-pending', '');
+      const reveal = () => this.removeAttribute('data-fonts-pending');
+      // rAF first: fonts.ready is a pre-resolved promise until layout has
+      // resolved the slotted text's font-family and pushed a FontFace into
+      // 'loading'. Reading it here in connectedCallback (parse-time) would
+      // settle the race in a microtask before any font fetch starts.
+      requestAnimationFrame(() => {
+        Promise.race([
+          document.fonts ? document.fonts.ready : Promise.resolve(),
+          new Promise((r) => setTimeout(r, 2000)),
+        ]).then(reveal, reveal);
+      });
+    }
+
+    _enableRail() {
+      // Idempotent — older host builds still post __omelette_rail_enabled.
+      // no-rail guard keeps the observers/stylesheet walk off the cheap path
+      // for presenter-popup thumbnail iframes (up to 9 per view).
+      if (this._railEnabled || this.hasAttribute('no-rail')) return;
+      this._railEnabled = true;
+      // Per-viewer preference — restored alongside rail width. Default on;
+      // only a stored '0' (from the TweaksPanel toggle) hides it.
+      this._railVisible = true;
+      try {
+        if (localStorage.getItem('deck-stage.railVisible') === '0') this._railVisible = false;
+      } catch (e) {}
+      // Live thumbnail updates: watch the light-DOM slides for content
+      // edits and re-clone just the affected thumb(s), debounced. Ignore
+      // the data-deck-* / data-screen-label / data-om-validate attributes
+      // this component itself writes so nav and skip don't trigger
+      // spurious refreshes.
+      const OWN_ATTRS = /^data-(deck-|screen-label$|om-validate$)/;
+      this._liveDirty = new Set();
+      this._liveObserver = new MutationObserver((records) => {
+        for (const r of records) {
+          if (r.type === 'attributes' && OWN_ATTRS.test(r.attributeName || '')) continue;
+          let n = r.target;
+          while (n && n.parentElement !== this) n = n.parentElement;
+          if (n && this._slideSet && this._slideSet.has(n)) this._liveDirty.add(n);
+        }
+        if (this._liveDirty.size && !this._liveTimer) {
+          this._liveTimer = setTimeout(() => {
+            this._liveTimer = null;
+            this._liveDirty.forEach((s) => this._refreshThumb(s));
+            this._liveDirty.clear();
+          }, 200);
+        }
+      });
+      this._liveObserver.observe(this, {
+        subtree: true, childList: true, characterData: true, attributes: true,
+      });
+      // Lazy thumbnail materialization — clone the slide only when its
+      // frame scrolls into (or near) the rail viewport. rootMargin gives
+      // ~4 thumbs of pre-load so fast scrolling doesn't flash blanks.
+      this._railObserver = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting && e.target.__deckThumb) {
+            this._materialize(e.target.__deckThumb);
+          }
+        });
+      }, { root: this._rail, rootMargin: '400px 0px' });
+      // Tweaks typically change CSS vars / attrs OUTSIDE <deck-stage>
+      // (on <html>, <body>, a wrapper div, or a <style> tag), which
+      // _liveObserver can't see. Re-snapshot author CSS (constructable
+      // sheet is shared by reference, so one replaceSync updates every
+      // thumb shadow root) and re-sync each thumb host's attrs + custom
+      // properties. In-slide DOM mutations are _liveObserver's job.
+      // Debounced so slider drags don't thrash.
+      this._onTweakChange = () => {
+        clearTimeout(this._tweakTimer);
+        this._tweakTimer = setTimeout(() => {
+          this._snapshotAuthorCss();
+          // One getComputedStyle for the whole batch — each
+          // getPropertyValue read below reuses the same computed style
+          // as long as nothing invalidates layout between thumbs.
+          const cs = getComputedStyle(this);
+          (this._thumbs || []).forEach((t) => {
+            if (t.host) this._syncThumbHostAttrs(t.host, cs);
+          });
+        }, 120);
+      };
+      window.addEventListener('tweakchange', this._onTweakChange);
+      this._snapshotAuthorCss();
+      // Build the rail now that it's enabled — slotchange already fired,
+      // so _renderRail's early-return skipped the initial build.
+      this._syncRailHidden();
+      this._renderRail();
+      this._fit();
+    }
+
+    /** Snapshot document stylesheets into a constructable sheet that each
+     *  thumbnail's nested shadow root adopts — so author CSS styles the
+     *  cloned slide content without touching this component's chrome.
+     *  Cross-origin sheets throw on .cssRules — skip them. Re-callable:
+     *  the existing constructable sheet is reused via replaceSync so every
+     *  already-adopted shadow root picks up the fresh CSS without re-adopt. */
+    _snapshotAuthorCss() {
+      // :root in an adopted sheet inside a shadow root matches nothing
+      // (only the document root qualifies), so author rules like
+      // `:root[data-voice="modern"] .serif` never reach the clones.
+      // Rewrite :root → :host and mirror <html>'s data-*/class/lang onto
+      // each thumb host (see _syncThumbHostAttrs) so the same selectors
+      // match inside the thumbnail's shadow tree.
+      const authorCss = Array.from(document.styleSheets).map((sh) => {
+        try {
+          return Array.from(sh.cssRules).map((r) => r.cssText).join('\n');
+        } catch (e) { return ''; }
+      }).join('\n')
+        // The shadow host is featureless outside the functional :host(...)
+        // form, so any compound on :root — [attr], .class, #id, :pseudo —
+        // must become :host(<compound>) not :host<compound>. Same for the
+        // html type selector (Tailwind class-strategy dark mode emits
+        // html.dark; Pico uses html[data-theme]), which has nothing to
+        // match inside the thumb's shadow tree.
+        .replace(/:root((?:\[[^\]]*\]|[.#][-\w]+|:[-\w]+(?:\([^)]*\))?)+)/g, ':host($1)')
+        .replace(/:root\b/g, ':host')
+        .replace(/(^|[\s,>~+(}])html((?:\[[^\]]*\]|[.#][-\w]+|:[-\w]+(?:\([^)]*\))?)+)(?![-\w])/g, '$1:host($2)')
+        .replace(/(^|[\s,>~+(}])html(?![-\w])/g, '$1:host');
+      // Every custom property the author references. _syncThumbHostAttrs
+      // mirrors each one's *computed* value at <deck-stage> onto the
+      // thumb host so the live value wins over the :host default above
+      // regardless of which ancestor the tweak wrote to (<html>, <body>,
+      // a wrapper div, or the deck-stage element itself all inherit
+      // down to getComputedStyle(this)).
+      this._authorVars = new Set(authorCss.match(/--[\w-]+/g) || []);
+      try {
+        if (!this._adoptedSheet) this._adoptedSheet = new CSSStyleSheet();
+        this._adoptedSheet.replaceSync(authorCss);
+      } catch (e) {
+        this._adoptedSheet = null;
+        this._authorCss = authorCss;
+      }
+    }
+
+    _syncThumbHostAttrs(host, cs) {
+      const de = document.documentElement;
+      // setAttribute overwrites but can't delete — an attr removed from
+      // <html> (toggleAttribute off, classList emptied) would linger on
+      // the host and :host([data-*]) / :host(.foo) rules would keep
+      // matching. Remove stale mirrored attrs first; iterate backward
+      // because removeAttribute mutates the live NamedNodeMap.
+      for (let i = host.attributes.length - 1; i >= 0; i--) {
+        const n = host.attributes[i].name;
+        if ((n.startsWith('data-') || n === 'class' || n === 'lang')
+            && !de.hasAttribute(n)) {
+          host.removeAttribute(n);
+        }
+      }
+      for (const a of de.attributes) {
+        if (a.name.startsWith('data-') || a.name === 'class' || a.name === 'lang') {
+          host.setAttribute(a.name, a.value);
+        }
+      }
+      // The :root→:host rewrite in _snapshotAuthorCss pins each custom
+      // property to its stylesheet default on the thumb host, shadowing
+      // the live value that would otherwise inherit. Tweaks can write the
+      // live value on any ancestor — <html>, <body>, a wrapper div, the
+      // deck-stage element — so read it as the *computed* value at
+      // <deck-stage> (which sees the whole inheritance chain) rather than
+      // trying to guess which element the author wrote to. Inline on the
+      // host beats the :host{} rule. remove-stale covers vars dropped
+      // from the stylesheet between snapshots.
+      const vars = this._authorVars || new Set();
+      for (let i = host.style.length - 1; i >= 0; i--) {
+        const p = host.style[i];
+        if (p.startsWith('--') && !vars.has(p)) host.style.removeProperty(p);
+      }
+      const live = cs || getComputedStyle(this);
+      vars.forEach((p) => {
+        const v = live.getPropertyValue(p);
+        if (v) host.style.setProperty(p, v.trim());
+        else host.style.removeProperty(p);
+      });
+    }
+
+    disconnectedCallback() {
+      window.removeEventListener('keydown', this._onKey);
+      window.removeEventListener('resize', this._onResize);
+      window.removeEventListener('mousemove', this._onMouseMove);
+      window.removeEventListener('message', this._onMessage);
+      window.removeEventListener('click', this._onDocClick, true);
+      if (this._hideTimer) clearTimeout(this._hideTimer);
+      if (this._mouseIdleTimer) clearTimeout(this._mouseIdleTimer);
+      if (this._liveTimer) clearTimeout(this._liveTimer);
+      if (this._tweakTimer) clearTimeout(this._tweakTimer);
+      if (this._railAnimTimer) clearTimeout(this._railAnimTimer);
+      if (this._scaleRaf) cancelAnimationFrame(this._scaleRaf);
+      if (this._liveObserver) this._liveObserver.disconnect();
+      if (this._railObserver) this._railObserver.disconnect();
+      if (this._onTweakChange) window.removeEventListener('tweakchange', this._onTweakChange);
+    }
+
+    attributeChangedCallback() {
+      if (this._canvas) {
+        this._canvas.style.width = this.designWidth + 'px';
+        this._canvas.style.height = this.designHeight + 'px';
+        this._canvas.style.setProperty('--deck-design-w', this.designWidth + 'px');
+        this._canvas.style.setProperty('--deck-design-h', this.designHeight + 'px');
+        if (this._rail) {
+          this._rail.style.setProperty('--deck-aspect', this.designWidth + '/' + this.designHeight);
+        }
+        this._fit();
+        this._scaleThumbs();
+        this._syncPrintPageRule();
+      }
+    }
+
+    _render() {
+      const style = document.createElement('style');
+      style.textContent = stylesheet;
+
+      const stage = document.createElement('div');
+      stage.className = 'stage';
+
+      const canvas = document.createElement('div');
+      canvas.className = 'canvas';
+      canvas.style.width = this.designWidth + 'px';
+      canvas.style.height = this.designHeight + 'px';
+      canvas.style.setProperty('--deck-design-w', this.designWidth + 'px');
+      canvas.style.setProperty('--deck-design-h', this.designHeight + 'px');
+
+      const slot = document.createElement('slot');
+      slot.addEventListener('slotchange', this._onSlotChange);
+      canvas.appendChild(slot);
+      stage.appendChild(canvas);
+
+      // Tap zones (mobile): left third = back, right third = forward.
+      const tapzones = document.createElement('div');
+      tapzones.className = 'tapzones export-hidden';
+      tapzones.setAttribute('aria-hidden', 'true');
+      tapzones.setAttribute('data-noncommentable', '');
+      const tzBack = document.createElement('div');
+      tzBack.className = 'tapzone tapzone--back';
+      const tzMid = document.createElement('div');
+      tzMid.className = 'tapzone tapzone--mid';
+      tzMid.style.pointerEvents = 'none';
+      const tzFwd = document.createElement('div');
+      tzFwd.className = 'tapzone tapzone--fwd';
+      tzBack.addEventListener('click', this._onTapBack);
+      tzFwd.addEventListener('click', this._onTapForward);
+      tapzones.append(tzBack, tzMid, tzFwd);
+
+      // Overlay: compact, solid black, with clickable controls.
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay export-hidden';
+      overlay.setAttribute('role', 'toolbar');
+      overlay.setAttribute('aria-label', 'Deck controls');
+      overlay.setAttribute('data-noncommentable', '');
+      overlay.innerHTML = `
+        <button class="btn prev" type="button" aria-label="Previous slide" title="Previous (←)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>
+        </button>
+        <span class="count" aria-live="polite"><span class="current">1</span><span class="sep">/</span><span class="total">1</span></span>
+        <button class="btn next" type="button" aria-label="Next slide" title="Next (→)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+        </button>
+        <span class="divider"></span>
+        <button class="btn reset" type="button" aria-label="Reset to first slide" title="Reset (R)">Reset<span class="kbd">R</span></button>
+      `;
+
+      overlay.querySelector('.prev').addEventListener('click', () => this._advance(-1, 'click'));
+      overlay.querySelector('.next').addEventListener('click', () => this._advance(1, 'click'));
+      overlay.querySelector('.reset').addEventListener('click', () => this._go(0, 'click'));
+
+      // Thumbnail rail + context menu. Thumbnails are populated in
+      // _renderRail() after _collectSlides().
+      const rail = document.createElement('div');
+      rail.className = 'rail export-hidden';
+      rail.setAttribute('data-noncommentable', '');
+      rail.style.setProperty('--deck-aspect', this.designWidth + '/' + this.designHeight);
+      // Edge auto-scroll while dragging a thumb near the rail's top/bottom
+      // so off-screen drop targets are reachable. Native dragover fires
+      // continuously while the pointer is stationary, so a per-event nudge
+      // (ramped by edge proximity) is enough — no rAF loop needed.
+      rail.addEventListener('dragover', (e) => {
+        if (this._dragFrom == null) return;
+        const r = rail.getBoundingClientRect();
+        const EDGE = 40;
+        const dt = e.clientY - r.top;
+        const db = r.bottom - e.clientY;
+        if (dt < EDGE) rail.scrollTop -= Math.ceil((EDGE - dt) / 3);
+        else if (db < EDGE) rail.scrollTop += Math.ceil((EDGE - db) / 3);
+      });
+
+      const menu = document.createElement('div');
+      menu.className = 'ctxmenu export-hidden';
+      menu.setAttribute('data-noncommentable', '');
+      menu.innerHTML = `
+        <button type="button" data-act="skip">Skip slide</button>
+        <button type="button" data-act="up">Move up</button>
+        <button type="button" data-act="down">Move down</button>
+        <hr>
+        <button type="button" data-act="delete">Delete slide</button>
+      `;
+      menu.addEventListener('click', (e) => {
+        const act = e.target && e.target.getAttribute && e.target.getAttribute('data-act');
+        if (!act) return;
+        const i = this._menuIndex;
+        this._closeMenu();
+        if (act === 'skip') this._toggleSkip(i);
+        else if (act === 'up') this._moveSlide(i, i - 1);
+        else if (act === 'down') this._moveSlide(i, i + 1);
+        else if (act === 'delete') this._openConfirm(i);
+      });
+      menu.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      // Rail resize handle — drag to set --deck-rail-w, persisted to
+      // localStorage so the width survives reloads.
+      const resize = document.createElement('div');
+      resize.className = 'rail-resize export-hidden';
+      resize.setAttribute('data-noncommentable', '');
+      resize.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        resize.setPointerCapture(e.pointerId);
+        resize.setAttribute('data-dragging', '');
+        const move = (ev) => this._setRailWidth(ev.clientX);
+        const up = () => {
+          resize.removeEventListener('pointermove', move);
+          resize.removeEventListener('pointerup', up);
+          resize.removeEventListener('pointercancel', up);
+          resize.removeAttribute('data-dragging');
+          try { localStorage.setItem('deck-stage.railWidth', String(this._railPx)); } catch (err) {}
+        };
+        resize.addEventListener('pointermove', move);
+        resize.addEventListener('pointerup', up);
+        resize.addEventListener('pointercancel', up);
+      });
+
+      // Delete-confirm dialog — mirrors the SPA's ConfirmDialog layout.
+      const confirm = document.createElement('div');
+      confirm.className = 'confirm-backdrop export-hidden';
+      confirm.setAttribute('data-noncommentable', '');
+      confirm.innerHTML = `
+        <div class="confirm" role="dialog" aria-modal="true">
+          <div class="body">
+            <div class="title">Delete slide?</div>
+            <div class="msg">This slide will be removed from the deck.</div>
+          </div>
+          <div class="footer">
+            <button type="button" class="cancel">Cancel</button>
+            <button type="button" class="danger">Delete</button>
+          </div>
+        </div>
+      `;
+      confirm.addEventListener('click', (e) => {
+        if (e.target === confirm) this._closeConfirm();
+      });
+      confirm.querySelector('.cancel').addEventListener('click', () => this._closeConfirm());
+      confirm.querySelector('.danger').addEventListener('click', () => {
+        const i = this._confirmIndex;
+        this._closeConfirm();
+        this._deleteSlide(i);
+      });
+
+      this._root.append(style, rail, resize, stage, tapzones, overlay, menu, confirm);
+      this._canvas = canvas;
+      this._slot = slot;
+      this._overlay = overlay;
+      this._tapzones = tapzones;
+      this._rail = rail;
+      this._resize = resize;
+      this._menu = menu;
+      this._confirm = confirm;
+      this._countEl = overlay.querySelector('.current');
+      this._totalEl = overlay.querySelector('.total');
+
+      // Restore persisted rail width.
+      let rw = 188;
+      try {
+        const s = localStorage.getItem('deck-stage.railWidth');
+        if (s) rw = parseInt(s, 10) || rw;
+      } catch (err) {}
+      this._setRailWidth(rw);
+      this._syncRailHidden();
+    }
+
+    _setRailWidth(px) {
+      const w = Math.max(120, Math.min(360, Math.round(px)));
+      this._railPx = w;
+      this.style.setProperty('--deck-rail-w', w + 'px');
+      this._fit();
+      // _scaleThumbs forces a sync layout (frame.offsetWidth) then writes
+      // N transforms. During a resize drag this runs per-pointermove;
+      // coalesce to one per frame.
+      if (!this._scaleRaf) {
+        this._scaleRaf = requestAnimationFrame(() => {
+          this._scaleRaf = null;
+          this._scaleThumbs();
+        });
+      }
+    }
+
+    /** @page must live in the document stylesheet — it's a no-op inside
+     *  shadow DOM. Inject/update a single <head> style tag so the print
+     *  sheet matches the design size and Save-as-PDF yields one slide per
+     *  page with no margins. */
+    _syncPrintPageRule() {
+      const id = 'deck-stage-print-page';
+      let tag = document.getElementById(id);
+      if (!tag) {
+        tag = document.createElement('style');
+        tag.id = id;
+        document.head.appendChild(tag);
+      }
+      tag.textContent =
+        '@page { size: ' + this.designWidth + 'px ' + this.designHeight + 'px; margin: 0; } ' +
+        '@media print { html, body { margin: 0 !important; padding: 0 !important; background: none !important; overflow: visible !important; height: auto !important; } ' +
+        '* { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }';
+    }
+
+    _onSlotChange() {
+      // Rail mutations (delete/move) already reconcile synchronously and
+      // emit slidechange with reason 'api'; skip the async slotchange that
+      // would otherwise re-broadcast with reason 'init'.
+      if (this._squelchSlotChange) { this._squelchSlotChange = false; return; }
+      this._collectSlides();
+      this._restoreIndex();
+      this._applyIndex({ showOverlay: false, broadcast: true, reason: 'init' });
+      this._fit();
+    }
+
+    _collectSlides() {
+      const assigned = this._slot.assignedElements({ flatten: true });
+      this._slides = assigned.filter((el) => {
+        // Skip template/style/script nodes even if someone slots them.
+        const tag = el.tagName;
+        return tag !== 'TEMPLATE' && tag !== 'SCRIPT' && tag !== 'STYLE';
+      });
+      this._slideSet = new Set(this._slides);
+
+      this._slides.forEach((slide, i) => {
+        const n = i + 1;
+        // Determine a label for comment flow: prefer explicit data-label,
+        // then an existing data-screen-label, then first heading, else "Slide".
+        let label = slide.getAttribute('data-label');
+        if (!label) {
+          const existing = slide.getAttribute('data-screen-label');
+          if (existing) {
+            // Strip any leading number the author may have included.
+            label = existing.replace(/^\s*\d+\s*/, '').trim() || existing;
+          }
+        }
+        if (!label) {
+          const h = slide.querySelector('h1, h2, h3, [data-title]');
+          if (h) label = (h.textContent || '').trim().slice(0, 40);
+        }
+        if (!label) label = 'Slide';
+        slide.setAttribute('data-screen-label', `${pad2(n)} ${label}`);
+
+        // Validation attribute for comment flow / auto-checks.
+        if (!slide.hasAttribute('data-om-validate')) {
+          slide.setAttribute('data-om-validate', VALIDATE_ATTR);
+        }
+
+        slide.setAttribute('data-deck-slide', String(i));
+      });
+
+      if (this._totalEl) this._totalEl.textContent = String(this._slides.length || 1);
+      if (this._index >= this._slides.length) this._index = Math.max(0, this._slides.length - 1);
+      this._markLastVisible();
+      this._renderRail();
+    }
+
+    /** Tag the last non-skipped slide so print CSS can drop its
+     *  break-after (see the @media print comment above — :last-child
+     *  alone matches a hidden skipped slide). */
+    _markLastVisible() {
+      let last = null;
+      this._slides.forEach((s) => {
+        s.removeAttribute('data-deck-last-visible');
+        if (!s.hasAttribute('data-deck-skip')) last = s;
+      });
+      if (last) last.setAttribute('data-deck-last-visible', '');
+    }
+
+    _loadNotes() {
+      const tag = document.getElementById('speaker-notes');
+      if (!tag) { this._notes = []; return; }
+      try {
+        const parsed = JSON.parse(tag.textContent || '[]');
+        if (Array.isArray(parsed)) this._notes = parsed;
+      } catch (e) {
+        console.warn('[deck-stage] Failed to parse #speaker-notes JSON:', e);
+        this._notes = [];
+      }
+    }
+
+    _restoreIndex() {
+      // The host's ?slide= param is delivered as a #<int> hash (1-indexed) on
+      // the iframe src. No hash → slide 1; the deck itself keeps no position
+      // state across loads.
+      const h = (location.hash || '').match(/^#(\d+)$/);
+      if (h) {
+        const n = parseInt(h[1], 10) - 1;
+        if (n >= 0 && n < this._slides.length) this._index = n;
+      }
+    }
+
+    _applyIndex({ showOverlay = true, broadcast = true, reason = 'init' } = {}) {
+      if (!this._slides.length) return;
+      const prev = this._prevIndex == null ? -1 : this._prevIndex;
+      const curr = this._index;
+      // Keep the iframe's own hash in sync so an in-iframe location.reload()
+      // (reload banner path in viewer-handle.ts) lands on the current slide,
+      // not the stale deep-link hash from initial load.
+      try { history.replaceState(null, '', '#' + (curr + 1)); } catch (e) {}
+      this._slides.forEach((s, i) => {
+        if (i === curr) s.setAttribute('data-deck-active', '');
+        else s.removeAttribute('data-deck-active');
+      });
+      if (this._countEl) this._countEl.textContent = String(curr + 1);
+      // Follow-scroll on every navigation (init deep-link, keyboard, click,
+      // tap, external goTo) — the only time we *don't* want the rail to
+      // track current is after a rail-internal mutation, where _renderRail
+      // has already restored the user's scroll position and yanking back to
+      // current would undo it.
+      this._syncRail(reason !== 'mutation');
+
+      if (broadcast) {
+        // (1) Legacy: host-window postMessage for speaker-notes renderers.
+        try { window.postMessage({ slideIndexChanged: curr, deckTotal: this._slides.length, deckSkipped: this._skippedIndices() }, '*'); } catch (e) {}
+
+        // (2) In-page CustomEvent on the <deck-stage> element itself.
+        //     Bubbles and composes out of shadow DOM so slide code can listen:
+        //       document.querySelector('deck-stage').addEventListener('slidechange', e => {
+        //         e.detail.index, e.detail.previousIndex, e.detail.total, e.detail.slide, e.detail.reason
+        //       });
+        const detail = {
+          index: curr,
+          previousIndex: prev,
+          total: this._slides.length,
+          slide: this._slides[curr] || null,
+          previousSlide: prev >= 0 ? (this._slides[prev] || null) : null,
+          reason: reason, // 'init' | 'keyboard' | 'click' | 'tap' | 'api'
+        };
+        this.dispatchEvent(new CustomEvent('slidechange', {
+          detail,
+          bubbles: true,
+          composed: true,
+        }));
+      }
+
+      this._prevIndex = curr;
+      if (showOverlay) this._flashOverlay();
+    }
+
+    _flashOverlay() {
+      // Host posts __omelette_presenting while in fullscreen/tab presentation
+      // mode — suppress the nav footer entirely (both hover and slide-change
+      // flash) so the audience sees clean slides.
+      if (!this._overlay || this._presenting) return;
+      this._overlay.setAttribute('data-visible', '');
+      if (this._hideTimer) clearTimeout(this._hideTimer);
+      this._hideTimer = setTimeout(() => {
+        this._overlay.removeAttribute('data-visible');
+      }, OVERLAY_HIDE_MS);
+    }
+
+    _railWidth() {
+      // State-based, no offsetWidth: the first _fit() can run before the
+      // rail has had layout on some load paths, and a 0 there paints the
+      // slide full-width for one frame before the post-slotchange _fit()
+      // corrects it.
+      if (!this._railEnabled || !this._railVisible || this.hasAttribute('no-rail')
+          || this.hasAttribute('noscale') || this._presenting) return 0;
+      return this._railPx || 0;
+    }
+
+    _fit() {
+      if (!this._canvas) return;
+      const stage = this._canvas.parentElement;
+      // PPTX export sets noscale so the DOM capture sees authored-size
+      // geometry — the scaled canvas is in shadow DOM, so the exporter's
+      // resetTransformSelector can't reach .canvas.style.transform directly.
+      if (this.hasAttribute('noscale')) {
+        this._canvas.style.transform = 'none';
+        if (stage) stage.style.left = '0';
+        if (this._overlay) this._overlay.style.marginLeft = '0';
+        if (this._tapzones) this._tapzones.style.left = '0';
+        return;
+      }
+      const rw = this._railWidth();
+      if (stage) stage.style.left = rw + 'px';
+      // Overlay is centred on the viewport via left:50% + translate(-50%);
+      // marginLeft shifts the centre by rw/2 so it lands in the middle of
+      // the [rw, innerWidth] stage region. Tapzones just inset from rw.
+      if (this._overlay) this._overlay.style.marginLeft = (rw / 2) + 'px';
+      if (this._tapzones) this._tapzones.style.left = rw + 'px';
+      const vw = window.innerWidth - rw;
+      const vh = window.innerHeight;
+      const s = Math.min(vw / this.designWidth, vh / this.designHeight);
+      this._canvas.style.transform = `scale(${s})`;
+    }
+
+    _onResize() { this._fit(); }
+
+    _onMouseMove() {
+      // Keep overlay visible while mouse moves; hide after idle.
+      this._flashOverlay();
+    }
+
+    _onMessage(e) {
+      const d = e.data;
+      if (d && typeof d.__omelette_presenting === 'boolean') {
+        this._presenting = d.__omelette_presenting;
+        if (this._presenting && this._overlay) {
+          this._overlay.removeAttribute('data-visible');
+          if (this._hideTimer) clearTimeout(this._hideTimer);
+        }
+        this._syncRailHidden();
+        this._closeMenu();
+        this._closeConfirm();
+        this._fit();
+        this._scaleThumbs();
+      }
+      // Per-viewer show/hide, driven by the TweaksPanel's auto-injected
+      // "Thumbnail rail" toggle (or any author script). Independent of
+      // whether the Tweaks panel itself is open — closing the panel
+      // doesn't change rail visibility. Persists alongside rail width.
+      if (d && d.type === '__deck_rail_visible' && typeof d.on === 'boolean') {
+        if (d.on === this._railVisible) return;
+        this._railVisible = d.on;
+        try { localStorage.setItem('deck-stage.railVisible', d.on ? '1' : '0'); } catch (e) {}
+        // Arm the transition, commit it, then flip state — otherwise the
+        // browser coalesces both writes and nothing animates on show.
+        this.setAttribute('data-rail-anim', '');
+        void (this._rail && this._rail.offsetHeight);
+        this._syncRailHidden();
+        this._fit();
+        this._scaleThumbs();
+        clearTimeout(this._railAnimTimer);
+        this._railAnimTimer = setTimeout(() => this.removeAttribute('data-rail-anim'), 220);
+      }
+      if (d && d.type === '__omelette_rail_enabled') this._enableRail();
+    }
+
+    _syncRailHidden() {
+      if (!this._rail) return;
+      // data-presenting is the hard hide (display:none) for flag-off and
+      // presentation mode — instant, no transition. data-user-hidden is
+      // the soft hide (translateX(-100%)) for the viewer's rail toggle,
+      // so show/hide slides under :host([data-rail-anim]).
+      const hard = !this._railEnabled || this._presenting;
+      if (hard) this._rail.setAttribute('data-presenting', '');
+      else this._rail.removeAttribute('data-presenting');
+      if (!this._railVisible) this._rail.setAttribute('data-user-hidden', '');
+      else this._rail.removeAttribute('data-user-hidden');
+      // translateX hide leaves thumbs (tabIndex=0) in the tab order —
+      // inert keeps them unfocusable while the rail is off-screen.
+      this._rail.inert = hard || !this._railVisible;
+    }
+
+    _onTapBack(e) {
+      e.preventDefault();
+      this._advance(-1, 'tap');
+    }
+
+    _onTapForward(e) {
+      e.preventDefault();
+      this._advance(1, 'tap');
+    }
+
+    _onKey(e) {
+      // Ignore when the user is typing.
+      const t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      // Confirm dialog swallows nav keys while open; Escape cancels. Enter
+      // is left to the focused button's native activation so Tab→Cancel
+      // →Enter activates Cancel, not the window-level confirm path.
+      if (this._confirm && this._confirm.hasAttribute('data-open')) {
+        if (e.key === 'Escape') { this._closeConfirm(); e.preventDefault(); }
+        return;
+      }
+      if (e.key === 'Escape' && this._menu && this._menu.hasAttribute('data-open')) {
+        this._closeMenu();
+        e.preventDefault();
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      const key = e.key;
+      let handled = true;
+
+      if (key === 'ArrowRight' || key === 'PageDown' || key === ' ' || key === 'Spacebar') {
+        this._advance(1, 'keyboard');
+      } else if (key === 'ArrowLeft' || key === 'PageUp') {
+        this._advance(-1, 'keyboard');
+      } else if (key === 'Home') {
+        this._go(0, 'keyboard');
+      } else if (key === 'End') {
+        this._go(this._slides.length - 1, 'keyboard');
+      } else if (key === 'r' || key === 'R') {
+        this._go(0, 'keyboard');
+      } else if (/^[0-9]$/.test(key)) {
+        // 1..9 jump to that slide; 0 jumps to 10.
+        const n = key === '0' ? 9 : parseInt(key, 10) - 1;
+        if (n < this._slides.length) this._go(n, 'keyboard');
+      } else {
+        handled = false;
+      }
+
+      if (handled) {
+        e.preventDefault();
+        this._flashOverlay();
+      }
+    }
+
+    _go(i, reason = 'api') {
+      if (!this._slides.length) return;
+      const clamped = Math.max(0, Math.min(this._slides.length - 1, i));
+      if (clamped === this._index) {
+        this._flashOverlay();
+        return;
+      }
+      this._index = clamped;
+      this._applyIndex({ showOverlay: true, broadcast: true, reason });
+    }
+
+    /** Step forward/back skipping any slide marked data-deck-skip. Falls
+     *  back to _go's clamp-at-ends behaviour (flash overlay) when there's
+     *  nothing further in that direction. */
+    _advance(dir, reason) {
+      if (!this._slides.length) return;
+      let i = this._index + dir;
+      while (i >= 0 && i < this._slides.length && this._slides[i].hasAttribute('data-deck-skip')) {
+        i += dir;
+      }
+      if (i < 0 || i >= this._slides.length) { this._flashOverlay(); return; }
+      this._go(i, reason);
+    }
+
+    // ── Thumbnail rail ────────────────────────────────────────────────────
+    //
+    // Thumbs are keyed by slide element and reused across _renderRail()
+    // calls, so a reorder/delete is an O(changed) DOM shuffle instead of an
+    // O(N) teardown-and-re-clone. Each thumb starts as a lightweight shell
+    // (num + empty frame); the clone is materialized lazily by an
+    // IntersectionObserver when the frame scrolls into (or near) view, so
+    // only visible-ish slides pay the clone + image-decode cost.
+
+    _renderRail() {
+      if (!this._rail || !this._railEnabled) { this._thumbs = []; return; }
+      // FLIP: record each *materialized* thumb's top before the reconcile.
+      // Off-screen (non-materialized) thumbs don't need the animation and
+      // skipping their getBoundingClientRect saves a forced layout per
+      // off-screen thumb on large decks.
+      const prevTops = new Map();
+      (this._thumbs || []).forEach(({ thumb, slide, host }) => {
+        if (host) prevTops.set(slide, thumb.getBoundingClientRect().top);
+      });
+      const st = this._rail.scrollTop;
+
+      // Reconcile: reuse thumbs that already exist for a slide, create
+      // shells for new slides, drop thumbs for removed slides.
+      const bySlide = new Map();
+      (this._thumbs || []).forEach((t) => bySlide.set(t.slide, t));
+      const next = [];
+      this._slides.forEach((slide) => {
+        let t = bySlide.get(slide);
+        if (t) bySlide.delete(slide);
+        else t = this._makeThumb(slide);
+        next.push(t);
+      });
+      // Orphans — slides removed since last render.
+      bySlide.forEach((t) => {
+        if (this._railObserver) this._railObserver.unobserve(t.frame);
+        t.thumb.remove();
+      });
+      // Put thumbs into document order to match _slides. insertBefore on
+      // an already-correctly-placed node is a no-op, so this is cheap
+      // when nothing moved.
+      next.forEach((t, i) => {
+        const want = t.thumb;
+        const at = this._rail.children[i];
+        if (at !== want) this._rail.insertBefore(want, at || null);
+        t.i = i;
+        t.num.textContent = String(i + 1);
+        if (t.slide.hasAttribute('data-deck-skip')) t.thumb.setAttribute('data-skip', '');
+        else t.thumb.removeAttribute('data-skip');
+      });
+      this._thumbs = next;
+
+      this._rail.scrollTop = st;
+      if (prevTops.size) {
+        const moved = [];
+        this._thumbs.forEach(({ thumb, slide }) => {
+          const old = prevTops.get(slide);
+          if (old == null) return;
+          const dy = old - thumb.getBoundingClientRect().top;
+          if (Math.abs(dy) < 1) return;
+          thumb.style.transition = 'none';
+          thumb.style.transform = `translateY(${dy}px)`;
+          moved.push(thumb);
+        });
+        if (moved.length) {
+          // Commit the inverted positions before flipping the transition
+          // on — otherwise the browser coalesces both style writes and
+          // nothing animates.
+          void this._rail.offsetHeight;
+          moved.forEach((t) => {
+            t.style.transition = 'transform 180ms cubic-bezier(.2,.7,.3,1)';
+            t.style.transform = '';
+          });
+          setTimeout(() => moved.forEach((t) => { t.style.transition = ''; }), 220);
+        }
+      }
+      requestAnimationFrame(() => this._scaleThumbs());
+      this._syncRail(false);
+    }
+
+    /** Create a lightweight thumb shell for one slide. The clone is
+     *  materialized later by the IntersectionObserver. Event handlers
+     *  look up the thumb's *current* index (via _thumbs.indexOf) so the
+     *  same element can be reused across reorders. */
+    _makeThumb(slide) {
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      thumb.tabIndex = 0;
+      const num = document.createElement('div');
+      num.className = 'num';
+      const frame = document.createElement('div');
+      frame.className = 'frame';
+      thumb.append(num, frame);
+
+      const entry = { thumb, num, frame, slide, clone: null, host: null, i: -1 };
+      // entry.i is refreshed on every _renderRail reconcile pass, so
+      // handlers read the thumb's current position without an O(N) scan.
+      const idx = () => entry.i;
+
+      thumb.addEventListener('click', () => this._go(idx(), 'click'));
+      // ↑/↓ step through the rail when a thumb has focus. _go clamps at the
+      // ends and _applyIndex→_syncRail scrolls the new current thumb into
+      // view; we move focus to it (preventScroll — _syncRail already
+      // scrolled) so a held key walks the whole list. stopPropagation keeps
+      // this out of the window-level _onKey nav handler.
+      thumb.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        e.preventDefault();
+        e.stopPropagation();
+        this._go(idx() + (e.key === 'ArrowDown' ? 1 : -1), 'keyboard');
+        const cur = this._thumbs && this._thumbs[this._index];
+        if (cur) cur.thumb.focus({ preventScroll: true });
+      });
+      thumb.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        this._openMenu(idx(), e.clientX, e.clientY);
+      });
+      thumb.draggable = true;
+      thumb.addEventListener('dragstart', (e) => {
+        this._dragFrom = idx();
+        thumb.setAttribute('data-dragging', '');
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(this._dragFrom)); } catch (err) {}
+      });
+      thumb.addEventListener('dragend', () => {
+        thumb.removeAttribute('data-dragging');
+        this._clearDrop();
+        this._dragFrom = null;
+      });
+      thumb.addEventListener('dragover', (e) => {
+        if (this._dragFrom == null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const r = thumb.getBoundingClientRect();
+        this._setDrop(idx(), e.clientY < r.top + r.height / 2 ? 'before' : 'after');
+      });
+      thumb.addEventListener('drop', (e) => {
+        if (this._dragFrom == null) return;
+        e.preventDefault();
+        const i = idx();
+        const r = thumb.getBoundingClientRect();
+        let to = e.clientY >= r.top + r.height / 2 ? i + 1 : i;
+        if (this._dragFrom < to) to--;
+        const from = this._dragFrom;
+        this._clearDrop();
+        this._dragFrom = null;
+        if (to !== from) this._moveSlide(from, to);
+      });
+
+      if (this._railObserver) this._railObserver.observe(frame);
+      frame.__deckThumb = entry;
+      return entry;
+    }
+
+    /** Lazily build the clone for a thumb that has scrolled into view. */
+    _materialize(entry) {
+      if (entry.host) return;
+      const dw = this.designWidth, dh = this.designHeight;
+      let clone = entry.slide.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.removeAttribute('data-deck-active');
+      clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+      // Neuter heavy media; replace <video> with its poster so the box
+      // keeps a visual. <iframe>/<audio> become empty placeholders.
+      clone.querySelectorAll('iframe, audio, object, embed').forEach((el) => {
+        el.removeAttribute('src');
+        el.removeAttribute('srcdoc');
+        el.removeAttribute('data');
+        el.innerHTML = '';
+      });
+      clone.querySelectorAll('video').forEach((el) => {
+        if (!el.poster) { el.removeAttribute('src'); el.innerHTML = ''; return; }
+        const img = document.createElement('img');
+        img.src = el.poster;
+        img.alt = '';
+        img.style.cssText = el.style.cssText + ';object-fit:cover;width:100%;height:100%;';
+        img.className = el.className;
+        el.replaceWith(img);
+      });
+      // Images: defer decode and let the browser pick the smallest
+      // srcset candidate for the ~140px thumb. Same-URL clones reuse the
+      // slide's decoded bitmap (URL-keyed cache), so the remaining cost
+      // is paint/composite — lazy+async keeps that off the main thread.
+      clone.querySelectorAll('img').forEach((el) => {
+        el.loading = 'lazy';
+        el.decoding = 'async';
+        if (el.srcset) el.sizes = (this._railPx || 188) + 'px';
+      });
+      // Custom elements inside the slide would have their
+      // connectedCallback fire when the clone is appended. Replace them
+      // with inert boxes so a component-heavy deck doesn't run N copies
+      // of each component's mount logic in the rail. Children are
+      // preserved so layout-wrapper elements (<my-column><h2>…</h2>)
+      // still show their authored content; the querySelectorAll NodeList
+      // is static, so nested custom elements in the moved subtree are
+      // still visited on later iterations.
+      const neuter = (el) => {
+        const box = document.createElement('div');
+        box.style.cssText = (el.getAttribute('style') || '') +
+          ';background:rgba(0,0,0,0.06);border:1px dashed rgba(0,0,0,0.15);';
+        box.className = el.className;
+        // Preserve theming/i18n hooks so [data-*] / :lang() / [dir]
+        // descendant selectors still match the neutered root.
+        for (const a of el.attributes) {
+          const n = a.name;
+          if (n.startsWith('data-') || n.startsWith('aria-') ||
+              n === 'lang' || n === 'dir' || n === 'role' || n === 'title') {
+            box.setAttribute(n, a.value);
+          }
+        }
+        while (el.firstChild) box.appendChild(el.firstChild);
+        return box;
+      };
+      // querySelectorAll('*') returns descendants only — a custom-element
+      // slide root (<my-slide>…</my-slide>) would slip through and upgrade
+      // on append. Swap the root first.
+      if (clone.tagName.includes('-')) clone = neuter(clone);
+      clone.querySelectorAll('*').forEach((el) => {
+        if (el.tagName.includes('-')) el.replaceWith(neuter(el));
+      });
+      clone.style.cssText += ';position:absolute;top:0;left:0;transform-origin:0 0;' +
+        'pointer-events:none;width:' + dw + 'px;height:' + dh + 'px;' +
+        'box-sizing:border-box;overflow:hidden;visibility:visible;opacity:1;';
+      const host = document.createElement('div');
+      host.style.cssText = 'position:absolute;inset:0;';
+      this._syncThumbHostAttrs(host);
+      const sr = host.attachShadow({ mode: 'open' });
+      if (this._adoptedSheet) sr.adoptedStyleSheets = [this._adoptedSheet];
+      else {
+        const st = document.createElement('style');
+        st.textContent = this._authorCss || '';
+        sr.appendChild(st);
+      }
+      sr.appendChild(clone);
+      entry.frame.appendChild(host);
+      entry.host = host;
+      entry.clone = clone;
+      if (this._thumbScale) clone.style.transform = 'scale(' + this._thumbScale + ')';
+      // Once materialized the IO callback is a no-op early-return —
+      // unobserve so scroll doesn't keep firing it.
+      if (this._railObserver) this._railObserver.unobserve(entry.frame);
+    }
+
+    /** Re-clone a single thumb (live-update path). No-op if the thumb
+     *  hasn't been materialized yet — it'll pick up current content when
+     *  it scrolls into view. */
+    _refreshThumb(slide) {
+      const entry = (this._thumbs || []).find((t) => t.slide === slide);
+      if (!entry || !entry.host) return;
+      entry.host.remove();
+      entry.host = entry.clone = null;
+      this._materialize(entry);
+    }
+
+    _scaleThumbs() {
+      if (!this._thumbs || !this._thumbs.length) return;
+      // Every frame is the same width; if it reads 0 the rail is
+      // display:none (noscale / no-rail / presenting / print) — leave the
+      // clones as-is and re-run when the rail is revealed.
+      const fw = this._thumbs[0].frame.offsetWidth;
+      if (!fw) return;
+      this._thumbScale = fw / this.designWidth;
+      this._thumbs.forEach(({ clone }) => {
+        if (clone) clone.style.transform = 'scale(' + this._thumbScale + ')';
+      });
+    }
+
+    _setDrop(i, where) {
+      // dragover fires at pointer-event rate; touch only the previous
+      // and new target rather than sweeping all N thumbs.
+      const t = this._thumbs && this._thumbs[i];
+      if (this._dropOn && this._dropOn !== t) {
+        this._dropOn.thumb.removeAttribute('data-drop');
+      }
+      if (t) t.thumb.setAttribute('data-drop', where);
+      this._dropOn = t || null;
+    }
+
+    _clearDrop() {
+      if (this._dropOn) this._dropOn.thumb.removeAttribute('data-drop');
+      this._dropOn = null;
+    }
+
+    _syncRail(follow) {
+      if (!this._thumbs) return;
+      this._thumbs.forEach(({ thumb }, i) => {
+        if (i === this._index) {
+          thumb.setAttribute('data-current', '');
+          if (follow && typeof thumb.scrollIntoView === 'function') {
+            thumb.scrollIntoView({ block: 'nearest' });
+          }
+        } else {
+          thumb.removeAttribute('data-current');
+        }
+      });
+    }
+
+    _openMenu(i, x, y) {
+      if (!this._menu) return;
+      this._menuIndex = i;
+      const slide = this._slides[i];
+      const skip = slide && slide.hasAttribute('data-deck-skip');
+      this._menu.querySelector('[data-act="skip"]').textContent = skip ? 'Unskip slide' : 'Skip slide';
+      this._menu.querySelector('[data-act="up"]').disabled = i <= 0;
+      this._menu.querySelector('[data-act="down"]').disabled = i >= this._slides.length - 1;
+      this._menu.querySelector('[data-act="delete"]').disabled = this._slides.length <= 1;
+      // Place, then clamp to viewport after it's measurable.
+      this._menu.style.left = x + 'px';
+      this._menu.style.top = y + 'px';
+      this._menu.setAttribute('data-open', '');
+      const r = this._menu.getBoundingClientRect();
+      const nx = Math.min(x, window.innerWidth - r.width - 4);
+      const ny = Math.min(y, window.innerHeight - r.height - 4);
+      this._menu.style.left = Math.max(4, nx) + 'px';
+      this._menu.style.top = Math.max(4, ny) + 'px';
+    }
+
+    _closeMenu() {
+      if (this._menu) this._menu.removeAttribute('data-open');
+      this._menuIndex = -1;
+    }
+
+    _openConfirm(i) {
+      if (!this._confirm) return;
+      this._confirmIndex = i;
+      this._confirm.querySelector('.title').textContent = 'Delete slide ' + (i + 1) + '?';
+      this._confirm.setAttribute('data-open', '');
+      const btn = this._confirm.querySelector('.danger');
+      if (btn && btn.focus) btn.focus();
+    }
+
+    _closeConfirm() {
+      if (this._confirm) this._confirm.removeAttribute('data-open');
+      this._confirmIndex = -1;
+    }
+
+    _emitDeckChange(detail) {
+      this.dispatchEvent(new CustomEvent('deckchange', {
+        detail, bubbles: true, composed: true,
+      }));
+    }
+
+    _deleteSlide(i) {
+      const slide = this._slides[i];
+      if (!slide || this._slides.length <= 1) return;
+      const wasCurrent = i === this._index;
+      if (i < this._index || (wasCurrent && i === this._slides.length - 1)) this._index--;
+      this._squelchSlotChange = true;
+      slide.remove();
+      this._emitDeckChange({ action: 'delete', from: i, slide });
+      this._collectSlides();
+      this._applyIndex({ showOverlay: true, broadcast: true, reason: 'mutation' });
+    }
+
+    _toggleSkip(i) {
+      const slide = this._slides[i];
+      if (!slide) return;
+      const on = !slide.hasAttribute('data-deck-skip');
+      if (on) slide.setAttribute('data-deck-skip', '');
+      else slide.removeAttribute('data-deck-skip');
+      if (this._thumbs && this._thumbs[i]) {
+        if (on) this._thumbs[i].thumb.setAttribute('data-skip', '');
+        else this._thumbs[i].thumb.removeAttribute('data-skip');
+      }
+      this._markLastVisible();
+      this._emitDeckChange({ action: on ? 'skip' : 'unskip', from: i, slide });
+      // Re-broadcast so the presenter popup's prev/next thumbnails re-pick
+      // the nearest non-skipped slide without waiting for a nav event.
+      try { window.postMessage({ slideIndexChanged: this._index, deckTotal: this._slides.length, deckSkipped: this._skippedIndices() }, '*'); } catch (e) {}
+    }
+
+    _skippedIndices() {
+      const out = [];
+      for (let i = 0; i < this._slides.length; i++) {
+        if (this._slides[i].hasAttribute('data-deck-skip')) out.push(i);
+      }
+      return out;
+    }
+
+    _moveSlide(i, j) {
+      if (j < 0 || j >= this._slides.length || j === i) return;
+      const slide = this._slides[i];
+      const ref = j < i ? this._slides[j] : this._slides[j].nextSibling;
+      // Track the active slide across the reorder so the same content
+      // stays on screen.
+      const cur = this._index;
+      if (cur === i) this._index = j;
+      else if (i < cur && j >= cur) this._index = cur - 1;
+      else if (i > cur && j <= cur) this._index = cur + 1;
+      this._squelchSlotChange = true;
+      this.insertBefore(slide, ref);
+      this._emitDeckChange({ action: 'move', from: i, to: j, slide });
+      this._collectSlides();
+      this._applyIndex({ showOverlay: false, broadcast: true, reason: 'mutation' });
+    }
+
+    // Public API ------------------------------------------------------------
+
+    /** Current slide index (0-based). */
+    get index() { return this._index; }
+    /** Total slide count. */
+    get length() { return this._slides.length; }
+    /** Programmatically navigate. */
+    goTo(i) { this._go(i, 'api'); }
+    next() { this._advance(1, 'api'); }
+    prev() { this._advance(-1, 'api'); }
+    reset() { this._go(0, 'api'); }
+  }
+
+  if (!customElements.get('deck-stage')) {
+    customElements.define('deck-stage', DeckStage);
+  }
+})();
+
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F7F6F2;--t:#1a1a18;--mu:#5F5E5A;--fa:#888780;
+  --bo:#D3D1C7;--su:#EEEDEB;--pu:#534AB7;--pb:#EEEDFE;
+  --gpt:#7B3FF2;--cg:#D85A30;--pp:#1D9E75;--gm:#1A6B9A;--nb:#0F7B6C;--cy:#22D3EE;
+  --ff:'Onest',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+section{background:var(--bg);color:var(--t);font-family:var(--ff);
+  padding:52px 88px;display:flex;flex-direction:column;
+  width:100%;height:100%;overflow:hidden;position:relative;}
+.ey{font-family:var(--fm);font-size:18px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fa);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.ey::before{content:'';width:22px;height:1px;background:var(--bo);}
+h1{font-size:120px;font-weight:900;letter-spacing:-.03em;line-height:.95;}
+h2{font-size:78px;font-weight:900;letter-spacing:-.02em;line-height:1.0;}
+h3{font-size:58px;font-weight:700;letter-spacing:-.015em;line-height:1.1;}
+h4{font-size:37px;font-weight:700;line-height:1.2;}
+p{font-size:30px;line-height:1.55;color:var(--mu);text-wrap:pretty;}
+.em{font-style:normal;color:var(--pu);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;}
+.card{background:#fff;border:.5px solid var(--bo);border-radius:12px;padding:22px 26px;}
+.card-sm{background:#fff;border:.5px solid var(--bo);border-radius:9px;padding:14px 18px;}
+.div{width:100%;height:.5px;background:var(--bo);}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:100px;border:.5px solid var(--bo);font-size:21px;font-family:var(--fm);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.ul li{display:flex;gap:9px;align-items:flex-start;font-size:28px;color:var(--mu);line-height:1.45;}
+.arr{font-family:var(--fm);font-size:14px;color:var(--fa);flex-shrink:0;margin-top:5px;}
+.mono{font-family:var(--fm);}
+.pbox{font-family:var(--fm);font-size:23px;line-height:1.6;color:var(--pu);background:var(--pb);padding:13px 18px;border-radius:8px;margin-top:10px;}
+.rp{font-family:var(--fm);font-size:16px;padding:6px 13px;border-radius:7px;background:var(--su);border:.5px solid var(--bo);}
+.tbl{border-collapse:collapse;width:100%;}
+.tbl th{font-family:var(--fm);font-size:17px;text-transform:uppercase;letter-spacing:.07em;color:var(--fa);padding:8px 16px;text-align:left;border-bottom:.5px solid var(--bo);}
+.tbl td{font-size:22px;padding:10px 16px;border-bottom:.5px solid rgba(0,0,0,.05);color:var(--mu);}
+.tbl td:first-child{font-weight:700;color:var(--t);font-size:21px;}
+.tbl tr:last-child td{border-bottom:none;}
+.block-row{display:flex;align-items:center;gap:16px;padding:13px 20px;background:#fff;border:.5px solid var(--bo);border-radius:9px;}
+.block-bar{width:3px;height:30px;border-radius:2px;flex-shrink:0;}
+.stat-box{display:flex;border:.5px solid var(--bo);border-radius:11px;overflow:hidden;align-self:flex-start;}
+.stat-cell{padding:14px 34px;text-align:center;border-right:.5px solid var(--bo);}
+.stat-cell:last-child{border-right:none;}
+.lh{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:var(--su);border-radius:8px;}
+.lh-n{font-family:var(--fm);font-size:15px;color:var(--pu);flex-shrink:0;font-weight:500;}
+.plan-col{border-radius:12px;padding:20px 24px;border:.5px solid;}
+/* Case slides */
+.case-prob{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.28);}
+.case-sol{background:var(--pb);border-color:rgba(83,74,183,.28);}
+</style>
+</head>
+
+<body style="">
+<deck-stage style="--deck-rail-w: 188px;">
+
+<!-- 01 TITLE -->
+<section>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;max-width:1200px;">
+    <div class="ey">Курс «ИИ в жизнь» · Елена Сизых</div>
+    <div><h1>ИИ <span class="em">в жизнь</span></h1>
+    <p style="font-size:31px;margin-top:14px;white-space:nowrap;">Простым языком · с готовыми промптами · без технического жаргона</p></div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;">
+      <div class="pill"><span class="dot" style="background:var(--cg)"></span>ChatGPT</div>
+      <div class="pill"><span class="dot" style="background:var(--pu)"></span>Claude</div>
+      <div class="pill"><span class="dot" style="background:var(--pp)"></span>Perplexity</div>
+      <div class="pill"><span class="dot" style="background:var(--gm)"></span>Gemini</div>
+      <div class="pill"><span class="dot" style="background:var(--nb)"></span>NotebookLM</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-cell"><div class="mono" style="font-size:32px;font-weight:500;">6</div><div class="mono" style="font-size:14px;color:var(--fa);margin-top:2px;">блоков</div></div>
+      <div class="stat-cell"><div class="mono" style="font-size:32px;font-weight:500;">5</div><div class="mono" style="font-size:14px;color:var(--fa);margin-top:2px;">инструментов</div></div>
+      <div class="stat-cell"><div class="mono" style="font-size:32px;font-weight:500;">30+</div><div class="mono" style="font-size:14px;color:var(--fa);margin-top:2px;">промптов</div></div>
+      <div class="stat-cell"><div class="mono" style="font-size:32px;font-weight:500;">13</div><div class="mono" style="font-size:14px;color:var(--fa);margin-top:2px;">кейсов</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 AGENDA -->
+<section>
+  <div class="ey">Что внутри</div>
+  <h2 style="margin-bottom:24px;"><span class="em">6 блоков</span> курса</h2>
+  <div style="display:flex;flex-direction:column;gap:7px;flex:1;justify-content:center;">
+    <div class="block-row"><span class="mono" style="font-size:16px;color:var(--fa);min-width:22px;">01</span><div class="block-bar" style="background:var(--pu);"></div><div style="font-size:23px;font-weight:700;min-width:210px;">Мышление и основы</div><div style="font-size:21px;color:var(--mu);">Главная идея, формула промпта, что такое ИИ, обзор инструментов</div></div>
+    <div class="block-row"><span class="mono" style="font-size:16px;color:var(--fa);min-width:22px;">02</span><div class="block-bar" style="background:var(--pp);"></div><div style="font-size:23px;font-weight:700;color:var(--pp);min-width:210px;">Perplexity</div><div style="font-size:21px;color:var(--mu);">ИИ-поиск с реальными ссылками. Работает без VPN. Тарифы и лайфхаки.</div></div>
+    <div class="block-row"><span class="mono" style="font-size:16px;color:var(--fa);min-width:22px;">03</span><div class="block-bar" style="background:var(--gm);"></div><div style="font-size:23px;font-weight:700;color:var(--gm);min-width:210px;">Gemini + NotebookLM</div><div style="font-size:21px;color:var(--mu);">Экосистема Google. Canvas, Deep Research, Live, Gems. Подкасты из документов.</div></div>
+    <div class="block-row"><span class="mono" style="font-size:16px;color:var(--fa);min-width:22px;">04</span><div class="block-bar" style="background:var(--cg);"></div><div style="font-size:23px;font-weight:700;color:var(--cg);min-width:210px;">ChatGPT</div><div style="font-size:21px;color:var(--mu);">Универсал: тексты, DALL·E, агент, GPT Store. Модели и тарифы.</div></div>
+    <div class="block-row"><span class="mono" style="font-size:16px;color:var(--fa);min-width:22px;">05</span><div class="block-bar" style="background:var(--pu);"></div><div style="font-size:23px;font-weight:700;color:var(--pu);min-width:210px;">Claude</div><div style="font-size:21px;color:var(--mu);">Главный инструмент: тексты, анализ, Проекты, Cowork, Skills, Connectors.</div></div>
+    <div class="block-row" style="background:var(--pb);border-color:rgba(83,74,183,.3);"><span class="mono" style="font-size:16px;color:var(--fa);min-width:22px;">06</span><div class="block-bar" style="background:var(--pu);"></div><div style="font-size:23px;font-weight:700;color:var(--pu);min-width:210px;">Кейсы из жизни</div><div style="font-size:21px;color:var(--mu);">13 кейсов из жизни: проблема → решение с ИИ → результат.</div></div>
+  </div>
+</section>
+
+<!-- 02.5 БОЛИ АУДИТОРИИ -->
+<section>
+  <div class="ey">Аудитория курса · Запросы участников</div>
+  <h2 style="margin-bottom:24px;">Что болит <span class="em">у участников</span></h2>
+  <table class="tbl" style="flex:1;border:.5px solid var(--bo);border-radius:12px;overflow:hidden;">
+    <thead>
+      <tr style="background:var(--su);">
+        <th style="text-align:left;padding:14px 24px;font-size:21px;">Боль</th>
+        <th style="text-align:center;padding:14px 24px;font-size:21px;min-width:200px;">Частота</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:rgba(216,90,48,.05);"><td style="padding:12px 24px;font-size:24px;font-weight:700;">Снять рутину</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●●</td></tr>
+      <tr><td style="padding:12px 24px;font-size:24px;font-weight:700;">Ускорить работу</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●●</td></tr>
+      <tr style="background:rgba(216,90,48,.05);"><td style="padding:12px 24px;font-size:24px;font-weight:700;">Понять практическое применение ИИ</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●●</td></tr>
+      <tr><td style="padding:12px 24px;font-size:24px;font-weight:700;">Автоматизировать таблицы / КП</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●</td></tr>
+      <tr style="background:rgba(216,90,48,.05);"><td style="padding:12px 24px;font-size:24px;font-weight:700;">Делать презентации быстрее</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●</td></tr>
+      <tr><td style="padding:12px 24px;font-size:24px;font-weight:700;">Систематизировать процессы</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●</td></tr>
+      <tr style="background:rgba(216,90,48,.05);"><td style="padding:12px 24px;font-size:24px;font-weight:700;">Научиться писать промпты</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●●</td></tr>
+      <tr><td style="padding:12px 24px;font-size:24px;font-weight:700;">AI-агенты и автоматизация сотрудников</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●</td></tr>
+      <tr style="background:rgba(216,90,48,.05);"><td style="padding:12px 24px;font-size:24px;font-weight:700;">Контент / лендинги / посты</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●</td></tr>
+      <tr><td style="padding:12px 24px;font-size:24px;font-weight:700;">Аналитика задач и команды</td><td style="text-align:center;font-size:22px;letter-spacing:2px;">●●●</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 03 СПОЙЛЕР -->
+<section>
+  <div class="ey">Блок 1 · Мышление</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:32px;">
+    <div><div class="mono" style="font-size:20px;color:var(--pu);letter-spacing:.15em;margin-bottom:8px;">— СПОЙЛЕР —</div><h2>Что нужно для хорошей<br>работы с ИИ</h2></div>
+    <div class="g2" style="gap:16px;">
+      <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="mono" style="font-size:20px;color:var(--pu);min-width:26px;padding-top:3px;">01</div><div><h4 style="margin-bottom:8px;">Любопытство</h4><p style="font-size:24px;">Не бояться пробовать и экспериментировать. Первый ответ — начало разговора, не финал.</p></div></div>
+      <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="mono" style="font-size:20px;color:var(--pu);min-width:26px;padding-top:3px;">02</div><div><h4 style="margin-bottom:8px;">Инициатива</h4><p style="font-size:24px;">ИИ не будет работать за тебя без запросов. Действие всегда начинается с тебя.</p></div></div>
+      <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="mono" style="font-size:20px;color:var(--pu);min-width:26px;padding-top:3px;">03</div><div><h4 style="margin-bottom:8px;">Готовность пробовать</h4><p style="font-size:24px;">Первый ответ часто не идеален, и это нормально. Результат приходит через диалог.</p></div></div>
+      <div class="card" style="display:flex;gap:18px;align-items:flex-start;"><div class="mono" style="font-size:20px;color:var(--pu);min-width:26px;padding-top:3px;">04</div><div><h4 style="margin-bottom:8px;">Уточнять и доводить</h4><p style="font-size:24px;">Диалог с ИИ — как работа с редактором. Итерации приближают к отличному результату.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 ГЛАВНАЯ ИДЕЯ -->
+<section>
+  <div class="ey">Блок 1 · Философия</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:36px;">
+    <div>
+      <h2 style="font-size:83px;line-height:.95;">ИИ — это не замена<br>вашего мышления.</h2>
+      <h2 style="font-size:92px;color:var(--pu);margin-top:12px;">Это усилитель.</h2>
+    </div>
+    <p style="font-size: 28px; max-width: 900px;"><strong style="color:var(--t);">Вы думаете</strong> → ИИ ускоряет и масштабирует.&nbsp;<div>Чем чётче мысль — тем мощнее результат.</div></p>
+    <div class="g3" style="gap:16px;">
+      <div class="card" style="text-align:center;border-top:3px solid var(--t);">
+        <h4 style="margin-bottom:8px;">Вы думаете</h4>
+        <p style="font-size:23px;">Формулируете задачу, даёте контекст, определяете цель</p>
+      </div>
+      <div class="card" style="text-align:center;border-top:3px solid var(--pu);">
+        <div style="font-size:51px;margin-bottom:10px;">⚡</div>
+        <h4 style="margin-bottom:8px;color:var(--pu);">ИИ ускоряет</h4>
+        <p style="font-size:23px;">Обрабатывает, структурирует, генерирует первый вариант</p>
+      </div>
+      <div class="card" style="text-align:center;border-top:3px solid var(--pp);">
+        <h4 style="margin-bottom:8px;color:var(--pp);">Результат масштабируется</h4>
+        <p style="font-size:23px;">Часы превращаются в минуты, идеи — в готовые продукты</p>
+      </div>
+    </div>
+    <div style="padding:14px 20px;background:var(--su);border-radius:9px;font-size:24px;color:var(--mu);">
+      <span class="mono" style="color:var(--fa);">→</span>&nbsp; ИИ — зеркало вашего мышления. Расплывчатый запрос → расплывчатый ответ. Чёткий запрос с контекстом → точный и полезный ответ.
+    </div>
+  </div>
+</section>
+
+<!-- 05 СИТУАЦИЯ → РЕШЕНИЕ -->
+<section style="padding:0;display:grid;grid-template-columns:1fr 1fr;">
+  <div style="background:#1a1a18;padding:56px 66px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+    <div class="mono" style="font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:#666;margin-bottom:18px;">Ситуация</div>
+    <div style="font-size:58px;font-weight:900;color:#fff;line-height:1.05;margin-bottom:32px;font-family:var(--ff);">Всё смешалось<br>в голове</div>
+    <div style="position:relative;height:290px;user-select:none;">
+      <span style="position:absolute;top:0;left:30px;font-size:22px;color:#555;transform:rotate(-8deg);font-family:var(--ff);">куда позвонить?</span>
+      <span style="position:absolute;top:44px;right:50px;font-size:25px;color:#4a4a4a;transform:rotate(5deg);font-family:var(--ff);">что важнее?</span>
+      <span style="position:absolute;top:90px;left:55px;font-size:20px;color:#C0392B;transform:rotate(-4deg);font-family:var(--ff);">ДЕДЛАЙН ВЧЕРА!</span>
+      <span style="position:absolute;top:18px;left:46%;font-size:16px;color:#666;transform:rotate(7deg);font-family:var(--fm);">а это нужно?</span>
+      <span style="position:absolute;top:130px;left:18px;font-size:30px;color:#3a3a3a;transform:rotate(-11deg);font-family:var(--ff);">с чего начать?</span>
+      <span style="position:absolute;top:165px;right:55px;font-size:21px;color:#C0392B;transform:rotate(3deg);font-family:var(--ff);">всё срочно!</span>
+      <span style="position:absolute;top:200px;left:100px;font-size:23px;color:#4a4a4a;transform:rotate(-6deg);font-family:var(--ff);">не успеваю...</span>
+      <span style="position:absolute;top:238px;right:38px;font-size:17px;color:#555;transform:rotate(9deg);font-family:var(--fm);">что если забуду?</span>
+      <span style="position:absolute;top:148px;right:115px;font-size:15px;color:#666;transform:rotate(-3deg);font-family:var(--fm);">и ещё одно дело</span>
+      <span style="position:absolute;top:272px;left:55px;font-size:28px;color:#C0392B;transform:rotate(4deg);font-family:var(--ff);font-weight:700;">хаос</span>
+      <span style="position:absolute;top:50px;left:37%;font-size:18px;color:#4a4a4a;transform:rotate(-6deg);font-family:var(--ff);">регулярный ручной труд...</span>
+      <span style="position:absolute;top:188px;left:33%;font-size:17px;color:#555;transform:rotate(5deg);font-family:var(--fm);">повторяющиеся действия</span>
+    </div>
+  </div>
+  <div style="background:var(--bg);padding:56px 66px;display:flex;flex-direction:column;justify-content:center;">
+    <div class="mono" style="font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--pu);margin-bottom:18px;">Решение с ИИ</div>
+    <div style="font-size:58px;font-weight:900;color:var(--t);line-height:1.05;margin-bottom:32px;font-family:var(--ff);">Ясно что<br>делать дальше</div>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div style="display:flex;gap:14px;align-items:center;padding:14px 20px;background:#fff;border:.5px solid var(--bo);border-radius:9px;"><span class="mono" style="font-size:16px;color:var(--pu);font-weight:500;flex-shrink:0;">01</span><span style="font-size:23px;">Описываешь ситуацию — ИИ раскладывает по шагам</span></div>
+      <div style="display:flex;gap:14px;align-items:center;padding:14px 20px;background:#fff;border:.5px solid var(--bo);border-radius:9px;"><span class="mono" style="font-size:16px;color:var(--pu);font-weight:500;flex-shrink:0;">02</span><span style="font-size:23px;">Получаешь список приоритетов с дедлайнами</span></div>
+      <div style="display:flex;gap:14px;align-items:center;padding:14px 20px;background:#fff;border:.5px solid var(--bo);border-radius:9px;"><span class="mono" style="font-size:16px;color:var(--pu);font-weight:500;flex-shrink:0;">03</span><span style="font-size:23px;">Знаешь точно, что сделать сегодня</span></div>
+      <div style="display:flex;gap:14px;align-items:center;padding:14px 20px;background:var(--pb);border:.5px solid rgba(83,74,183,.3);border-radius:9px;"><span class="mono" style="font-size:16px;color:var(--pu);font-weight:500;flex-shrink:0;">04</span><span style="font-size:23px;color:var(--pu);">Тревога уходит — у неё больше нет места</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 ГЛАВНОЕ ПРАВИЛО -->
+<section>
+  <div class="ey">Блок 1 · Основы</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:32px;">
+    <div><h2>Мусор на входе — <span class="em">мусор на выходе</span></h2>
+    <p style="font-size:28px;margin-top:14px;max-width:880px;">ИИ не угадывает мысли. Качество результата на 80% зависит от тебя, а не от ИИ. Это хорошая новость — этому можно научиться за один день.</p></div>
+    <div class="g2" style="gap:18px;">
+      <div class="card" style="background:#FEF2ED;border-color:#F5C4AD;"><div class="mono" style="font-size:14px;color:var(--cg);letter-spacing:.1em;margin-bottom:12px;">✕ &nbsp;ПЛОХОЙ ЗАПРОС</div><div style="font-size:35px;font-weight:700;">«Напиши пост»</div></div>
+      <div class="card" style="background:#E8F8F2;border-color:#A8E0C6;"><div class="mono" style="font-size:14px;color:var(--pp);letter-spacing:.1em;margin-bottom:12px;">✓ &nbsp;ХОРОШИЙ ЗАПРОС</div><div style="font-size:25px;font-weight:700;line-height:1.4;">«Напиши пост для Telegram про выгорание предпринимателей. Тон: живой, честный. Цель: вовлечение. До 1500 символов»</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:22px;color:var(--mu);">Давай контекст один раз в начале — ИИ учтёт его в каждом ответе</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:22px;color:var(--mu);">Уточняй итеративно: «сделай короче», «добавь примеры»</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:22px;color:var(--mu);">Доверяй ИИ черновики — редактировать легче, чем писать с нуля</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 ЧТО ТАКОЕ ИИ + АГЕНТ -->
+<section>
+  <div class="ey">Блок 1 · Основы</div>
+  <h2 style="margin-bottom:22px;">Что такое ИИ — <span class="em">без сложных слов</span></h2>
+  <div class="g4" style="align-items:start;gap:14px;">
+    <div class="card" style="border-top:3px solid var(--pu);display:flex;flex-direction:column;gap:8px;"><h4 style="color:var(--pu);">ИИ / AI</h4><p style="font-size:22px;">Программы, которые «ведут себя умно»: анализируют, распознают, принимают решения</p><div class="div"></div><div class="mono" style="font-size:15px;color:var(--fa);">YouTube рекомендации, Face ID</div></div>
+    <div class="card" style="border-top:3px solid var(--gm);display:flex;flex-direction:column;gap:8px;"><h4 style="color:var(--gm);">Нейросеть</h4><p style="font-size:22px;">Технология внутри ИИ, вдохновлённая мозгом. Учится на миллиардах текстов из интернета</p><div class="div"></div><div class="mono" style="font-size:15px;color:var(--fa);">GPT-4, голосовой Siri</div></div>
+    <div class="card" style="border-top:3px solid var(--pp);display:flex;flex-direction:column;gap:8px;"><h4 style="color:var(--pp);">LLM</h4><p style="font-size:22px;">Языковая модель — нейросеть, обученная работать с текстом: читать, понимать, генерировать</p><div class="div"></div><div class="mono" style="font-size:15px;color:var(--fa);">Claude, GPT-4, Gemini</div></div>
+    <div class="card" style="border-top:3px solid var(--cg);display:flex;flex-direction:column;gap:8px;"><h4 style="color:var(--cg);">AI-ассистент</h4><p style="font-size:22px;">Интерфейс для общения с моделью. Как автомобиль вокруг двигателя</p><div class="div"></div><div class="mono" style="font-size:15px;color:var(--fa);">claude.ai, chatgpt.com</div></div>
+  </div>
+  <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div style="padding:16px 20px;background:#1a1a18;border-radius:11px;">
+      <div class="mono" style="font-size:15px;color:#666;margin-bottom:8px;">ОБЫЧНЫЙ ИИ</div>
+      <p style="font-size:22px;color:#aaa;">«Объясни, как переименовать 100 файлов» → <strong style="color:#fff;">ты делаешь сам</strong></p>
+    </div>
+    <div style="padding:16px 20px;background:var(--pb);border:.5px solid rgba(83,74,183,.3);border-radius:11px;">
+      <div class="mono" style="font-size:15px;color:var(--pu);margin-bottom:8px;">AI-АГЕНТ</div>
+      <p style="font-size:22px;color:var(--t);">«Переименуй все файлы в папке по дате» → <strong style="color:var(--pu);">он сам открывает папку, переименовывает, сообщает о результате</strong></p>
+    </div>
+  </div>
+  <div style="margin-top:12px;padding:13px 18px;background:var(--su);border-radius:8px;font-size:22px;color:var(--mu);"><span class="mono" style="color:var(--fa);">→</span>&nbsp; <strong style="color:var(--t);">Никакой магии:</strong> просто очень много данных, мощные компьютеры и умные люди, которые это всё настроили.</div>
+</section>
+
+<!-- 08 ФОРМУЛА ПРОМПТА -->
+<section>
+  <div class="ey">Блок 1 · Главный навык</div>
+  <h2 style="margin-bottom:20px;">Формула <span class="em">промпта</span></h2>
+  <div class="g3" style="align-items:start;flex:1;gap:13px;">
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;"><div class="mono" style="font-size:14px;color:var(--fa);">01</div><h4 style="color:var(--pu);">Роль</h4><p style="font-size:23px;">Скажи ИИ, кем ему быть — задаёт тон и экспертизу</p><div class="pbox" style="font-size:18px;margin-top:6px;">«Ты — опытный маркетолог», «Ты — строгий редактор»</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;"><div class="mono" style="font-size:14px;color:var(--fa);">02</div><h4 style="color:var(--pu);">Контекст</h4><p style="font-size:23px;">Детали ситуации — чем больше, тем точнее ответ</p><div class="pbox" style="font-size:18px;margin-top:6px;">«Пишу для Telegram, аудитория 30–45 лет»</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;"><div class="mono" style="font-size:14px;color:var(--fa);">03</div><h4 style="color:var(--pu);">Задача</h4><p style="font-size:23px;">Чётко скажи, что конкретно нужно сделать</p><div class="pbox" style="font-size:18px;margin-top:6px;">«Напиши / Проанализируй / Составь план»</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;"><div class="mono" style="font-size:14px;color:var(--fa);">04</div><h4 style="color:var(--pu);">Формат</h4><p style="font-size:23px;">В каком виде нужен результат</p><div class="pbox" style="font-size:18px;margin-top:6px;">«Таблица / 5 пунктов / 1 страница»</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;"><div class="mono" style="font-size:14px;color:var(--fa);">05</div><h4 style="color:var(--pu);">Ограничения</h4><p style="font-size:23px;">Что исключить заранее</p><div class="pbox" style="font-size:18px;margin-top:6px;">«Без клише, не длиннее 500 слов»</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;"><div class="mono" style="font-size:14px;color:var(--fa);">06</div><h4 style="color:var(--pu);">Пример</h4><p style="font-size:23px;">Образец стиля — необязательно, но очень помогает</p><div class="pbox" style="font-size:18px;margin-top:6px;">«Напиши в таком стиле: [вставь пример]»</div></div>
+  </div>
+</section>
+
+<!-- 09 ОБЗОР ИНСТРУМЕНТОВ -->
+<section>
+  <div class="ey">Навигация</div>
+  <h2 style="margin-bottom:20px;">Какой инструмент — <span class="em">когда</span></h2>
+  <div class="g5" style="align-items:start;">
+    <div class="card" style="display:flex;flex-direction:column;gap:11px;border-top:3px solid var(--pp);"><div style="display:flex;align-items:center;gap:7px;"><span class="dot" style="background:var(--pp);"></span><h4 style="color:var(--pp);font-size:25px;">Perplexity</h4></div><div class="div"></div><ul class="ul"><li><span class="arr">→</span>Поиск с реальными ссылками</li><li><span class="arr">→</span>Всегда актуальные данные</li><li><span class="arr">→</span>Без VPN, бесплатно</li><li><span class="arr">→</span>Spaces для исследований</li></ul><div class="mono" style="font-size:15px;color:var(--pp);font-weight:500;margin-top:auto;">→ Исследования, факты</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:11px;border-top:3px solid var(--gm);"><div style="display:flex;align-items:center;gap:7px;"><span class="dot" style="background:var(--gm);"></span><h4 style="color:var(--gm);font-size:25px;">Gemini</h4></div><div class="div"></div><ul class="ul"><li><span class="arr">→</span>Gmail, Docs, Sheets</li><li><span class="arr">→</span>Canvas, Deep Research</li><li><span class="arr">→</span>Gemini Live — голос</li><li><span class="arr">→</span>Изображения и видео</li></ul><div class="mono" style="font-size:15px;color:var(--gm);font-weight:500;margin-top:auto;">→ Google Workspace</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:11px;border-top:3px solid var(--nb);"><div style="display:flex;align-items:center;gap:7px;"><span class="dot" style="background:var(--nb);"></span><h4 style="color:var(--nb);font-size:25px;">NotebookLM</h4></div><div class="div"></div><ul class="ul"><li><span class="arr">→</span>Только твои документы</li><li><span class="arr">→</span>Ноль галлюцинаций</li><li><span class="arr">→</span>Подкасты из PDF</li><li><span class="arr">→</span>Карточки, Mind Map</li></ul><div class="mono" style="font-size:15px;color:var(--nb);font-weight:500;margin-top:auto;">→ Документы, учёба</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:11px;border-top:3px solid var(--cg);"><div style="display:flex;align-items:center;gap:7px;"><span class="dot" style="background:var(--cg);"></span><h4 style="color:var(--cg);font-size:25px;">ChatGPT</h4></div><div class="div"></div><ul class="ul"><li><span class="arr">→</span>Тексты, код, изображения</li><li><span class="arr">→</span>DALL·E, Canvas, Агент</li><li><span class="arr">→</span>Deep Research</li><li><span class="arr">→</span>GPT Store — готовые боты</li></ul><div class="mono" style="font-size:15px;color:var(--cg);font-weight:500;margin-top:auto;">→ Всё понемногу</div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:11px;border-top:3px solid var(--pu);"><div style="display:flex;align-items:center;gap:7px;"><span class="dot" style="background:var(--pu);"></span><h4 style="color:var(--pu);font-size:25px;">Claude</h4></div><div class="div"></div><ul class="ul"><li><span class="arr">→</span>200 000 токенов</li><li><span class="arr">→</span>Проекты с памятью</li><li><span class="arr">→</span>Cowork — файлы напрямую</li><li><span class="arr">→</span>Самый «человечный» текст</li></ul><div class="mono" style="font-size:15px;color:var(--pu);font-weight:500;margin-top:auto;">→ Главный инструмент</div></div>
+  </div>
+</section>
+
+<!-- 10 PERPLEXITY — ОБЗОР -->
+<section>
+  <div class="ey">Блок 2</div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;"><h2 style="color:var(--pp);">Perplexity</h2><span class="mono" style="font-size:17px;padding:4px 13px;border-radius:100px;border:.5px solid var(--pp);color:var(--pp);">ИИ-поисковик</span></div>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card" style="border-color:rgba(29,158,117,.25);"><h4 style="margin-bottom:10px;">Главная суперсила</h4><p style="font-size:24px;">Ищет в реальном интернете прямо сейчас. Каждый ответ содержит ссылки на источники для проверки. Актуальные цены, новости, статистика.</p></div>
+      <div class="card" style="background:#E8F8F2;border-color:rgba(29,158,117,.25);"><h4 style="color:var(--pp);margin-bottom:12px;">Когда использовать</h4>
+        <ul class="ul"><li><span class="arr">→</span>Найти актуальную информацию по теме</li><li><span class="arr">→</span>Проверить факт или статистику</li><li><span class="arr">→</span>Сравнить товары/услуги с источниками</li><li><span class="arr">→</span>Бриф по компании или рынку</li><li><span class="arr">→</span>Собрать источники для статьи</li></ul>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <h4 style="margin-bottom:2px;">Примеры запросов</h4>
+      <div class="card-sm"><p style="font-size:22px;color:var(--t);">Найди актуальную статистику рынка онлайн-образования в России 2025–2026 с источниками</p></div>
+      <div class="card-sm"><p style="font-size:22px;color:var(--t);">Сравни AmoCRM и Bitrix24 для малого бизнеса — цена, функции, плюсы и минусы</p></div>
+      <div class="card-sm"><p style="font-size:22px;color:var(--t);">Собери бриф по компании [название]: чем занимается, новости за последний год</p></div>
+      <div class="card-sm"><p style="font-size:22px;color:var(--t);">Какие тренды в [отрасль] актуальны сейчас? 5 наблюдений со ссылками</p></div>
+      <div class="card-sm" style="background:#FEF5F3;border-color:#F5C4AD;"><h4 style="color:var(--cg);font-size:22px;margin-bottom:5px;">Лучше другой инструмент:</h4><p style="font-size:20px;">Длинный текст → ChatGPT/Claude &nbsp;·&nbsp; Документы → NotebookLM &nbsp;·&nbsp; Изображения → Gemini</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 PERPLEXITY — ТАРИФЫ + ЛАЙФХАКИ -->
+<section>
+  <div class="ey">Блок 2 · Perplexity</div>
+  <h2 style="margin-bottom:22px;"><span class="em">Бесплатный vs Pro</span> + лайфхаки</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="plan-col" style="border-color:var(--bo);background:#fff;">
+          <div class="mono" style="font-size:15px;color:var(--fa);margin-bottom:12px;">БЕСПЛАТНО</div>
+          <ul class="ul"><li><span class="arr">→</span>Поиск с ссылками (лимиты)</li><li><span class="arr">→</span>Файлы с ограничениями</li><li><span class="arr">→</span>Аудио и видео (транскрипция)</li><li><span class="arr">→</span>Spaces — базово</li><li><span class="arr">→</span>Память между разговорами</li></ul>
+          <div style="margin-top:12px;font-size:21px;color:var(--mu);">Хватает на 90% задач новичка</div>
+        </div>
+        <div class="plan-col" style="border-color:var(--pp);background:#E8F8F2;">
+          <div class="mono" style="font-size:15px;color:var(--pp);margin-bottom:12px;">PRO</div>
+          <ul class="ul"><li><span class="arr">→</span>Расширенные лимиты поиска</li><li><span class="arr">→</span>Больше возможностей с файлами</li><li><span class="arr">→</span>Полный доступ к Spaces</li><li><span class="arr">→</span>Connectors — интеграции</li><li><span class="arr">→</span>Гибкая память</li></ul>
+          <div style="margin-top:12px;font-size:21px;color:var(--pp);">Для ежедневных исследований</div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 18px;"><p style="font-size:22px;color:var(--mu);"><strong style="color:var(--t);">Spaces</strong> — папки для исследований. Space «Открытие кофейни» = все источники, заметки и вопросы в одном месте.</p></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <h4 style="margin-bottom:4px;">5 лайфхаков</h4>
+      <div class="lh"><span class="lh-n">01</span><span style="font-size:23px;color:var(--mu);">Попроси показать источники явно: «дай ответ и перечисли 5 главных источников»</span></div>
+      <div class="lh"><span class="lh-n">02</span><span style="font-size:23px;color:var(--mu);">Для свежих данных добавляй год: «в 2026 году», «за последние 6 месяцев»</span></div>
+      <div class="lh"><span class="lh-n">03</span><span style="font-size:23px;color:var(--mu);">Просить таблицу сравнения — Perplexity отлично справляется</span></div>
+      <div class="lh"><span class="lh-n">04</span><span style="font-size:23px;color:var(--mu);">Для глубокой темы — создай Space и продолжай исследование там</span></div>
+      <div class="lh"><span class="lh-n">05</span><span style="font-size:23px;color:var(--mu);">Проверяй важные факты по ссылкам — не доверяй слепо, даже с источниками</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ПРАКТИКА: PERPLEXITY -->
+<section>
+  <div class="ey">Блок 2 · Практика</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div>
+      <div class="mono" style="font-size:18px;color:var(--pp);letter-spacing:.15em;margin-bottom:10px;">— ПРАКТИКА · 7 МИНУТ —</div>
+      <h2>«Детектив <span class="em">по теме</span>»</h2>
+    </div>
+    <div class="card" style="border-color:rgba(29,158,117,.3);background:#E8F8F2;">
+      <h4 style="color:var(--pp);margin-bottom:10px;">Задание</h4>
+      <p style="font-size:25px;">Выбери тему, актуальную прямо сейчас — конкурент, рынок, продукт, место для отдыха.</p>
+    </div>
+    <div class="pbox" style="font-size:23px;">«Найди 5 неочевидных фактов о [тема] со ссылками, которые бы меня удивили. Сделай сравнительную таблицу»</div>
+    <div class="g2" style="gap:16px;">
+      <div class="card-sm" style="background:#E8F8F2;border-color:rgba(29,158,117,.25);">
+        <div class="mono" style="font-size:14px;color:var(--pp);margin-bottom:6px;">ЧТО ТРЕНИРУЕМ</div>
+        <ul class="ul">
+          <li><span class="arr">→</span>Поиск с реальными ссылками</li>
+          <li><span class="arr">→</span>Запрос на сравнительную таблицу</li>
+          <li><span class="arr">→</span>Проверку источников</li>
+        </ul>
+      </div>
+      <div style="padding:18px 22px;background:var(--su);border-radius:9px;">
+        <p style="font-size:23px;color:var(--mu);"><strong style="color:var(--t);">После задания обсудим:</strong></p>
+        <p style="font-size:23px;color:var(--mu);margin-top:8px;">Какой самый неожиданный факт ты нашёл?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 GEMINI — ОБЗОР -->
+<section>
+  <div class="ey">Блок 3</div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;"><h2 style="color:var(--gm);">Gemini</h2><span class="mono" style="font-size:17px;padding:4px 13px;border-radius:100px;border:.5px solid var(--gm);color:var(--gm);">Google</span><p style="font-size:23px;margin-left:6px;color:var(--mu);">Если есть Gmail — можешь начать прямо сейчас</p></div>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card"><h4 style="margin-bottom:10px;">Особенности</h4><ul class="ul"><li><span class="arr">→</span>Встроен в Gmail, Google Docs, Sheets, Drive</li><li><span class="arr">→</span>Понимает текст, изображения, видео и аудио</li><li><span class="arr">→</span>Создаёт изображения (Imagen) и видео (Veo)</li><li><span class="arr">→</span>Запланированные задачи и уведомления</li></ul></div>
+      <div class="card" style="background:#E8F2F8;border-color:rgba(26,107,154,.25);"><h4 style="color:var(--gm);margin-bottom:10px;">Модели</h4>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:21px;">Flash</span><span style="font-size:20px;color:var(--mu);">Быстрая · ежедневные задачи</span></div><div class="div"></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:21px;">Pro</span><span style="font-size:20px;color:var(--mu);">Мощная · аналитика, сложные тексты</span></div><div class="div"></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:21px;">Ultra</span><span style="font-size:20px;color:var(--mu);">Максимум · видеоконтент, AI Ultra</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="card-sm"><h4 style="margin-bottom:5px;font-size:24px;">Canvas</h4><p style="font-size:22px;">Совместное редактирование — пишешь и правишь с ИИ в отдельной панели в реальном времени</p></div>
+      <div class="card-sm"><h4 style="margin-bottom:5px;font-size:24px;">Deep Research</h4><p style="font-size:22px;">Десятки автоматических поисков → изучение источников → полный аналитический отчёт</p></div>
+      <div class="card-sm"><h4 style="margin-bottom:5px;font-size:24px;">Gemini Live</h4><p style="font-size:22px;">Голосовой разговор в реальном времени. Тренировка языков, подготовка к переговорам, брейншторм</p></div>
+      <div class="card-sm"><h4 style="margin-bottom:5px;font-size:24px;">Gems</h4><p style="font-size:22px;">Персональные ИИ-ассистенты с твоими инструкциями — один раз настроил, используешь всегда</p></div>
+      <div class="card-sm"><h4 style="margin-bottom:5px;font-size:24px;">Камера телефона</h4><p style="font-size:22px;">Наведи на объект — Gemini описывает и объясняет: растения, провода, незнакомые приборы</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 GEMINI — ТАРИФЫ + ЛАЙФХАКИ -->
+<section>
+  <div class="ey">Блок 3 · Gemini</div>
+  <h2 style="margin-bottom:20px;"><span class="em">Тарифы</span> + лайфхаки</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="plan-col" style="border-color:var(--bo);background:#fff;">
+        <div class="mono" style="font-size:15px;color:var(--fa);margin-bottom:10px;">БЕСПЛАТНЫЙ</div>
+        <ul class="ul"><li><span class="arr">→</span>Базовый Gemini Flash, поиск, чат</li><li><span class="arr">→</span>Базовые изображения, Gemini Live</li><li><span class="arr">→</span>Хватает для 90% задач</li></ul>
+      </div>
+      <div class="plan-col" style="border-color:var(--gm);background:#E8F2F8;">
+        <div class="mono" style="font-size:15px;color:var(--gm);margin-bottom:10px;">GOOGLE ONE AI PREMIUM</div>
+        <ul class="ul"><li><span class="arr">→</span>Gemini Pro — более глубокий анализ</li><li><span class="arr">→</span>Глубокая интеграция Gmail / Docs / Drive</li><li><span class="arr">→</span>Больше лимитов на изображения</li></ul>
+        <div style="margin-top:10px;font-size:20px;color:var(--gm);">→ Для Google Workspace пользователей</div>
+      </div>
+      <div class="plan-col" style="border-color:var(--pu);background:var(--pb);">
+        <div class="mono" style="font-size:15px;color:var(--pu);margin-bottom:10px;">AI ULTRA</div>
+        <ul class="ul"><li><span class="arr">→</span>Самая мощная модель</li><li><span class="arr">→</span>Видео Veo, музыка Lyria 3</li><li><span class="arr">→</span>Максимальные лимиты</li></ul>
+        <div style="margin-top:10px;font-size:20px;color:var(--pu);">→ Видеоконтент, сложная аналитика</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <h4 style="margin-bottom:4px;">Лайфхаки</h4>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);"><strong style="color:var(--t);">About me / Личный контекст</strong> — расскажи о себе один раз: профессия, стиль, цели. Gemini персонализирует каждый ответ под тебя.</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Запланированные действия — Gemini присылает сводку новостей каждое утро или напоминает о задачах в нужное время</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Используй Deep Research для конкурентного анализа: «Сделай глубокое исследование рынка [отрасль], тренды, игроки, прогноз»</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Gems — создай своего «Редактора постов»: один раз задай инструкции, и ИИ всегда знает твой стиль и аудиторию</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">В Google Docs нажми «Ask Gemini» — он прочитает документ и ответит на вопросы прямо внутри файла</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GEMINI — РЕСУРСЫ И ССЫЛКИ -->
+<section>
+  <div class="ey">Блок 3 · Gemini</div>
+  <h2 style="margin-bottom:20px;">Google-экосистема — <span class="em">все ссылки</span></h2>
+  <div class="g2" style="flex:1;gap:18px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="border-top:3px solid var(--gm);">
+        <h4 style="color:var(--gm);margin-bottom:10px;">Основные продукты Google</h4>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Gemini</span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://gemini.google.com" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">gemini.google.com</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Google Документы</span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://docs.google.com/document" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">google.ru/intl/ru/docs</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Google Таблицы</span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://docs.google.com/spreadsheets" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">docs.google.com/spreadsheets</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Google Презентации</span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://slides.google.com" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">google.ru/intl/ru/slides</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Google Vids <span style="font-size:11px;background:#4A3FD4;color:#fff;padding:1px 5px;border-radius:4px;vertical-align:middle;font-weight:700;">new</span></span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://workspace.google.com/products/vids/" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">workspace.google.com/products/vids/</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Google AI Studio</span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://aistudio.google.com" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">aistudio.google.com</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:190px;font-weight:700;">Nano Banana 2</span><span class="mono" style="font-size:16px;color:var(--gm);"><a href="https://aistudio.google.com/prompts/new_chat" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">aistudio.google.com/prompts/new_chat</a></span></div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;background:#E8F2F8;border-radius:8px;">
+        <span class="mono" style="font-size:15px;color:var(--fa);">БЕСПЛАТНЫЕ ГЕНЕРАЦИИ →</span>
+        <span style="font-size:20px;color:var(--gm);margin-left:8px;"><a href="https://arena.ai" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">arena.ai</a></span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="border-top:3px solid var(--pu);">
+        <h4 style="margin-bottom:8px;">Google <span style="color:var(--pu);">Labs</span> — экспериментальные проекты</h4>
+        <div style="font-size:18px;color:var(--mu);margin-bottom:8px;"><span class="mono" style="color:var(--pu);"><a href="https://labs.google" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">labs.google</a></span> — советую погулять!</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:150px;font-weight:700;"><a href="https://pomelli.me" target="_blank" style="color:var(--gm);text-decoration:none;">Pomelli</a></span><span style="font-size:17px;color:var(--pu);"><a href="https://pomelli.me" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">pomelli.me</a> — маркетинг на автопилоте с ИИ</span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:150px;font-weight:700;">Learn Your Way</span><span class="mono" style="font-size:15px;color:var(--mu);"><a href="https://learnyourway.withgoogle.com" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">learnyourway.withgoogle.com</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:150px;font-weight:700;">Project Genie</span><span class="mono" style="font-size:15px;color:var(--mu);"><a href="https://labs.google/projectgenie" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">labs.google/projectgenie</a></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:10px;">Видео · Музыка · Наука</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:140px;font-weight:700;">Google Veo 3</span><span style="font-size:17px;color:var(--mu);"><a href="https://deepmind.google/models/veo" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">deepmind.google/models/veo</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:140px;font-weight:700;">MusicFX</span><span class="mono" style="font-size:15px;color:var(--mu);"><a href="https://labs.google/fx/ru/tools/music-fx" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">labs.google/fx/ru/tools/music-fx</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:140px;font-weight:700;">AntiGravity</span><span class="mono" style="font-size:15px;color:var(--mu);"><a href="https://antigravity.google" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">antigravity.google</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:140px;font-weight:700;">Opal</span><span class="mono" style="font-size:15px;color:var(--mu);"><a href="https://opal.google/landing" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">opal.google/landing</a></span></div><div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:20px;align-items:baseline;"><span style="min-width:140px;font-weight:700;">AlphaFold</span><span style="font-size:16px;color:var(--mu);"><a href="https://alphafoldserver.com" target="_blank" style="color:var(--gm);text-decoration:underline;text-underline-offset:3px;">alphafoldserver.com</a> — вклад Google в науку</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ПРАКТИКА: GEMINI -->
+<section>
+  <div class="ey">Блок 3 · Практика</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div>
+      <div class="mono" style="font-size:18px;color:var(--gm);letter-spacing:.15em;margin-bottom:10px;">— ПРАКТИКА · 7 МИНУТ —</div>
+      <h2>«Мой первый <span style="color:var(--gm);">Gem</span>»</h2>
+    </div>
+    <div class="card" style="border-color:rgba(26,107,154,.3);background:#E8F2F8;">
+      <h4 style="color:var(--gm);margin-bottom:10px;">Задание</h4>
+      <p style="font-size:25px;">Создать своего персонального ассистента — Gem с инструкцией под реальную задачу. Сразу скормите ему реальный текст.</p>
+    </div>
+    <div class="pbox" style="font-size:22px;">«Ты — мой редактор постов. Мой стиль: [2 предложения о себе]. Сначала хвали идею, потом улучшай. Без клише»</div>
+    <div class="g3" style="gap:14px;">
+      <div class="card-sm" style="border-color:rgba(26,107,154,.2);">
+        <div class="mono" style="font-size:14px;color:var(--gm);margin-bottom:5px;">ШАГ 1</div>
+        <p style="font-size:21px;">Gemini → раздел «Gems» → «Создать Gem»</p>
+      </div>
+      <div class="card-sm" style="border-color:rgba(26,107,154,.2);">
+        <div class="mono" style="font-size:14px;color:var(--gm);margin-bottom:5px;">ШАГ 2</div>
+        <p style="font-size:21px;">Напиши инструкцию: роль + стиль + правила</p>
+      </div>
+      <div class="card-sm" style="background:#E8F2F8;border-color:rgba(26,107,154,.25);">
+        <div class="mono" style="font-size:14px;color:var(--gm);margin-bottom:5px;">ШАГ 3</div>
+        <p style="font-size:21px;">Отправь реальный текст — проверь результат</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 NOTEBOOKLM -->
+<section>
+  <div class="ey">Блок 3</div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;"><h2 style="color:var(--nb);">NotebookLM</h2><span class="mono" style="font-size:17px;padding:4px 13px;border-radius:100px;border:.5px solid var(--nb);color:var(--nb);">Только твои данные</span></div>
+  <div style="flex:1;display:flex;gap:18px;">
+    <div style="flex:1.1;display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="border-color:rgba(15,123,108,.25);"><h4 style="margin-bottom:10px;">Главная идея</h4><p style="font-size:24px;">Твой личный ИИ-эксперт по твоим документам. Не ищет в интернете. <strong style="color:var(--nb);">Ноль галлюцинаций</strong> — каждый ответ со ссылкой на источник.</p></div>
+      <div class="card"><h4 style="margin-bottom:8px;">Загружай что угодно</h4><p style="font-size:22px;line-height:1.7;">PDF · Word · PowerPoint · Google Docs<br>Ссылки на сайты · YouTube-видео · Текстовые файлы</p></div>
+      <div class="card" style="background:#E8F5F3;border-color:rgba(15,123,108,.2);"><h4 style="color:var(--nb);margin-bottom:8px;font-size:23px;">Лучший кейс</h4><p style="font-size:22px;">Загрузи PDF книги → нажми «Audio Overview» → через 2 минуты получи подкаст на 10–15 минут. Слушай по дороге.</p></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <h4 style="font-size:24px;margin-bottom:4px;">Studio — одна кнопка, готовый материал</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;align-content:start;">
+        <div class="card-sm"><p style="font-weight:700;font-size:18px;margin-bottom:3px;">Аудиоподкаст</p><p style="font-size:16px;">Два ИИ-ведущих обсуждают идеи</p></div>
+        <div class="card-sm"><p style="font-weight:700;font-size:18px;margin-bottom:3px;">Флеш-карточки</p><p style="font-size:16px;">Автоматически для запоминания</p></div>
+        <div class="card-sm"><p style="font-weight:700;font-size:18px;margin-bottom:3px;">Краткая сводка</p><p style="font-size:16px;">Ключевые тезисы из всех файлов</p></div>
+        <div class="card-sm"><p style="font-weight:700;font-size:18px;margin-bottom:3px;">Mind Map</p><p style="font-size:16px;">Визуальная карта идей</p></div>
+        <div class="card-sm"><p style="font-weight:700;font-size:18px;margin-bottom:3px;">Video Overview</p><p style="font-size:16px;">Видео-презентация по материалам</p></div>
+        <div class="card-sm"><p style="font-weight:700;font-size:18px;margin-bottom:3px;">Timeline / Таблица</p><p style="font-size:16px;">Данные и хронология событий</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 NOTEBOOKLM — ЛАЙФХАКИ -->
+<section>
+  <div class="ey">Блок 3 · NotebookLM</div>
+  <h2 style="margin-bottom:22px;"><span class="em">Лайфхаки</span> + как использовать</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="lh"><span class="lh-n">01</span><span style="font-size:24px;color:var(--mu);">Загружай YouTube-ссылки — NotebookLM расшифрует видео и позволит задавать вопросы по нему</span></div>
+      <div class="lh"><span class="lh-n">02</span><span style="font-size:24px;color:var(--mu);">Audio Overview для любого скучного документа — он сделает его увлекательным</span></div>
+      <div class="lh"><span class="lh-n">03</span><span style="font-size:24px;color:var(--mu);">Всегда проверяй источники в ответах — NotebookLM показывает, где именно в документе написано</span></div>
+      <div class="lh"><span class="lh-n">04</span><span style="font-size:24px;color:var(--mu);">Один блокнот = одна тема. Не смешивай разные темы — теряется точность ответов</span></div>
+      <div class="lh"><span class="lh-n">05</span><span style="font-size:24px;color:var(--mu);">Создай «Личную базу знаний»: статьи, исследования, шаблоны — твой умный архив для разговора</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <h4>Конкретные кейсы</h4>
+      <div class="card-sm"><strong style="font-size:22px;">Изучить книгу за 15 минут</strong><p style="font-size:21px;margin-top:4px;">Загрузи PDF → Audio Overview → подкаст с идеями. Затем задай вопросы в чате: «Как применить к [моя ситуация]?»</p></div>
+      <div class="card-sm"><strong style="font-size:22px;">Подготовка к встрече</strong><p style="font-size:21px;margin-top:4px;">Загрузи материалы по клиенту → «Какие болевые точки? Что учесть в переговорах?» — ответ со ссылками на источники</p></div>
+      <div class="card-sm"><strong style="font-size:22px;">Анализ нескольких документов</strong><p style="font-size:21px;margin-top:4px;">Загрузи 10 PDF-отчётов → «Сравни цены из всех файлов» или «Найди противоречия между документами»</p></div>
+      <div class="card-sm"><strong style="font-size:22px;">Создание учебных материалов</strong><p style="font-size:21px;margin-top:4px;">Загрузи лекции → создай через Studio: карточки для запоминания, тест, краткую сводку по теме</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTEBOOKLM — КЕЙСЫ ДО 50 ИСТОЧНИКОВ -->
+<section>
+  <div class="ey">Блок 3 · NotebookLM</div>
+  <h2 style="margin-bottom:20px;">Что делать с <span class="em">50 источниками</span></h2>
+  <div class="g2" style="flex:1;gap:18px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">01</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">База знаний и инструкции</p><p style="font-size:20px;color:var(--mu);">Загрузи все инструкции — новичок задаёт вопросы «как мне сделать этот шаг?»</p></div></div>
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">02</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Онбординг сотрудника</p><p style="font-size:20px;color:var(--mu);">Тестирование и обучение только на основании ваших документов и стандартов</p></div></div>
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">03</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Создать презентацию</p><p style="font-size:20px;color:var(--mu);">⚠️ Только как картинка — без возможности редактирования. Используй как структуру.</p></div></div>
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">04</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Анализ поставщиков</p><p style="font-size:20px;color:var(--mu);">Загрузи данные — выявление сильных и слабых сторон каждого поставщика</p></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">05</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Подготовка к переговорам</p><p style="font-size:20px;color:var(--mu);">Изучение компании и человека — сборка всех данных в единую аналитику</p></div></div>
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">06</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Создать бота по теме</p><p style="font-size:20px;color:var(--mu);">Через Gemini — ассистент, отвечающий только по твоим материалам</p></div></div>
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">07</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Транскрибация YouTube</p><p style="font-size:20px;color:var(--mu);">Вставь ссылку → расшифровка → задавай вопросы по видео</p></div></div>
+      <div class="lh"><span class="lh-n" style="color:var(--nb);">08</span><div><p style="font-size:22px;font-weight:700;color:var(--t);margin-bottom:3px;">Наставник из книги</p><p style="font-size:20px;color:var(--mu);">«Как автор посоветовал бы мне поступить в ситуации [описание]?»</p></div></div>
+      <div style="padding:12px 16px;background:rgba(15,123,108,.08);border:.5px solid rgba(15,123,108,.25);border-radius:8px;">
+        <p style="font-size:17px;color:var(--nb);"><span class="mono">ЛИМИТ ДО 50 ИСТОЧНИКОВ —</span> PDF, Word, Google Docs, ссылки, YouTube</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ПРАКТИКА: NOTEBOOKLM -->
+<section>
+  <div class="ey">Блок 3 · Практика</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div>
+      <div class="mono" style="font-size:18px;color:var(--nb);letter-spacing:.15em;margin-bottom:10px;">— ПРАКТИКА · 7 МИНУТ —</div>
+      <h2>«10 минут вместо <span style="color:var(--nb);">3 часов</span>»</h2>
+    </div>
+    <div class="card" style="border-color:rgba(15,123,108,.3);background:#E8F5F3;">
+      <h4 style="color:var(--nb);margin-bottom:10px;">Задание</h4>
+      <p style="font-size:25px;">Загрузи YouTube-ссылку на видео, которое давно лежит в «посмотреть позже».</p>
+    </div>
+    <div class="pbox" style="font-size:23px;">«Как применить главную идею этого видео к [моя конкретная ситуация]?»</div>
+    <div class="g2" style="gap:16px;">
+      <div class="card-sm">
+        <div class="mono" style="font-size:14px;color:var(--nb);margin-bottom:6px;">ЧТО ТРЕНИРУЕМ</div>
+        <ul class="ul">
+          <li><span class="arr">→</span>Загрузка YouTube-ссылки</li>
+          <li><span class="arr">→</span>Точный вопрос с контекстом</li>
+          <li><span class="arr">→</span>Применение к своей ситуации</li>
+        </ul>
+      </div>
+      <div style="padding:18px 22px;background:var(--su);border-radius:9px;">
+        <p style="font-size:22px;color:var(--mu);"><strong style="color:var(--t);">Бонус:</strong></p>
+        <p style="font-size:21px;color:var(--mu);margin-top:8px;">После — нажми Audio Overview и получи подкаст с идеями видео.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 CHATGPT — ОБЗОР -->
+<section>
+  <div class="ey">Блок 4</div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;"><h2 style="color:var(--gpt);">ChatGPT</h2><span class="mono" style="font-size:17px;padding:4px 13px;border-radius:100px;border:.5px solid var(--gpt);color:var(--gpt);">OpenAI</span></div>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card"><h4 style="margin-bottom:10px;">Ключевые возможности</h4>
+        <ul class="ul"><li><span class="arr">→</span>Тексты, анализ, код, изображения DALL·E 3</li><li><span class="arr">→</span>Canvas — совместное редактирование документов</li><li><span class="arr">→</span>Deep Research — полный анализ за 5–20 мин</li><li><span class="arr">→</span>Агент — цепочки действий без участия пользователя</li><li><span class="arr">→</span>GPT Store — библиотека готовых специализированных ботов</li><li><span class="arr">→</span>Проекты с постоянным контекстом и памятью</li><li><span class="arr">→</span>Голосовой ввод и Advanced Voice Mode</li></ul>
+      </div>
+      <div class="card" style="background:#EDE8FF;border-color:rgba(123,63,242,.2);"><h4 style="color:var(--gpt);font-size:23px;margin-bottom:6px;">Совет по старту</h4><p style="font-size:23px;">Начни с бесплатной версии. Если упрёшься в лимиты через 2–3 недели активного использования — переходи на Plus ($20/мес)</p></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card-sm"><h4 style="margin-bottom:6px;font-size:23px;">GPT Store — магазин ботов</h4><p style="font-size:21px;">Юридические документы, меню, обучение языкам, HR — специализированные боты уже есть. Перейди в chatgpt.com/store → найди нужного → Start chat.</p></div>
+      <div class="card-sm"><h4 style="margin-bottom:6px;font-size:23px;">Canvas</h4><p style="font-size:21px;">Режим для совместной работы над текстом или кодом. Редактируй конкретный абзац, не переписывая всё. Кнопки: «Сделай короче», «Добавь примеры».</p></div>
+      <div class="card-sm"><h4 style="margin-bottom:6px;font-size:23px;">Агентский режим</h4><p style="font-size:21px;">«Зайди на сайт, найди список товаров и цен, сохрани в таблицу» — агент делает это последовательно без твоего участия. Кнопка Tools / Agent mode.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 17 CHATGPT — ТАРИФЫ + ЛАЙФХАКИ -->
+<section>
+  <div class="ey">Блок 4 · ChatGPT</div>
+  <h2 style="margin-bottom:20px;"><span class="em">Модели и тарифы</span> + лайфхаки</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <table class="tbl"><thead><tr><th>Модель</th><th>Когда выбирать</th></tr></thead><tbody>
+        <tr><td>GPT-4o</td><td>Большинство задач — тексты, анализ, изображения</td></tr>
+        <tr><td>o1 (думающая)</td><td>Математика, логика, сложная аналитика, несколько шагов</td></tr>
+        <tr><td>o3 mini</td><td>Думающая, но быстрее o1 — когда нет времени ждать</td></tr>
+        <tr><td>GPT-4o mini</td><td>Простые вопросы, мгновенная скорость</td></tr>
+        <tr><td><strong>GPT-5.5</strong> <span style="font-size:11px;background:#4A3FD4;color:#fff;padding:1px 5px;border-radius:4px;vertical-align:middle;font-weight:700;">new</span></td><td>Флагман 2025 — максимальный интеллект, рассуждение и мультимодальность</td></tr>
+      </tbody></table>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="plan-col" style="border-color:var(--bo);background:#fff;"><div class="mono" style="font-size:15px;color:var(--fa);margin-bottom:10px;">БЕСПЛАТНО</div><ul class="ul"><li><span class="arr">→</span>Базовый чат GPT-4o (лимиты)</li><li><span class="arr">→</span>Ограниченно: o1, DALL·E, Canvas</li><li><span class="arr">→</span>Загрузка файлов с лимитами</li><li><span class="arr">→</span>Базовый голосовой режим</li></ul></div>
+        <div class="plan-col" style="border-color:var(--gpt);background:#EDE8FF;"><div class="mono" style="font-size:15px;color:var(--gpt);margin-bottom:10px;">PLUS $20/МЕС</div><ul class="ul"><li><span class="arr">→</span>Увеличенные лимиты GPT-4o</li><li><span class="arr">→</span>Полный доступ o1, o3 mini</li><li><span class="arr">→</span>Deep Research</li><li><span class="arr">→</span>Advanced Voice Mode</li><li><span class="arr">→</span>Агент + Коннекторы</li></ul></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <h4 style="margin-bottom:4px;">Лайфхаки</h4>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Создавай Projects для регулярных задач: один раз загрузи файлы и инструкции — ChatGPT помнит их всегда</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Подключи Коннекторы: Google Drive, Dropbox, Notion, GitHub — ChatGPT работает с файлами напрямую</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Управляй памятью: Настройки → «Память» → посмотри что помнит ChatGPT → отредактируй или удали</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Для генерации изображений: «в стиле акварели», «фотореалистично», «минималистичный вектор»</span></div>
+      <div class="lh"><span class="lh-n">→</span><span style="font-size:23px;color:var(--mu);">Расписание: «напоминай каждое утро о трёх приоритетах дня» — через голосовой интерфейс или текстом</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ПРАКТИКА: CHATGPT -->
+<section>
+  <div class="ey">Блок 4 · Практика</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div>
+      <div class="mono" style="font-size:18px;color:var(--gpt);letter-spacing:.15em;margin-bottom:10px;">— ПРАКТИКА · 8 МИНУТ —</div>
+      <h2>«Визуальная <span style="color:var(--gpt);">метафора</span>»</h2>
+    </div>
+    <div class="card" style="border-color:rgba(123,63,242,.3);background:#EDE8FF;">
+      <h4 style="color:var(--gpt);margin-bottom:10px;">Задание</h4>
+      <p style="font-size:25px;">Через DALL·E создать изображение-метафору своей профессии или текущей ситуации.</p>
+    </div>
+    <div class="pbox" style="font-size:22px;">«Нарисуй метафору того, каково это — быть [профессия] в 2026 году. Стиль: [акварель / фотореализм / комикс]»</div>
+    <div class="g3" style="gap:14px;">
+      <div class="card-sm" style="text-align:center;border-color:rgba(123,63,242,.2);">
+        <div style="font-size:39px;margin-bottom:6px;"></div>
+        <p style="font-size:21px;font-weight:700;">Акварель</p>
+        <p style="font-size:17px;color:var(--mu);">Мягкий, художественный</p>
+      </div>
+      <div class="card-sm" style="text-align:center;border-color:rgba(123,63,242,.2);">
+        <div style="font-size:39px;margin-bottom:6px;"></div>
+        <p style="font-size:21px;font-weight:700;">Фотореализм</p>
+        <p style="font-size:17px;color:var(--mu);">Как настоящая фотография</p>
+      </div>
+      <div class="card-sm" style="text-align:center;background:#EDE8FF;border-color:rgba(123,63,242,.2);">
+        <div style="font-size:39px;margin-bottom:6px;"></div>
+        <p style="font-size:21px;font-weight:700;">Комикс</p>
+        <p style="font-size:17px;color:var(--mu);">Яркий, игровой стиль</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 CLAUDE — ОСОБЕННОСТИ -->
+<section style="position:relative;">
+  <div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#F59E0B,#F97316,#F59E0B);border-radius:0;"></div>
+  <div class="ey">Блок 5 · Главный инструмент курса</div>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+    <h2 style="color:var(--cg);">Claude</h2>
+    <span style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;font-family:var(--fm);font-size:15px;letter-spacing:.12em;padding:7px 18px;border-radius:100px;font-weight:700;box-shadow:0 2px 12px rgba(245,158,11,.4);">⭐ №1 КУРСА</span><span class="mono" style="font-size:17px;padding:4px 13px;border-radius:100px;border:.5px solid var(--cg);color:var(--cg);">Anthropic</span></div>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div class="card" style="border-color:rgba(216,90,48,.25);"><h4 style="margin-bottom:10px;">Что делает Claude особенным</h4>
+        <ul class="ul"><li><span class="arr">→</span><span><strong style="color:var(--t);">Самый «человечный» текст</strong> — меньше клише, больше нюансов, не чувствуется ИИ</span></li><li><span class="arr">→</span><span><strong style="color:var(--t);">200 000 токенов</strong> — целая книга в одном запросе</span></li><li><span class="arr">→</span><span><strong style="color:var(--t);">Проекты с памятью</strong> — контекст сохраняется во всех диалогах</span></li><li><span class="arr">→</span><span><strong style="color:var(--t);">Меньше галлюцинаций</strong> — честно признаёт, когда не знает</span></li><li><span class="arr">→</span><span><strong style="color:var(--t);">Claude Cowork</strong> — работает с файлами прямо на компьютере</span></li></ul>
+      </div>
+      <div class="card"><h4 style="margin-bottom:8px;">Честное сравнение с ChatGPT</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;gap:10px;font-size:21px;"><span style="min-width:180px;color:var(--fa);">Контекст</span><span>Claude <strong style="color:var(--cg);">200K</strong> vs ChatGPT 128K токенов</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;font-size:21px;"><span style="min-width:180px;color:var(--fa);">Длинные документы</span><span>Claude значительно лучше</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;font-size:21px;"><span style="min-width:180px;color:var(--fa);">Projects + Memory</span><span>Claude значительно опережает</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;font-size:21px;"><span style="min-width:180px;color:var(--fa);">Честность</span><span>Claude чаще признаёт, когда не знает</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card"><h4 style="margin-bottom:8px;">Три продукта</h4>
+        <ul class="ul"><li><span class="arr">→</span><span><strong style="color:var(--t);">Claude.ai</strong> — веб и мобайл. Основной инструмент для всех задач</span></li><li><span class="arr">→</span><span><strong style="color:var(--t);">Claude Cowork</strong> — десктоп. Видит папки и файлы на компьютере напрямую</span></li><li><span class="arr">→</span><span style="color:var(--fa);">Claude Code — только для разработчиков (не для этого курса)</span></li></ul>
+      </div>
+      <div class="card" style="background:#FEF2ED;border-color:rgba(216,90,48,.25);"><h4 style="color:var(--cg);margin-bottom:10px;">Что категорически не загружать</h4><p style="font-size:21px;line-height:1.7;color:var(--mu);">Пароли и токены · Паспортные данные · Конфиденциальные документы клиентов без разрешения · Коммерческая тайна без согласования</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 CLAUDE — PROJECTS + COWORK -->
+<section>
+  <div class="ey">Блок 5 · Claude</div>
+  <h2 style="margin-bottom:20px;"><span class="em">Проекты</span> + Cowork</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="background:#FEF2ED;border-color:rgba(216,90,48,.25);">
+        <h4 style="color:var(--cg);margin-bottom:10px;">Проекты — постоянная память</h4>
+        <p style="font-size:23px;margin-bottom:10px;">Загружаешь файлы и пишешь инструкции один раз — Claude знает этот контекст в каждом новом диалоге.</p>
+        <p style="font-size:20px;color:var(--fa);margin-bottom:8px;">Как создать: claude.ai → «Проекты» → «Новый проект» → Настройки → инструкции + загрузи файлы</p>
+        <div class="pbox" style="font-size:18px;">«Ты — ассистент по маркетингу для студии йоги. Аудитория: женщины 30–50 лет. Тон: тёплый, заботливый. Следуй стилю из примеров постов.»</div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:8px;">Memory — личная память</h4>
+        <p style="font-size:23px;">С 2026 года Claude запоминает важные факты о тебе между разными чатами. Настройки → Память → посмотри и редактируй.</p>
+        <p style="font-size:20px;color:var(--mu);margin-top:8px;">Расскажи Claude: профессия, стиль работы, что важно, чего избегать в текстах — и он учитывает это всегда.</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <h4 style="margin-bottom:10px;">Claude Cowork — ИИ и твои файлы</h4>
+        <p style="font-size:23px;margin-bottom:10px;">Видит папки и файлы на компьютере. Работает без ручного копипаста. Mac и Windows.</p>
+        <ul class="ul" style="margin-bottom:10px;">
+          <li><span class="arr">→</span>Читает PDF, Word, Excel, картинки, код</li>
+          <li><span class="arr">→</span>Создаёт и редактирует файлы на диске</li>
+          <li><span class="arr">→</span>Работает с несколькими файлами одновременно</li>
+          <li><span class="arr">→</span>Сохраняй шаблоны регулярных задач</li>
+        </ul>
+        <div class="pbox" style="font-size:18px;">«Возьми данные из всех Excel-файлов → создай итоговый отчёт» · «Найди во всех документах упоминания [темы]» · «Переименуй все файлы по шаблону: дата_название»</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 CLAUDE — SKILLS + CONNECTORS + ТАРИФЫ -->
+<section>
+  <div class="ey">Блок 5 · Claude</div>
+  <h2 style="margin-bottom:20px;"><span class="em">Skills + Connectors</span> · тарифы</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card"><h4 style="margin-bottom:10px;">Skills — готовые наборы инструкций</h4>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;gap:10px;align-items:center;"><span class="mono" style="font-size:15px;color:var(--cg);min-width:90px;">PPTX</span><span style="font-size:21px;color:var(--mu);">Создаёт профессиональные презентации PowerPoint</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;align-items:center;"><span class="mono" style="font-size:15px;color:var(--cg);min-width:90px;">DOCX</span><span style="font-size:21px;color:var(--mu);">Создаёт и редактирует Word-документы с форматированием</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;align-items:center;"><span class="mono" style="font-size:15px;color:var(--cg);min-width:90px;">XLSX</span><span style="font-size:21px;color:var(--mu);">Работает с Excel: таблицы, формулы, анализ данных</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;align-items:center;"><span class="mono" style="font-size:15px;color:var(--cg);min-width:90px;">Humanizer</span><span style="font-size:21px;color:var(--mu);">Убирает признаки ИИ-текста, делает его человечным</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;align-items:center;"><span class="mono" style="font-size:15px;color:var(--cg);min-width:90px;">Connectors</span><span style="font-size:21px;color:var(--mu);">Notion, Slack, Google Drive — Claude подтягивает данные сам</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="plan-col" style="border-color:var(--bo);background:#fff;"><div class="mono" style="font-size:15px;color:var(--fa);margin-bottom:8px;">БЕСПЛАТНЫЙ</div><ul class="ul"><li><span class="arr">→</span>Чаты, Проекты, базовые функции</li><li><span class="arr">→</span>Sonnet с лимитами</li><li><span class="arr">→</span>Знакомство и лёгкое использование</li></ul></div>
+        <div class="plan-col" style="border-color:var(--cg);background:#FEF2ED;"><div class="mono" style="font-size:15px;color:var(--cg);margin-bottom:8px;">PRO — $20/МЕС</div><ul class="ul"><li><span class="arr">→</span>Увеличенные лимиты, модель Opus</li><li><span class="arr">→</span>Deep Research, расширенные Проекты</li><li><span class="arr">→</span>Полный Cowork + Skills</li></ul><div style="margin-top:8px;font-size:20px;color:var(--cg);">→ Для активного ежедневного использования</div></div>
+      </div>
+      <div style="padding:14px 18px;background:var(--su);border-radius:9px;"><h4 style="margin-bottom:8px;font-size:23px;">Топ лайфхаков Claude</h4>
+        <ul class="ul" style="gap:7px;"><li><span class="arr">→</span>Давай весь контекст в одном сообщении, не по частям</li><li><span class="arr">→</span>Extended Thinking — включай для сложной аналитики</li><li><span class="arr">→</span>Дай 5–10 примеров текстов → Claude научится твоему стилю</li><li><span class="arr">→</span>Начало чата: «Ты — [роль]. Мой стиль: [стиль]. Избегай: [слова]»</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLAUDE — АРТЕФАКТЫ И РАСШИРЕННЫЕ ВОЗМОЖНОСТИ -->
+<section>
+  <div class="ey">Блок 5 · Claude</div>
+  <h2 style="margin-bottom:20px;"><span class="em">Артефакты</span> · Память · Extended Thinking</h2>
+  <div class="g2" style="flex:1;gap:18px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="background:#FEF2ED;border-color:rgba(216,90,48,.25);">
+        <h4 style="color:var(--cg);margin-bottom:10px;">Артефакты — результат в отдельной панели</h4>
+        <p style="font-size:22px;margin-bottom:10px;">Когда Claude создаёт что-то объёмное — открывается панель справа с живым превью.</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;gap:10px;font-size:20px;"><span class="mono" style="color:var(--cg);min-width:140px;">HTML-страница</span><span style="color:var(--mu);">с живым превью прямо в чате</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;font-size:20px;"><span class="mono" style="color:var(--cg);min-width:140px;">Markdown-таблица</span><span style="color:var(--mu);">скопировать в Excel / Google Sheets</span></div><div class="div"></div>
+          <div style="display:flex;gap:10px;font-size:20px;"><span class="mono" style="color:var(--cg);min-width:140px;">Документ / Код</span><span style="color:var(--mu);">скачать или скопировать</span></div>
+        </div>
+        <div class="pbox" style="font-size:17px;margin-top:10px;">Попроси: «Создай это в виде артефакта» — результат откроется рядом с чатом</div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:8px;">Память между чатами (с 2026)</h4>
+        <p style="font-size:22px;margin-bottom:8px;">Claude запоминает профессию, стиль и предпочтения — учитывает их всегда.</p>
+        <div class="lh"><span class="lh-n">→</span><span style="font-size:20px;color:var(--mu);">Настройки → Память — посмотри и отредактируй</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <h4 style="margin-bottom:10px;">Extended Thinking — глубокое мышление</h4>
+        <p style="font-size:22px;margin-bottom:10px;">Claude рассуждает пошагово перед ответом — значительно точнее для сложных задач.</p>
+        <ul class="ul">
+          <li><span class="arr">→</span>Сложная аналитика и стратегия</li>
+          <li><span class="arr">→</span>Документы с противоречиями</li>
+          <li><span class="arr">→</span>Многоступенчатые задачи</li>
+        </ul>
+        <div style="margin-top:10px;padding:10px 14px;background:var(--su);border-radius:7px;font-size:20px;color:var(--mu);"><span class="mono" style="color:var(--cg);">→</span> Как включить: кнопка ⚡ Extended Thinking перед отправкой</div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:8px;">Мобильное приложение</h4>
+        <ul class="ul">
+          <li><span class="arr">→</span>Все чаты и Проекты синхронизируются</li>
+          <li><span class="arr">→</span>Голосовой ввод — диктуй запросы</li>
+          <li><span class="arr">→</span>Загрузка изображений с камеры</li>
+          <li><span class="arr">→</span>iOS и Android</li>
+        </ul>
+      </div>
+      <div class="card-sm" style="background:#FEF2ED;border-color:rgba(216,90,48,.25);">
+        <p style="font-size:20px;color:var(--mu);"><strong style="color:var(--cg);">Старт любого чата:</strong> «Ты — [роль]. Моя задача: [задача]. Стиль ответов: [стиль]»</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ПРАКТИКА: CLAUDE -->
+<section>
+  <div class="ey">Блок 5 · Практика</div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div>
+      <div class="mono" style="font-size:18px;color:var(--cg);letter-spacing:.15em;margin-bottom:10px;">— ПРАКТИКА · 10 МИНУТ —</div>
+      <h2>«Аудит <span class="em">моей работы</span>»</h2>
+    </div>
+    <div class="card" style="border-color:rgba(216,90,48,.3);background:#FEF2ED;">
+      <h4 style="color:var(--cg);margin-bottom:10px;">Задание</h4>
+      <p style="font-size:24px;">Создать Projects + написать инструкцию о себе + загрузить 2–3 реальных рабочих документа (план, переписка, описание задач).</p>
+    </div>
+    <div class="pbox" style="font-size:22px;">«Посмотри на эти материалы. Что из этого ты мог бы делать вместо меня — и что я точно должна делать сама?»</div>
+    <div class="g3" style="gap:14px;">
+      <div class="card-sm" style="border-color:rgba(216,90,48,.2);">
+        <div class="mono" style="font-size:14px;color:var(--cg);margin-bottom:5px;">ШАГ 1</div>
+        <p style="font-size:20px;">Создать Проект + написать инструкцию о себе</p>
+      </div>
+      <div class="card-sm" style="border-color:rgba(216,90,48,.2);">
+        <div class="mono" style="font-size:14px;color:var(--cg);margin-bottom:5px;">ШАГ 2</div>
+        <p style="font-size:20px;">Загрузить 2–3 рабочих документа</p>
+      </div>
+      <div class="card-sm" style="background:#FEF2ED;border-color:rgba(216,90,48,.25);">
+        <div class="mono" style="font-size:14px;color:var(--cg);margin-bottom:5px;">ШАГ 3</div>
+        <p style="font-size:20px;">Задать вопрос про аудит и обсудить результат</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 ШПАРГАЛКА -->
+<section>
+  <div class="ey">Быстрый навигатор · сохрани или распечатай</div>
+  <h2 style="margin-bottom:20px;">Какой инструмент — <span class="em">для какой задачи</span></h2>
+  <div class="g2" style="flex:1;gap:18px;align-items:start;">
+    <table class="tbl"><thead><tr><th>Задача</th><th>Инструмент</th></tr></thead><tbody>
+      <tr><td>Написать письмо, пост, текст</td><td style="color:var(--pu);font-weight:700;">Claude Chat</td></tr>
+      <tr><td>Быстрый вопрос и объяснение</td><td style="color:var(--cg);font-weight:700;">ChatGPT (4o)</td></tr>
+      <tr><td>Найти актуальную информацию</td><td style="color:var(--pp);font-weight:700;">Perplexity</td></tr>
+      <tr><td>Работа с большим документом</td><td style="color:var(--pu);font-weight:700;">Claude / NotebookLM</td></tr>
+      <tr><td>Изучить книгу или лекцию</td><td style="color:var(--nb);font-weight:700;">NotebookLM</td></tr>
+      <tr><td>Генерация изображений</td><td style="color:var(--cg);font-weight:700;">ChatGPT (DALL·E)</td></tr>
+      <tr><td>Анализ таблиц и данных</td><td style="color:var(--pu);font-weight:700;">Claude Chat</td></tr>
+    </tbody></table>
+    <table class="tbl"><thead><tr><th>Задача</th><th>Инструмент</th></tr></thead><tbody>
+      <tr><td>Долгосрочный проект с памятью</td><td style="color:var(--pu);font-weight:700;">Claude Проекты</td></tr>
+      <tr><td>Работа с файлами на компьютере</td><td style="color:var(--pu);font-weight:700;">Claude Cowork</td></tr>
+      <tr><td>Живой голосовой разговор</td><td style="color:var(--gm);font-weight:700;">Gemini Live</td></tr>
+      <tr><td>Создать подкаст из документа</td><td style="color:var(--nb);font-weight:700;">NotebookLM</td></tr>
+      <tr><td>Аналитический отчёт по рынку</td><td style="color:var(--gm);font-weight:700;">Deep Research (Gemini/GPT)</td></tr>
+      <tr><td>Интеграция с Google Docs / Gmail</td><td style="color:var(--gm);font-weight:700;">Gemini</td></tr>
+      <tr><td>Создать бота под задачу</td><td style="color:var(--cg);font-weight:700;">ChatGPT (GPT Store)</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<!-- 22 БЛОК 6 INTRO -->
+<section style="justify-content:center;align-items:center;text-align:center;">
+  <div class="mono" style="font-size:17px;letter-spacing:.15em;color:var(--fa);margin-bottom:18px;">БЛОК 6</div>
+  <h1 style="margin-bottom:18px;">Кейсы <span class="em">из жизни</span></h1>
+  <p style="font-size:29px;max-width:800px;margin:0 auto 36px;">Реальные ситуации — где ИИ убрал хаос, сэкономил часы и снял тревогу</p>
+  <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;">
+    <span class="rp">Здоровье близких</span><span class="rp">Выбор школы</span><span class="rp">Голос вместо текста</span><span class="rp">Instagram контент</span>
+    <span class="rp">ИИ как дневник</span><span class="rp">Работа с информацией</span><span class="rp">Модель себя</span><span class="rp">Управление задачами</span><span class="rp">КП за 5 минут</span><span class="rp">Сложный разговор</span><span class="rp">Авиабилеты дешевле</span><span class="rp">Мониторинг рынка</span><span class="rp">База знаний</span>
+  </div>
+</section>
+
+<!-- КЕЙС 01 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 01</div>
+  <h3 style="margin-bottom:20px;">Управление здоровьем близкого человека</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Хаос из анализов, справок, фотографий, документов по инвалидности. Постоянная тревога: что сделано, куда звонить, что забыли. Колоссальная эмоциональная нагрузка.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Claude собирает все данные в единую базу, анализирует динамику анализов, структурирует документы. Выдаёт чёткий план: куда идти → кому звонить → что сделать сегодня.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Тревога снижается на 60–70%</span><span class="rp">Ничего не теряется</span><span class="rp">Всё структурировано и под рукой</span></div>
+  <div class="pbox">У меня есть [анализы / документы / фото справок]. Составь структурированный план действий: что срочно, что отложить, куда обращаться и в каком порядке.</div>
+</section>
+
+<!-- КЕЙС 02 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 02</div>
+  <h3 style="margin-bottom:20px;">Сложные жизненные решения: выбор школы</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Десятки критериев, разные сайты, мнения знакомых, противоречивые отзывы. Невозможно сравнить объективно. Решение откладывается неделями из-за информационного хаоса.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">ИИ строит таблицу сравнения по заданным критериям: программа, расстояние, среда, стоимость, ценности. Взвешивает по приоритетам семьи. Даёт аргументированную рекомендацию.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Решение за 1 день вместо 3 недель</span><span class="rp">Объективное сравнение</span><span class="rp">Эмоциональный покой</span></div>
+  <div class="pbox">Помоги выбрать школу для ребёнка [возраст]. Критерии: [список]. Варианты: [школы]. Составь сравнительную таблицу и дай рекомендацию с обоснованием.</div>
+</section>
+
+<!-- КЕЙС 03 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 03</div>
+  <h3 style="margin-bottom:20px;">Голос вместо текста: энергосбережение</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Мысли в голове есть — но писать долго и энергозатратно. Важные идеи теряются. Голосовые заметки превращаются в хаотичные файлы, которые никто не расшифровывает.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Надиктовал голосом → ИИ структурирует в текст, выделяет ключевые мысли, создаёт план или список задач. 3 минуты речи превращаются в готовый документ.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">−80% времени на оформление</span><span class="rp">Мысль не теряется</span><span class="rp">Экономия энергии</span></div>
+  <div class="pbox">Вот расшифровка голосовой заметки: [текст]. Структурируй в: 1) ключевые идеи, 2) план действий, 3) вопросы, требующие решения.</div>
+</section>
+
+<!-- КЕЙС 04 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 04</div>
+  <h3 style="margin-bottom:20px;">Автоматизация визуального контента</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Ведение рубрики требует ежедневного создания контента: верстка, стиль, согласованность. Это часы работы в Canva или с дизайнером — дорого и медленно.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Фотографирую → отправляю макет → Claude соблюдает стиль рубрики, делает вёрстку по шаблону, генерирует подпись в нужном тоне. Workflow за 10–15 минут вместо 2–3 часов.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">−85% времени на контент</span><span class="rp">Единый стиль рубрики</span><span class="rp">Масштабируемый поток</span></div>
+  <div class="pbox">Вот макет рубрики и фото. Стиль: [голос/тон]. Сделай текст для поста, подпись до 150 слов и хэштеги (15 штук) в стиле рубрики.</div>
+</section>
+
+<!-- КЕЙС 05 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 05</div>
+  <h3 style="margin-bottom:20px;">ИИ как дневник и психологический помощник</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Эмоции накапливаются, нет времени на терапию, сложно выговориться. Стресс выражается телесно или в срывах. Внутренние конфликты не осознаются и не разрешаются.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Пишешь поток сознания → ИИ отражает структуру переживания, выделяет триггеры, задаёт вопросы для рефлексии. Безопасно, конфиденциально, без осуждения, в любое время.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Эмоциональная разгрузка</span><span class="rp">Осознание триггеров</span><span class="rp">Снижение тревоги</span></div>
+  <div class="pbox">Я хочу выгрузить то, что накопилось. Выслушай без оценок: [текст]. Задай 3 вопроса, которые помогут лучше понять, что происходит и что я на самом деле чувствую.</div>
+</section>
+
+<!-- КЕЙС 06 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 06</div>
+  <h3 style="margin-bottom:20px;">Работа с информацией: книги, видео, диалоги</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Стопка непрочитанных книг, записанные видео без просмотра, длинные переписки без осмысления. Информации много — применения ноль. Чувство вины за «не успеваю».</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">ИИ делает summary книги за 10 минут, выжимку из часового видео. Выделяет тезисы → применяет идеи к вашей ситуации → предлагает конкретные шаги.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Книга = 10 мин вместо 8 часов</span><span class="rp">Идеи сразу в действие</span><span class="rp">Конец чувству вины</span></div>
+  <div class="pbox">Прочитай [текст/транскрипт] и дай: 1) 5 ключевых идей, 2) как применить к [моя ситуация], 3) 3 конкретных действия на этой неделе.</div>
+</section>
+
+<!-- КЕЙС 07 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 07</div>
+  <h3 style="margin-bottom:20px;">Персональная модель себя на основе тестов</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Пройдено множество тестов (MBTI, Hogan, Сколково, CliftonStrengths) — результаты лежат в папке и не используются. Нет единого понимания: как работать, принимать решения.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Загружаю все результаты в Claude → он строит интегрированную персональную модель: сильные/слабые стороны, рекомендации по стилю работы, принятию решений, зонам роста.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Единый профиль личности</span><span class="rp">Персональные рекомендации</span><span class="rp">Ясный вектор развития</span></div>
+  <div class="pbox">Вот мои результаты тестов: [данные]. Составь профиль: 1) топ-5 сильных сторон, 2) зоны риска, 3) как мне принимать решения, 4) в каких условиях я эффективен(на).</div>
+</section>
+
+<!-- КЕЙС 08 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 08</div>
+  <h3 style="margin-bottom:20px;">Управление задачами и сложными процессами</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Подготовка к поступлению (ВШЭ, Сколково): десятки мелких задач, дедлайны, документы. Ежедневное планирование в голове — нагрузка на рабочую память, тревога «что забыла».</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pu);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">ИИ создаёт чек-лист из всех шагов, расставляет дедлайны, ежедневно показывает что «горит». Дневной план за 2 минуты. Трекер задач обновляется голосом.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Нулевая нагрузка на память</span><span class="rp">Ничего не забывается</span><span class="rp">2 мин вместо 30 на планирование</span></div>
+  <div class="pbox">Помоги спланировать процесс [поступление / проект]. Вот шаги: [список]. Составь полный чек-лист, расставь приоритеты и укажи, что нужно сделать на этой неделе.</div>
+</section>
+
+
+<!-- КЕЙС 09 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 09</div>
+  <h3 style="margin-bottom:20px;">Коммерческое предложение за 5 минут</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Подготовка КП занимает полдня: структурировать, написать выгоды, оформить. Постоянно откладывается — из-за этого теряются клиенты и сделки срываются.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--gpt);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">ChatGPT составляет полное КП с болью клиента, решением, ценой и призывом к действию. Клиент получает предложение в тот же день.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">КП за 5–10 минут</span><span class="rp">Клиент получает в тот же день</span><span class="rp">Меньше потерянных сделок</span></div>
+  <div class="pbox">Составь коммерческое предложение для [тип клиента]. Мы предлагаем [услуга/продукт]. Ключевые выгоды: [список]. Структура: введение → боль → решение → цена → призыв к действию.</div>
+</section>
+
+<!-- КЕЙС 10 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 10</div>
+  <h3 style="margin-bottom:20px;">Подготовка к сложному разговору</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Предстоит трудный разговор с клиентом, партнёром или сотрудником. Не знаешь, как начать, боишься возражений, теряешься в нужный момент.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--gpt);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">ChatGPT готовит: как начать разговор, 3 вероятных возражения с ответами, сценарий завершения с нужным результатом. Входишь на встречу уверенно.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Уверенность на встрече</span><span class="rp">Не теряешься при возражениях</span><span class="rp">Разговор идёт по плану</span></div>
+  <div class="pbox">Помоги подготовиться к разговору с [роль] по теме [тема]. Напиши: 1) как начать, 2) 3 вероятных возражения и ответы, 3) как завершить с результатом [цель].</div>
+</section>
+
+<!-- КЕЙС 11 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 11</div>
+  <h3 style="margin-bottom:20px;">Авиабилеты: найти дешевле за 10 минут</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Хочется сэкономить на перелёте, но непонятно: когда покупать, какие дни дешевле, есть ли лайфхаки с маршрутами. Часы на сайтах — без результата.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pp);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Perplexity анализирует: лучшие дни вылета, оптимальное окно бронирования, соседние аэропорты, альтернативные маршруты. Показывает, где реальная экономия 20–50%.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Экономия 20–50% на перелётах</span><span class="rp">Выбор с конкретными цифрами</span><span class="rp">10 минут вместо 2 часов</span></div>
+  <div class="pbox">Действуй как эксперт по дешёвым перелётам. Я лечу из [город] в [город] около [дата]. Проанализируй: лучшие дни, окно бронирования, соседние аэропорты, альтернативные маршруты.</div>
+</section>
+
+<!-- КЕЙС 12 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 12</div>
+  <h3 style="margin-bottom:20px;">Мониторинг конкурентов и рынка</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Нужно регулярно следить за конкурентами, новыми игроками, изменениями цен. Ручной мониторинг занимает часы. Важное всё равно пропускается.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--pp);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">Perplexity даёт актуальный обзор рынка с источниками: ключевые игроки, изменения цен, новые продукты, тренды — за 10 минут с проверяемыми ссылками.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Рыночный обзор за 10 минут</span><span class="rp">Все источники проверяемы</span><span class="rp">Ничего важного не пропускаешь</span></div>
+  <div class="pbox">Дай актуальный обзор рынка [ниша] за последние [период]. Ключевые игроки, изменения цен, новые продукты, тренды. Что важно для [моя роль/бизнес]. Укажи источники.</div>
+</section>
+
+<!-- КЕЙС 13 -->
+<section>
+  <div class="ey">Блок 6 · Кейс 13</div>
+  <h3 style="margin-bottom:20px;">База знаний для команды — ответы за 30 секунд</h3>
+  <div class="g2" style="gap:18px;align-items:start;">
+    <div class="card case-prob"><div class="mono" style="font-size:15px;color:#0e7490;letter-spacing:.08em;margin-bottom:10px;">ДО ИИ — ПРОБЛЕМА</div><p style="font-size:29px;color:var(--t);">Накопилось много документов, инструкций, стандартов. Нужная информация постоянно теряется. Каждый раз ищешь одно и то же в разных папках.</p></div>
+    <div class="card case-sol"><div class="mono" style="font-size:15px;color:var(--nb);letter-spacing:.08em;margin-bottom:10px;">С ИИ — РЕШЕНИЕ</div><p style="font-size:29px;color:var(--t);">NotebookLM объединяет до 50 источников в одну базу. Задаёшь любой вопрос — получаешь ответ со ссылкой на конкретный фрагмент документа за 30 секунд.</p></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;"><span class="mono" style="font-size:15px;color:var(--fa);">РЕЗУЛЬТАТ:</span><span class="rp">Ответ из базы за 30 секунд</span><span class="rp">Всегда со ссылкой на источник</span><span class="rp">До 50 документов в одном месте</span></div>
+  <div class="pbox">Загрузи все нужные документы в NotebookLM. Задавай вопросы: «Что написано про [тема] в этих материалах?» — и получай ответ с указанием конкретного источника.</div>
+</section>
+
+<!-- 31 СУММАРНЫЙ ЭФФЕКТ -->
+<section>
+  <div class="ey">Блок 6 · Итог</div>
+  <h2 style="margin-bottom:20px;">Что меняется <span class="em">с ИИ</span></h2>
+  <table class="tbl" style="flex:1;">
+    <thead><tr><th>Область</th><th>Без ИИ</th><th>С ИИ</th><th>Экономия</th></tr></thead>
+    <tbody>
+      <tr><td>Управление здоровьем</td><td>Хаос, тревога, забытые шаги</td><td>Чёткий план, всё структурировано</td><td>Высокая</td></tr>
+      <tr><td>Сложные решения</td><td>Недели раздумий, информационный шум</td><td>Анализ за часы, ясный выбор</td><td>Высокая</td></tr>
+      <tr><td>Создание контента</td><td>2–3 часа на пост</td><td>10–15 минут + единый стиль</td><td>Очень высокая</td></tr>
+      <tr><td>Обработка информации</td><td>Книги не читаются, идеи теряются</td><td>Summary за 10 мин, идеи в действие</td><td>Высокая</td></tr>
+      <tr><td>Эмоциональная нагрузка</td><td>Накапливается без выхода</td><td>Регулярная разгрузка и рефлексия</td><td>Средняя</td></tr>
+      <tr><td>Ежедневное планирование</td><td>30+ мин, нагрузка на память</td><td>2 мин, ничего не теряется</td><td>Очень высокая</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:14px;padding:14px 20px;background:var(--su);border-radius:9px;font-size:24px;color:var(--mu);"><strong style="color:var(--t);">ИИ не делает за вас</strong> — он освобождает вас от лишнего. Меньше задач в голове → меньше стресса → больше энергии на то, что действительно важно.</div>
+</section>
+
+<!-- 32 ФИНАЛ -->
+<section style="justify-content:center;align-items:center;text-align:center;" data-deck-last-visible="">
+  <div class="ey" style="justify-content:center;">Курс «ИИ в жизнь» · Елена Сизых</div>
+  <h1 style="margin-bottom:18px;">Начни <span class="em">сегодня</span></h1>
+  <p style="font-size:29px;max-width:820px;margin:0 auto 32px;">Открой любой сервис прямо сейчас и задай первый вопрос. Самый важный шаг — просто начать.</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:36px;">
+    <div class="pill" style="border-color:var(--pp);color:var(--pp);">perplexity.ai</div>
+    <div class="pill" style="border-color:var(--gm);color:var(--gm);">gemini.google.com</div>
+    <div class="pill" style="border-color:var(--nb);color:var(--nb);">notebooklm.google.com</div>
+    <div class="pill" style="border-color:var(--cg);color:var(--cg);">chatgpt.com</div>
+    <div class="pill" style="border-color:var(--pu);color:var(--pu);">claude.ai</div>
+  </div>
+  <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;">
+    <div class="lh"><span class="lh-n">→</span><span style="font-size:22px;color:var(--mu);">Выберите 1 задачу, которая давит</span></div>
+    <div class="lh"><span class="lh-n">→</span><span style="font-size:22px;color:var(--mu);">Поставьте ИИ-час в расписание</span></div>
+    <div class="lh"><span class="lh-n">→</span><span style="font-size:22px;color:var(--mu);">Дайте ИИ знать, кто вы</span></div>
+  </div>
+</section>
+
+</deck-stage>
+
+
+</body></html>

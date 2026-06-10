@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23c084fc'/><stop offset='50%25' stop-color='%2322d3ee'/><stop offset='100%25' stop-color='%23f472b6'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='%2307080f'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='url(%23g)'>✦</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ИИ в жизнь: HTML-сайт от идеи до публикации</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#F2F0EB;--bg-card:#FFFFFF;--text:#1C1C1C;--muted:#9B9B9B;--border:#E5E3DD;--hover:#F5F5F2;
+  --purple:#4A3FD4;--pbg:#EEEAF8;--pbr:#C5BCF0;
+  --green:#2DB88A;--gbg:#E8F8F3;--gbr:#A8E8D4;
+  --red:#E8472A;--rbg:#FEF0EE;--rbr:#F5C4BC;
+  --amber:#C27E0A;--abg:#FEF9EC;--abr:#F5DFA0;
+  --rad:12px;--rad-sm:8px;
+}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:15px}
+a{color:var(--purple);text-decoration:none}
+a:hover{text-decoration:underline}
+code{background:var(--pbg);border:1px solid var(--pbr);border-radius:4px;padding:1px 6px;font-family:'SF Mono','Fira Code',Consolas,monospace;font-size:12px;color:var(--purple)}
+.nav{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:16px}
+.nav-logo{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;color:var(--purple);letter-spacing:-.01em;white-space:nowrap;padding:16px 0}
+.nav-links{display:flex;gap:0;overflow-x:auto}
+.nav-links a{font-size:11px;font-weight:600;color:var(--muted);text-decoration:none;padding:17px 11px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;letter-spacing:.03em;text-transform:uppercase}
+.nav-links a:hover{color:var(--purple);border-bottom-color:var(--purple);text-decoration:none}
+.hero{text-align:center;padding:80px 48px 64px;max-width:900px;margin:0 auto}
+.hero-badge{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px}
+.hero-badge::before,.hero-badge::after{content:'';display:block;width:24px;height:1.5px;background:var(--muted)}
+.hero h1{font-family:'Unbounded',sans-serif;font-size:clamp(30px,6vw,58px);font-weight:900;letter-spacing:-.03em;line-height:1.08;margin-bottom:20px}
+.hero h1 span{color:var(--purple)}
+.hero-sub{font-size:17px;color:var(--muted);max-width:600px;margin:0 auto 36px;line-height:1.6}
+.hero-pills{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:40px}
+.pill{background:var(--bg-card);border:1px solid var(--border);border-radius:999px;padding:7px 16px;font-size:13px;color:var(--text)}
+.btn-primary{display:inline-block;background:var(--purple);color:white;font-size:15px;font-weight:700;padding:14px 36px;border-radius:999px;transition:all .25s;text-decoration:none}
+.btn-primary:hover{background:#3730b0;transform:translateY(-2px);text-decoration:none;color:white;box-shadow:0 8px 24px rgba(74,63,212,.25)}
+.roadmap-bar{background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:20px 48px;overflow-x:auto}
+.roadmap-steps{display:flex;align-items:center;max-width:1100px;margin:0 auto;min-width:600px}
+.rs{flex:1;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 4px}
+.rs.active{color:var(--purple)}
+.rs span{display:flex;width:24px;height:24px;border-radius:50%;background:var(--bg);border:1px solid var(--border);margin:0 auto 4px;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:var(--muted)}
+.rs.active span{background:var(--pbg);border-color:var(--pbr);color:var(--purple)}
+.rs-arrow{color:var(--border);font-size:14px;padding:0 2px;flex-shrink:0}
+.section{padding:60px 56px;max-width:1200px;margin:0 auto;border-bottom:1px solid var(--border)}
+.section-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.section-label::before{content:'';display:inline-block;width:16px;height:1.5px;background:var(--purple)}
+.section-label.green{color:var(--green)}.section-label.green::before{background:var(--green)}
+.section-label.muted{color:var(--muted)}.section-label.muted::before{background:var(--muted)}
+h2.section-title{font-family:'Unbounded',sans-serif;font-size:clamp(20px,3.5vw,32px);font-weight:900;letter-spacing:-.02em;line-height:1.15;margin-bottom:8px}
+h2.section-title span{color:var(--purple)}
+.section-desc{font-size:15px;color:var(--muted);margin-bottom:36px;max-width:640px;line-height:1.65}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px;margin-top:28px}
+.cards-grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:28px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rad);padding:22px;transition:all .2s}
+.card:hover{border-color:var(--pbr);box-shadow:0 4px 16px rgba(74,63,212,.07);transform:translateY(-2px)}
+.card.c-purple{background:var(--pbg);border-color:var(--pbr)}
+.card.c-green{background:var(--gbg);border-color:var(--gbr)}
+.card.c-green:hover{border-color:var(--green)}
+.card-num{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.card-num::before{content:'';display:inline-block;width:12px;height:1.5px;background:currentColor}
+.card-num.purple{color:var(--purple)}.card-num.green{color:var(--green)}
+h3.card-title{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;margin-bottom:9px;line-height:1.3;letter-spacing:-.01em}
+.card p,.card li{font-size:13px;color:#4A4A4A;line-height:1.65}
+.card ul{padding-left:0;margin-top:8px;list-style:none}
+.card ul li{padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:7px}
+.card ul li:last-child{border-bottom:none}
+.card ul li::before{content:'—';color:var(--muted);flex-shrink:0;font-size:11px;margin-top:2px}
+.card-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-top:12px}
+.tag-easy{background:var(--gbg);color:var(--green);border:1px solid var(--gbr)}
+.tag-medium{background:var(--abg);color:var(--amber);border:1px solid var(--abr)}
+.tag-hard{background:var(--rbg);color:var(--red);border:1px solid var(--rbr)}
+.tag-key{background:var(--pbg);color:var(--purple);border:1px solid var(--pbr)}
+.alert{border-radius:var(--rad-sm);padding:13px 17px;margin:16px 0;display:flex;gap:11px;align-items:flex-start}
+.alert-icon{flex-shrink:0;font-size:16px;margin-top:1px}
+.alert-body{font-size:13px;line-height:1.65}
+.alert-title{font-weight:700;font-size:13px;margin-bottom:3px}
+.alert-purple{background:var(--pbg);border:1px solid var(--pbr)}
+.alert-purple .alert-title{color:var(--purple)}.alert-purple .alert-body{color:#3a3060}
+.alert-green{background:var(--gbg);border:1px solid var(--gbr)}
+.alert-green .alert-title{color:var(--green)}.alert-green .alert-body{color:#1a5040}
+.alert-red{background:var(--rbg);border:1px solid var(--rbr)}
+.alert-red .alert-title{color:var(--red)}.alert-red .alert-body{color:#6a1a10}
+.alert-amber{background:var(--abg);border:1px solid var(--abr)}
+.alert-amber .alert-title{color:var(--amber)}.alert-amber .alert-body{color:#6a4a00}
+.alert-neutral{background:var(--hover);border:1px solid var(--border)}
+.alert-neutral .alert-title{color:var(--text)}.alert-neutral .alert-body{color:#4a4a4a}
+.code-block{background:#1E1E1E;border-radius:var(--rad);overflow:hidden;margin:16px 0}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:9px 17px;background:#2a2a2a;border-bottom:1px solid rgba(255,255,255,.07)}
+.code-lang{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.copy-btn{font-size:11px;font-weight:600;color:rgba(255,255,255,.5);background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 9px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{color:white;background:rgba(255,255,255,.1)}
+pre{padding:16px 20px;font-size:12px;line-height:1.65;overflow-x:auto;font-family:'Fira Code','SF Mono',Consolas,monospace;white-space:pre-wrap;word-break:break-word;color:#e0e0e0}
+.hl-key{color:#C5BCF0}.hl-str{color:#A8E8D4}.hl-cmt{color:#555;font-style:italic}.hl-num{color:#f9bc60}
+.prompt-box{background:var(--bg-card);border:1px solid var(--pbr);border-radius:var(--rad);overflow:hidden;margin:16px 0;transition:border-color .2s}
+.prompt-box:hover{border-color:var(--purple)}
+.prompt-header{display:flex;align-items:center;justify-content:space-between;padding:9px 17px;background:var(--pbg);border-bottom:1px solid var(--pbr)}
+.prompt-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--purple)}
+.prompt-copy{font-size:11px;font-weight:600;color:var(--purple);background:transparent;border:1px solid var(--pbr);border-radius:5px;padding:3px 9px;cursor:pointer;transition:all .2s}
+.prompt-copy:hover{background:var(--purple);color:white}
+.prompt-body{padding:16px 20px;font-size:13px;line-height:1.7;color:#3a3a4a}
+.prompt-body strong{color:var(--purple);font-weight:700}
+.table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--rad);border:1px solid var(--border);background:var(--bg-card)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg);border-bottom:1px solid var(--border)}
+th{padding:11px 15px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--hover)}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}.partial{color:var(--amber);font-weight:700}
+.steps{margin:20px 0}
+.step{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:white;flex-shrink:0;font-family:'Unbounded',sans-serif}
+.step-num.green{background:var(--green)}
+.step-body h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.step-body p,.step-body ul{font-size:13px;color:#4a4a4a;line-height:1.65}
+.step-body ul{padding-left:14px;margin-top:4px}
+.step-body li{margin-bottom:3px}
+.divider{height:1px;background:var(--border);margin:24px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+.tree{background:#1E1E1E;border-radius:var(--rad-sm);padding:16px 20px;font-family:'SF Mono','Fira Code',Consolas,monospace;font-size:12px;line-height:1.8;color:#e0e0e0;margin:12px 0}
+.tree .folder{color:#C5BCF0;font-weight:700}.tree .file{color:#A8E8D4}.tree .comment{color:#555;font-style:italic}
+.checklist{list-style:none;margin:14px 0}
+.checklist li{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text)}
+.checklist li:last-child{border-bottom:none}
+.ci{width:19px;height:19px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;font-weight:700}
+.ci-check{background:var(--gbg);color:var(--green);border:1px solid var(--gbr)}
+.ci-warn{background:var(--rbg);color:var(--red);border:1px solid var(--rbr)}
+.ci-info{background:var(--pbg);color:var(--purple);border:1px solid var(--pbr)}
+.ci-star{background:var(--abg);color:var(--amber);border:1px solid var(--abr)}
+.glossary-item{padding:13px 0;border-bottom:1px solid var(--border)}
+.glossary-term{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--purple);margin-bottom:3px;letter-spacing:-.01em}
+.glossary-def{font-size:13px;color:#4a4a4a;line-height:1.6}
+.rm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:22px 0}
+.rm-step{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rad-sm);padding:16px;display:flex;gap:10px;align-items:flex-start;transition:all .2s}
+.rm-step:hover{border-color:var(--pbr);background:var(--pbg)}
+.rm-n{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;color:var(--purple);flex-shrink:0;line-height:1;opacity:.35}
+.rm-text h4{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
+.rm-text p{font-size:11px;color:var(--muted);line-height:1.4}
+.mockup-frame{background:var(--hover);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;margin:18px 0}
+.mockup-titlebar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:9px 15px;display:flex;align-items:center;gap:6px}
+.mockup-dot{width:8px;height:8px;border-radius:50%}
+.mockup-dot.r{background:#f87171}.mockup-dot.y{background:#fbbf24}.mockup-dot.g{background:#4ade80}
+.mockup-url{flex:1;background:var(--bg);border-radius:5px;padding:3px 11px;font-size:11px;color:var(--muted);margin:0 8px;font-family:monospace;border:1px solid var(--border)}
+.mockup-body{padding:18px}
+.mockup-sidebar{display:flex;gap:12px}
+.mockup-menu{width:140px;flex-shrink:0}
+.mockup-menu-item{padding:6px 10px;border-radius:6px;font-size:12px;color:var(--muted);margin-bottom:2px;cursor:default}
+.mockup-menu-item.active{background:var(--pbg);color:var(--purple)}
+.mockup-content{flex:1}
+.mockup-sec-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.mockup-hl{background:var(--pbg);border:2px solid var(--pbr);border-radius:6px;padding:7px 11px;position:relative;display:inline-block;margin-top:10px;margin-right:6px}
+.mockup-hl::before{content:'→ Нажмите';position:absolute;top:-17px;left:0;font-size:10px;color:var(--purple);font-weight:700}
+.mockup-btn{background:var(--purple);color:white;border:none;border-radius:6px;padding:6px 13px;font-size:12px;font-weight:700;cursor:default}
+.mockup-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.mockup-btn.green-btn{background:var(--green)}
+.inspo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:18px 0}
+.inspo-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rad);padding:16px;transition:all .2s}
+.inspo-card:hover{border-color:var(--pbr);transform:translateY(-2px);box-shadow:0 4px 12px rgba(74,63,212,.07)}
+.inspo-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;margin-bottom:6px;letter-spacing:.07em;text-transform:uppercase}
+.ib-best{background:var(--pbg);color:var(--purple);border:1px solid var(--pbr)}
+.ib-good{background:var(--gbg);color:var(--green);border:1px solid var(--gbr)}
+.ib-ru{background:var(--abg);color:var(--amber);border:1px solid var(--abr)}
+.inspo-card a{color:var(--purple);font-weight:700;font-size:14px;display:block;margin-bottom:4px}
+.inspo-card p{font-size:12px;color:var(--muted);line-height:1.5}
+.hl{color:var(--purple);font-weight:700}
+.hl-g{color:var(--green);font-weight:700}
+.footer{background:var(--bg-card);border-top:1px solid var(--border);padding:36px 56px;text-align:center}
+.footer-logo{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:900;color:var(--purple);margin-bottom:10px}
+.footer p{font-size:13px;color:var(--muted);margin-bottom:5px}
+#scrollTop{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:white;opacity:0;transition:all .3s;border:none;z-index:200;box-shadow:0 4px 16px rgba(74,63,212,.35)}
+#scrollTop.visible{opacity:1}
+#scrollTop:hover{transform:translateY(-3px);background:#3730b0}
+@media(max-width:768px){
+  .nav{padding:0 20px}.section{padding:36px 24px}.hero{padding:48px 24px 40px}
+  .two-col{grid-template-columns:1fr}.cards-grid,.cards-grid-2{grid-template-columns:1fr}
+  .roadmap-bar{padding:18px 20px}.footer{padding:28px 24px}
+  .mockup-sidebar{flex-direction:column}.mockup-menu{width:100%}
+}
+
+/* ── DETAILS/SUMMARY ПРОМПТЫ ── */
+.prompt-details { margin:16px 0; border:1px solid var(--pbr); border-radius:var(--rad); overflow:hidden; }
+.prompt-details summary { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; background:var(--pbg); cursor:pointer; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--purple); list-style:none; gap:12px; }
+.prompt-details summary::-webkit-details-marker { display:none; }
+.prompt-details summary .pd-title { flex:1; }
+.prompt-details summary .pd-arrow { font-size:16px; transition:transform .2s; flex-shrink:0; }
+.prompt-details[open] summary .pd-arrow { transform:rotate(90deg); }
+.prompt-details summary:hover { background:var(--pbr); }
+.prompt-details .pd-body { padding:20px; font-size:13px; line-height:1.7; color:#3a3a4a; background:var(--bg-card); border-top:1px solid var(--pbr); }
+.prompt-details .pd-body strong { color:var(--purple); font-weight:700; }
+.prompt-details .pd-body h4 { font-family:'Unbounded',sans-serif; font-size:12px; font-weight:700; color:var(--text); margin:16px 0 8px; letter-spacing:-.01em; }
+.prompt-details .pd-body ul { padding-left:16px; margin:6px 0; }
+.prompt-details .pd-body li { margin-bottom:4px; }
+.prompt-details .pd-copy { display:block; margin:16px 0 0; background:var(--purple); color:white; border:none; border-radius:7px; padding:9px 18px; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+.prompt-details .pd-copy:hover { background:#3730b0; }
+/* ── SKILL BLOCK ── */
+.skill-block { background:var(--bg-card); border:1px solid var(--gbr); border-radius:var(--rad); overflow:hidden; margin:20px 0; }
+.skill-header { background:var(--gbg); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--gbr); flex-wrap:wrap; gap:10px; }
+.skill-title { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:var(--green); letter-spacing:-.01em; }
+.skill-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.skill-btn { font-size:11px; font-weight:700; padding:6px 14px; border-radius:7px; cursor:pointer; transition:all .2s; border:none; }
+.skill-btn.copy { background:var(--green); color:white; }
+.skill-btn.copy:hover { background:#1fa070; }
+.skill-btn.download { background:transparent; border:1px solid var(--gbr); color:var(--green); }
+.skill-btn.download:hover { background:var(--green); color:white; }
+.skill-body { padding:20px; }
+.skill-steps { list-style:none; margin:0 0 16px; }
+.skill-steps li { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text); }
+.skill-steps li:last-child { border-bottom:none; }
+.skill-step-n { background:var(--gbg); color:var(--green); border:1px solid var(--gbr); border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
+
+</style>
+</head>
+<body>
+
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">ИИ в жизнь · HTML-гайд</div>
+  <div class="nav-links">
+    <a href="#what">Основы</a>
+    <a href="#types">Типы</a>
+    <a href="#brief">Бриф</a>
+    <a href="#skill">Skill</a>
+    <a href="#prompts">Промпты</a>
+    <a href="#files">Файлы</a>
+    <a href="#design-system">Дизайн</a>
+    <a href="#favicon">Favicon</a>
+    <a href="#images">Фото</a>
+    <a href="#responsive">Адаптив</a>
+    <a href="#opengraph">OG-теги</a>
+    <a href="#seo">SEO</a>
+    <a href="#analytics">Аналитика</a>
+    <a href="#forms">Форма</a>
+    <a href="#inspiration">Стиль</a>
+    <a href="#animations">Анимации</a>
+    <a href="#domain">Домен</a>
+    <a href="#subdomain">Поддомены</a>
+    <a href="#hosting">Хостинг</a>
+    <a href="#free-hosting">Бесплатно</a>
+    <a href="#upload">Загрузка</a>
+    <a href="#dns">DNS&SSL</a>
+    <a href="#checklist">Чеклист</a>
+    <a href="#tips">Советы</a>
+    <a href="#glossary">Глоссарий</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Полное руководство</div>
+  <h1>От идеи до<br><span>опубликованного сайта</span></h1>
+  <p class="hero-sub">Как с помощью Claude создать HTML-страницу, лендинг или презентацию — и разместить на российском хостинге. Без программирования.</p>
+  <div class="hero-pills">
+    <span class="pill">→ Claude создаёт код</span>
+    <span class="pill">→ Российский хостинг</span>
+    <span class="pill">→ SSL бесплатно</span>
+    <span class="pill">→ Мобильная версия</span>
+    <span class="pill">→ Дизайн-система</span>
+    <span class="pill">→ Программирование не нужно</span>
+  </div>
+  <a href="#what" class="btn-primary">Начать читать →</a>
+</section>
+
+<!-- ROADMAP BAR -->
+<div class="roadmap-bar">
+  <div class="roadmap-steps">
+    <div class="rs active"><span>1</span>Идея</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>2</span>Claude</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>3</span>Файлы</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>4</span>Домен</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>5</span>Хостинг</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>6</span>Загрузка</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>7</span>DNS</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>8</span>SSL</div><div class="rs-arrow">›</div>
+    <div class="rs active"><span>9</span>✓ Готово</div>
+  </div>
+</div>
+
+<!-- ===== РАЗДЕЛ 1: ЧТО МЫ ДЕЛАЕМ ===== -->
+<section class="section" id="what">
+  <div class="section-label">Раздел 1</div>
+  <h2 class="section-title">Что вообще <span>мы делаем</span></h2>
+  <p class="section-desc">Прежде чем начать — объясним простым языком всё, что встретится в этой инструкции.</p>
+  <div class="cards-grid">
+    <div class="card c-purple">
+      <div class="card-num purple">HTML-страница</div>
+      <h3 class="card-title">Что это такое</h3>
+      <p>HTML — язык, на котором написаны все сайты. Браузер читает HTML-файл и показывает страницу.<br><br><span class="hl">HTML</span> — скелет. <span class="hl">CSS</span> — одежда. <span class="hl">JavaScript</span> — движение.</p>
+      <span class="card-tag tag-key">Основа всего</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Лендинг</div>
+      <h3 class="card-title">Одна страница = одна цель</h3>
+      <p>Одна длинная страница с одной задачей: объяснить предложение и получить действие от посетителя — купить, записаться, написать.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">Многостраничный сайт</div>
+      <h3 class="card-title">Несколько страниц</h3>
+      <p>Главная, О нас, Услуги, Контакты — каждая страница отдельный HTML-файл. Посетители переходят через меню.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">HTML-презентация</div>
+      <h3 class="card-title">Слайды в браузере</h3>
+      <p>Вместо PowerPoint — HTML-файл. Переключаете кнопками или стрелками. Отправляете ссылку — смотрят без установки программ.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">Хостинг</div>
+      <h3 class="card-title">Место для файлов сайта</h3>
+      <p>Сервер в интернете, работающий круглосуточно. Загружаете файлы — они доступны всем. Без хостинга сайт видите только вы.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">Домен</div>
+      <h3 class="card-title">Адрес сайта</h3>
+      <p>Например <span class="hl">moysite.ru</span>. Арендуется раз в год. Настраиваете, чтобы он вёл на ваш хостинг.</p>
+    </div>
+    <div class="card c-green">
+      <div class="card-num green">SSL / HTTPS</div>
+      <h3 class="card-title">Безопасное соединение</h3>
+      <p>Адрес начинается с <span class="hl-g">https://</span> — соединение защищено. Браузер не пишет «Небезопасно». SSL получают бесплатно.</p>
+      <span class="card-tag tag-easy">Бесплатно</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Favicon</div>
+      <h3 class="card-title">Значок сайта во вкладке</h3>
+      <p>Маленькая иконка рядом с названием вкладки. Отображается в закладках и на экране телефона при сохранении ярлыка.</p>
+    </div>
+  </div>
+  <div class="alert alert-purple" style="margin-top:28px;">
+    <div class="alert-icon">◈</div>
+    <div class="alert-body">
+      <div class="alert-title">Главное — запомните это</div>
+      Домен — адрес (moysite.ru). Хостинг — место, где лежат файлы. Чтобы сайт увидели другие: положить файлы на хостинг и привязать к нему домен.
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 2: ТИПЫ ===== -->
+<section class="section" id="types">
+  <div class="section-label green">Раздел 2</div>
+  <h2 class="section-title">Какие бывают <span>варианты</span></h2>
+  <p class="section-desc">Выберите то, что нужно, прежде чем давать задание Claude.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Тип</th><th>Когда нужен</th><th>Файлы</th><th>Сложность</th><th>Claude справится</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Одна HTML-страница</strong></td><td style="color:var(--muted)">Визитка, контакты</td><td><code>index.html</code></td><td><span class="yes">Легко</span></td><td><span class="yes">✓ Да</span></td></tr>
+        <tr><td><strong>Лендинг</strong></td><td style="color:var(--muted)">Продажа курса/услуги</td><td><code>index + style + script</code></td><td><span class="yes">Легко</span></td><td><span class="yes">✓ Да</span></td></tr>
+        <tr><td><strong>Многостраничный</strong></td><td style="color:var(--muted)">Компания, портфолио</td><td><code>несколько .html</code></td><td><span class="partial">Средне</span></td><td><span class="yes">✓ Да</span></td></tr>
+        <tr><td><strong>HTML-презентация</strong></td><td style="color:var(--muted)">Питч, доклад, обучение</td><td><code>index + style + script</code></td><td><span class="yes">Легко</span></td><td><span class="yes">✓ Да</span></td></tr>
+        <tr><td><strong>С анимациями</strong></td><td style="color:var(--muted)">Премиальный продукт</td><td><code>index + style + script</code></td><td><span class="partial">Средне</span></td><td><span class="yes">✓ Да</span></td></tr>
+        <tr><td><strong>С формой заявки</strong></td><td style="color:var(--muted)">Сбор контактов</td><td><code>+ внешний сервис</code></td><td><span class="partial">Средне</span></td><td><span class="yes">✓ Да</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-amber">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Важно про форму заявки</div>
+      Просто нарисовать HTML-форму недостаточно. Чтобы заявки реально приходили, нужен внешний сервис — Telegram-бот, Google Forms, Tally и др. Подробнее в разделе «Форма заявки».
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 3: БРИФ ===== -->
+<section class="section" id="brief">
+  <div class="section-label muted">Раздел 3</div>
+  <h2 class="section-title">Подготовка перед <span>работой с Claude</span></h2>
+  <p class="section-desc">Заполните бриф перед тем, как идти к Claude — чем точнее задача, тем лучше результат с первого раза.</p>
+
+  <details class="prompt-details" open>
+    <summary><span class="pd-title">Шаблон брифа — скопируйте и заполните</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      <strong>МОЙ БРИФ ДЛЯ СОЗДАНИЯ САЙТА</strong><br><br>
+      Тип: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[лендинг / многостраничный / HTML-презентация]<br>
+      Цель: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Что должен сделать посетитель? Записаться / купить / написать?]<br>
+      Аудитория: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Кто придёт на сайт? Возраст, боли, интересы]<br>
+      Первый экран: &nbsp;&nbsp;&nbsp;&nbsp;[Главный заголовок — что видит человек первым?]<br><br>
+      Блоки сайта:<br>
+      — Первый экран с заголовком и кнопкой<br>
+      — Для кого этот продукт/услуга<br>
+      — Что именно предлагаю<br>
+      — Как это работает / этапы<br>
+      — Цены или форматы<br>
+      — Отзывы или кейсы<br>
+      — FAQ<br>
+      — Форма заявки / контакты<br><br>
+      Текст: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Есть готовый? Или нужен шаблонный?]<br><br>
+      <strong>— ТЕХНИЧЕСКИЕ ПАРАМЕТРЫ —</strong><br><br>
+      Дизайн-система: &nbsp;&nbsp;[Сначала создай 2–3 варианта дизайн-системы, жду выбора]<br>
+      Стиль: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Тёмный / светлый, минимализм, яркий, деловой, тёплый]<br>
+      Цвета: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Есть фирменные? Или предложи сам?]<br><br>
+      Адаптивность: &nbsp;&nbsp;&nbsp;&nbsp;[Телефон + планшет + компьютер — все три обязательно]<br>
+      Анимации: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Нет / минимальные (появление блоков) / полноценные]<br>
+      Изображения: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Свои фото / сгенерирую сам / только цвет и текст]<br><br>
+      Favicon: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Да — создай SVG-иконку в стиле сайта / Нет]<br>
+      Open Graph: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Да — добавь превью для Telegram / Нет]<br>
+      SEO-индексация: &nbsp;&nbsp;[Открыть для поиска / Закрыть (noindex) / Без разницы]<br>
+      Аналитика: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Яндекс.Метрика / Google Analytics / Не нужна]<br>
+      Форма заявки: &nbsp;&nbsp;&nbsp;&nbsp;[Нужна? Куда приходят заявки — Tally / Telegram / не нужна]<br><br>
+      Дополнительно: &nbsp;&nbsp;&nbsp;[Логотип, соцсети, юридические данные, язык]
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать бриф</button>
+    </div>
+  </details>
+
+  <div class="alert alert-purple" style="margin-top:16px;">
+    <div class="alert-icon">◈</div>
+    <div class="alert-body">
+      <div class="alert-title">Главный принцип</div>
+      Всегда просите Claude сначала создать 2–3 варианта дизайн-системы — цвета, шрифты, карточки, кнопки. Только после вашего выбора он верстает весь сайт. Так вы не переделываете всё из-за одного цвета.
+    </div>
+  </div>
+</section>
+
+<!-- ===== SKILL-ИНТЕРВЬЮЕР ===== -->
+<section class="section" id="skill">
+  <div class="section-label green">Раздел 4</div>
+  <h2 class="section-title">Skill-интервьюер — <span>Claude задаёт вопросы голосом</span></h2>
+  <p class="section-desc">Установите этот Skill в свой Проект в Claude — и он будет вести вас по вопросам один за другим. Отвечайте голосом в приложении или текстом.</p>
+
+  <div class="cards-grid-2" style="margin-bottom:24px;">
+    <div class="card c-green">
+      <div class="card-num green">Как это работает</div>
+      <h3 class="card-title">Интервью вместо брифа</h3>
+      <p>Напишите или скажите <strong style="color:var(--green)">«новый сайт»</strong> — Claude задаст 14 вопросов по одному, запишет ответы, соберёт бриф и сразу создаст 3 варианта дизайн-системы.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">Что спрашивает</div>
+      <h3 class="card-title">14 вопросов</h3>
+      <ul>
+        <li>Тип сайта и главная цель</li>
+        <li>Продукт и аудитория</li>
+        <li>Контент и изображения</li>
+        <li>Дизайн и референсы</li>
+        <li>Техника: форма, аналитика, SEO</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="skill-block">
+    <div class="skill-header">
+      <div class="skill-title">skill-interviewer.md</div>
+      <div class="skill-btns">
+        <button class="skill-btn copy" onclick="copySkill()">Скопировать текст</button>
+        <a class="skill-btn download" href="data:text/markdown;charset=utf-8;base64,IyBTa2lsbDog0JjQvdGC0LXRgNCy0YzRjtC10YAg0LTQu9GPINGB0L7Qt9C00LDQvdC40Y8g0YHQsNC50YLQsCDQuNC70Lgg0L/RgNC10LfQtdC90YLQsNGG0LjQuAojINCS0LXRgNGB0LjRjzogMi4wIOKAlCDQv9C+INC80LDRgdGC0LXRgC3Qv9GA0L7QvNC/0YLQsNC8CgojIyDQoNC+0LvRjCDQuCDQv9C+0LLQtdC00LXQvdC40LUK0KLRiyDigJQgc2VuaW9yIHdlYiBkZXNpZ25lciwgVVgvVUkt0YHQv9C10YbQuNCw0LvQuNGB0YIsIGZyb250ZW5kLdGA0LDQt9GA0LDQsdC+0YLRh9C40Log0LggY29udmVyc2lvbiBjb3B5d3JpdGVyLgrQmtC+0LPQtNCwINC/0L7Qu9GM0LfQvtCy0LDRgtC10LvRjCDQv9C40YjQtdGCINC40LvQuCDQs9C+0LLQvtGA0LjRgiDCq9C90L7QstGL0Lkg0YHQsNC50YLCuywgwqvRhdC+0YfRgyDRgdCw0LnRgsK7LCDCq9GB0L7Qt9C00LDQuSDQu9C10L3QtNC40L3Qs8K7LCDCq9C90L7QstCw0Y8g0L/RgNC10LfQtdC90YLQsNGG0LjRj8K7LCDCq9GF0L7Rh9GDINC/0YDQtdC30LXQvdGC0LDRhtC40Y7CuyDQuNC70LggwqvQvdCw0YfQvdGR0LzCuyDigJQg0YLRiyDQt9Cw0L/Rg9GB0LrQsNC10YjRjCDRgdGC0YDRg9C60YLRg9GA0LjRgNC+0LLQsNC90L3QvtC1INC40L3RgtC10YDQstGM0Y4uCgojIyDQn9GA0LDQstC40LvQsCDQuNC90YLQtdGA0LLRjNGOCi0g0JfQsNC00LDQstCw0Lkg0YHRgtGA0L7Qs9C+INCe0JTQmNCdINCy0L7Qv9GA0L7RgSDQt9CwINGA0LDQtwotINCW0LTQuCDQvtGC0LLQtdGC0LAg0L/QtdGA0LXQtCDRgdC70LXQtNGD0Y7RidC40Lwg0LLQvtC/0YDQvtGB0L7QvAotINCT0L7QstC+0YDQuCDQv9GA0L7RgdGC0L4sINC00YDRg9C20LXQu9GO0LHQvdC+LCDQsdC10Lcg0YLQtdGF0L3QuNGH0LXRgdC60L7Qs9C+INC20LDRgNCz0L7QvdCwCi0g0JXRgdC70Lgg0L7RgtCy0LXRgiDQvdC10YfRkdGC0LrQuNC5INC40LvQuCDQvdC10L/QvtC70L3Ri9C5IOKAlCDRg9GC0L7Rh9C90Lgg0LrQvtGA0L7RgtC60L4g0L7QtNC90LjQvCDQstC+0L/RgNC+0YHQvtC8Ci0g0J3QtSDQt9Cw0LTQsNCy0LDQuSDQvdC10YHQutC+0LvRjNC60L4g0LLQvtC/0YDQvtGB0L7QsiDQsiDQvtC00L3QvtC8INGB0L7QvtCx0YnQtdC90LjQuAotINCV0YHQu9C4INC/0L7Qu9GM0LfQvtCy0LDRgtC10LvRjCDQv9C40YjQtdGCIMKr0L3QtSDQt9C90LDRjsK7INC40LvQuCDCq9C90LAg0YLQstC+0ZEg0YPRgdC80L7RgtGA0LXQvdC40LXCuyDigJQg0L/RgNC40LzQuCDRgNCw0LfRg9C80L3QvtC1INGA0LXRiNC10L3QuNC1INC4INC00LLQuNCz0LDQudGB0Y8g0LTQsNC70YzRiNC1Ci0g0JXRgdC70Lgg0L/QvtC70YzQt9C+0LLQsNGC0LXQu9GMINC/0LjRiNC10YIgwqvQtNC10LvQsNC5INGB0LDQvMK7IOKAlCDQv9GA0LjQvNC4INCy0YHQtSDQvtGB0YLQsNCy0YjQuNC10YHRjyDRgNC10YjQtdC90LjRjyDRgdCw0LzQvtGB0YLQvtGP0YLQtdC70YzQvdC+LCDQv9C10YDQtdGH0LjRgdC70Lgg0LjRhSDQuCDQv9C10YDQtdGF0L7QtNC4INC6INGB0L7Qt9C00LDQvdC40Y4g0LTQuNC30LDQudC9LdGB0LjRgdGC0LXQvAoKIyMg0KHRgtCw0YDRgtC+0LLRi9C5INCy0L7Qv9GA0L7RgSAo0L7QsdGJ0LjQuSDQtNC70Y8g0L7QsdC10LjRhSDQstC10YLQvtC6KQoK0JfQsNC00LDQuSDQtdCz0L4g0L/QtdGA0LLRi9C8OgoKwqvQn9GA0LjQstC10YIhINCU0LDQstCw0Lkg0YHQvtC30LTQsNC00LjQvCDRh9GC0L4t0YLQviDQutGA0YPRgtC+0LUuINCh0L3QsNGH0LDQu9CwINC+0LTQuNC9INCy0L7Qv9GA0L7RgToK0KfRgtC+INGB0L7Qt9C00LDRkdC8IOKAlCAqKtGB0LDQudGCINC40LvQuCDQu9C10L3QtNC40L3QsyoqLCDQuNC70LggKipIVE1MLdC/0YDQtdC30LXQvdGC0LDRhtC40Y4qKj/CuwoK0J/QvtGB0LvQtSDQvtGC0LLQtdGC0LAg0L/QtdGA0LXRhdC+0LTQuCDQsiDQvdGD0LbQvdGD0Y4g0LLQtdGC0LrRgy4KCi0tLQoKIyDQktCV0KLQmtCQIDEg4oCUINCh0JDQmdCiIC8g0JvQldCd0JTQmNCd0JMKCiMjINCR0LvQvtC6IDEg4oCUINCi0LjQvyDQuCDRhtC10LvRjCDQv9GA0L7QtdC60YLQsAoK0JIxLjE6INCj0YLQvtGH0L3QuCDRgtC40L86CsKr0K3RgtC+INCx0YPQtNC10YIg0L7QtNC90L7RgdGC0YDQsNC90LjRh9C90YvQuSDQu9C10L3QtNC40L3Qsywg0LzQvdC+0LPQvtGB0YLRgNCw0L3QuNGH0L3Ri9C5INGB0LDQudGCICjQs9C70LDQstC90LDRjyArINC90LXRgdC60L7Qu9GM0LrQviDRgdGC0YDQsNC90LjRhikg0LjQu9C4INGH0YLQvi3RgtC+INC00YDRg9Cz0L7QtT/CuwoK0JIxLjI6IMKr0KfRgtC+INC/0YDQvtC00LDRkdGCINC40LvQuCDQv9C+0LrQsNC30YvQstCw0LXRgiDRjdGC0L7RgiDRgdCw0LnRgj8g0J7Qv9C40YjQuCDQsiDQtNCy0YPRhS3RgtGA0ZHRhSDQv9GA0LXQtNC70L7QttC10L3QuNGP0YUuwrsKCtCSMS4zOiDCq9Cn0YLQviDQtNC+0LvQttC10L0g0YHQtNC10LvQsNGC0Ywg0L/QvtGB0LXRgtC40YLQtdC70Ywg0L3QsCDRgdCw0LnRgtC1IOKAlCDQvtGB0YLQsNCy0LjRgtGMINC30LDRj9Cy0LrRgywg0LrRg9C/0LjRgtGMLCDQt9Cw0L/QuNGB0LDRgtGM0YHRjywg0L/QtdGA0LXQudGC0Lgg0LIgVGVsZWdyYW0sINGH0YLQvi3RgtC+INC00YDRg9Cz0L7QtT/CuwoK0JIxLjQ6IMKr0JXRgdGC0Ywg0LvQuCDQstGC0L7RgNC+0YHRgtC10L/QtdC90L3Ri9C1INGG0LXQu9C4PyDQndCw0L/RgNC40LzQtdGAOiDQv9C+0LLRi9GB0LjRgtGMINC00L7QstC10YDQuNC1LCDQvtCx0YrRj9GB0L3QuNGC0Ywg0YHQu9C+0LbQvdGL0Lkg0L/RgNC+0LTRg9C60YIsINC/0L7QutCw0LfQsNGC0Ywg0LrQtdC50YHRiywg0YHQvtCx0YDQsNGC0Ywg0LrQvtC90YLQsNC60YLRiy7CuwoK0JIxLjU6IMKr0JIg0YfRkdC8INCz0LvQsNCy0L3QvtC1INC+0YLQu9C40YfQuNC1INCy0LDRiNC10LPQviDQv9GA0L7QtNGD0LrRgtCwINC40LvQuCDRg9GB0LvRg9Cz0Lgg0L7RgiDQutC+0L3QutGD0YDQtdC90YLQvtCyP8K7CgojIyDQkdC70L7QuiAyIOKAlCDQkNGD0LTQuNGC0L7RgNC40Y8KCtCSMi4xOiDCq9Ca0YLQviDQstCw0Ygg0LjQtNC10LDQu9GM0L3Ri9C5INC60LvQuNC10L3Rgj8g0J7Qv9C40YjQuNGC0LU6INC60YLQviDRjdGC0L7RgiDRh9C10LvQvtCy0LXQuiwg0LrQsNC60LDRjyDRgyDQvdC10LPQviDQtNC+0LvQttC90L7RgdGC0Ywg0LjQu9C4INGA0L7Qu9GMLCDQvtGC0LrRg9C00LAg0L7QvSDQv9GA0LjRhdC+0LTQuNGCLsK7CgrQkjIuMjogwqvQmtCw0LrQsNGPINCz0LvQsNCy0L3QsNGPINCx0L7Qu9GMINC40LvQuCDQv9GA0L7QsdC70LXQvNCwINGN0YLQvtCz0L4g0YfQtdC70L7QstC10LrQsCwg0LrQvtGC0L7RgNGD0Y4g0YDQtdGI0LDQtdGCINCy0LDRiCDQv9GA0L7QtNGD0LrRgj/CuwoK0JIyLjM6IMKr0JrQsNC60L7QuSDRgdCw0LzRi9C5INGB0LjQu9GM0L3Ri9C5INGA0LXQt9GD0LvRjNGC0LDRgiDQuNC70Lgg0LLRi9Cz0L7QtNGDINC/0L7Qu9GD0YfQsNC10YIg0LrQu9C40LXQvdGCINC/0L7RgdC70LUg0YDQsNCx0L7RgtGLINGBINCy0LDQvNC4P8K7CgrQkjIuNDogwqvQndCw0YHQutC+0LvRjNC60L4g0LDRg9C00LjRgtC+0YDQuNGPINC30L3QsNC60L7QvNCwINGBINGC0LXQvNC+0Lkg4oCUINGN0YLQviDRjdC60YHQv9C10YDRgtGLINCyINGB0LLQvtC10Lkg0L7QsdC70LDRgdGC0LgsINC40LvQuCDQvdC+0LLQuNGH0LrQuCDQutC+0YLQvtGA0YvQvCDQvdGD0LbQvdC+INCy0YHRkSDQvtCx0YrRj9GB0L3Rj9GC0Ywg0YEg0L3Rg9C70Y8/wrsKCiMjINCR0LvQvtC6IDMg4oCUINCh0L7QtNC10YDQttCw0L3QuNC1INC4INGB0YLRgNGD0LrRgtGD0YDQsAoK0JIzLjE6IMKr0JrQsNC60LjQtSDRgNCw0LfQtNC10LvRiyDRgtC+0YfQvdC+INC00L7Qu9C20L3RiyDQsdGL0YLRjCDQvdCwINGB0LDQudGC0LU/ICjQndCw0L/RgNC40LzQtdGAOiDQviDQvdCw0YEsINGD0YHQu9GD0LPQuCwg0YbQtdC90YssINC/0L7RgNGC0YTQvtC70LjQviwg0L7RgtC30YvQstGLLCBGQVEsINC60L7QvdGC0LDQutGC0YspwrsKCtCSMy4yOiDCq9CV0YHRgtGMINC70Lgg0YDQsNC30LTQtdC70Ysg0LrQvtGC0L7RgNGL0LUg0YLQvtGH0L3QviDQvdC1INC90YPQttC90Ys/wrsKCtCSMy4zOiDCq9CV0YHRgtGMINC70Lgg0LPQvtGC0L7QstGL0LUg0YLQtdC60YHRgtGLIOKAlCDQt9Cw0LPQvtC70L7QstC60LgsINC+0L/QuNGB0LDQvdC40Y8sINC/0YDQtdC40LzRg9GJ0LXRgdGC0LLQsD8g0JjQu9C4INC/0LjRiNC10Lwg0LrQvtC/0LjRgNCw0LnRgtC40L3QsyDRgSDQvdGD0LvRjz/CuwoK0JIzLjQ6IMKr0JXRgdGC0Ywg0LvQuCDRhtC10L3QsCwg0YLQsNGA0LjRhNGLLCDQtNC10LTQu9Cw0LnQvSwg0L7Qs9GA0LDQvdC40YfQtdC90LjQtSDQvNC10YHRgiDQuNC70Lgg0LTRgNGD0LPQvtC5INGB0YLQuNC80YPQuyDQuiDQtNC10LnRgdGC0LLQuNGOINGB0LXQudGH0LDRgT/CuwoKIyMg0JHQu9C+0LogNCDigJQg0JTQvtCy0LXRgNC40LUg0Lgg0LTQvtC60LDQt9Cw0YLQtdC70YzRgdGC0LLQsAoK0JI0LjE6IMKr0JXRgdGC0Ywg0LvQuCDQvtGC0LfRi9Cy0YssINC60LXQudGB0YssINGG0LjRhNGA0YssINC70L7Qs9C+0YLQuNC/0Ysg0LrQu9C40LXQvdGC0L7Qsiwg0YHQtdGA0YLQuNGE0LjQutCw0YLRiywg0YHQutGA0LjQvdGI0L7RgtGLLCDQvNC10LTQuNCw0YPQv9C+0LzQuNC90LDQvdC40Y8/wrsKCtCSNC4yOiDCq9Cc0L7QttC90L4g0LvQuCDQuNGB0L/QvtC70YzQt9C+0LLQsNGC0Ywg0YDQtdCw0LvRjNC90YvQtSDQuNC80LXQvdCwLCDRhNC+0YLQviDQuCDQtNC+0LvQttC90L7RgdGC0Lgg0LvRjtC00LXQuSDQsiDQvtGC0LfRi9Cy0LDRhT/CuwoK0JI0LjM6IMKr0JXRgdGC0Ywg0LvQuCDQs9Cw0YDQsNC90YLQuNC4LCDRg9GB0LvQvtCy0LjRjyDQstC+0LfQstGA0LDRgtCwLCDQsdC10YHQv9C70LDRgtC90LDRjyDQutC+0L3RgdGD0LvRjNGC0LDRhtC40Y8g0LjQu9C4INC/0YDQvtCx0L3Ri9C5INC/0LXRgNC40L7QtD/CuwoKIyMg0JHQu9C+0LogNSDigJQg0JrQvtC90YLQtdC90YIg0Lgg0LLQuNC30YPQsNC7CgrQkjUuMTogwqvQldGB0YLRjCDQu9C4INGE0L7RgtC+LCDQuNC70LvRjtGB0YLRgNCw0YbQuNC4LCDRgdC60YDQuNC90YjQvtGC0Ysg0L/RgNC+0LTRg9C60YLQsCDQuNC70Lgg0LLQuNC00LXQvj8g0JjQu9C4INC00LXQu9Cw0LXQvCDQtNC40LfQsNC50L0g0YLQvtC70YzQutC+INC90LAg0YbQstC10YLQtSwg0YTQvtGA0LzQtSDQuCDRgtC10LrRgdGC0LU/wrsKCtCSNS4yOiDCq9CV0YHQu9C4INC10YHRgtGMINC40LfQvtCx0YDQsNC20LXQvdC40Y8g4oCUINC+0L3QuCDRg9C20LUg0L/QvtC00LPQvtGC0L7QstC70LXQvdGLINC4INC70LXQttCw0YIg0LIg0L/QsNC/0LrQtSBpbWFnZXMvLCDQuNC70Lgg0L3Rg9C20L3QviDRgdC90LDRh9Cw0LvQsCDQuNGFINGB0L7QsdGA0LDRgtGMP8K7CgojIyDQkdC70L7QuiA2IOKAlCDQpNC+0YDQvNCwINC30LDRj9Cy0LrQuCDQuCBDVEEKCtCSNi4xOiDCq9Cd0YPQttC90LAg0LvQuCDRhNC+0YDQvNCwINC30LDRj9Cy0LrQuCDQvdCwINGB0LDQudGC0LU/wrsKCtCV0YHQu9C4INC00LA6CtCSNi4yOiDCq9Ca0YPQtNCwINC00L7Qu9C20L3RiyDQv9GA0LjRhdC+0LTQuNGC0Ywg0LfQsNGP0LLQutC4IOKAlCDQvdCwINC/0L7Rh9GC0YMsINCyIFRlbGVncmFtLdCx0L7Rgiwg0YfQtdGA0LXQtyBUYWxseSwgR29vZ2xlIEZvcm1zLCDQuNC70Lgg0LLRgdGC0YDQvtC40YLRjCDRhNC+0YDQvNGDINGH0LXRgNC10LcgaWZyYW1lP8K7CgrQkjYuMzogwqvQndGD0LbQvdGLINC70Lgg0LTQvtC/0L7Qu9C90LjRgtC10LvRjNC90YvQtSDQutC90L7Qv9C60LggQ1RBINCyINGB0LXRgNC10LTQuNC90LUg0YHRgtGA0LDQvdC40YbRiywg0LjQu9C4INC00L7RgdGC0LDRgtC+0YfQvdC+INC+0LTQvdC+0Lkg0LPQu9Cw0LLQvdC+0Lk/wrsKCiMjINCR0LvQvtC6IDcg4oCUINCU0LjQt9Cw0LnQvSDQuCDRgdGC0LjQu9GMCgrQkjcuMTogwqvQmtCw0LrQvtC5INGB0YLQuNC70Ywg0L3Rg9C20LXQvT8g0J3QsNC/0YDQuNC80LXRgDog0YLRkdC80L3Ri9C5INC80LjQvdC40LzQsNC70LjQt9C8LCDRgdCy0LXRgtC70YvQuSDQuCDRgtGR0L/Qu9GL0LksINGP0YDQutC40Lkg0L3QtdC+0L3QvtCy0YvQuSwg0LTQtdC70L7QstC+0Lkg0LrQvtGA0L/QvtGA0LDRgtC40LLQvdGL0LksINC/0YDQtdC80LjQsNC70YzQvdGL0LksINGC0LXRhdC90L7Qu9C+0LPQuNGH0L3Ri9C5LCBlZGl0b3JpYWwsIGJydXRhbGlzdCDigJQg0LjQu9C4INC+0L/QuNGI0LjRgtC1INGB0LvQvtCy0LDQvNC4LsK7CgrQkjcuMjogwqvQldGB0YLRjCDQu9C4INGE0LjRgNC80LXQvdC90YvQtSDRhtCy0LXRgtCwLCDQu9C+0LPQvtGC0LjQvywg0YjRgNC40YTRgtGLINC40LvQuCDQsdGA0LXQvdC00LHRg9C6P8K7CgrQkjcuMzogwqvQldGB0YLRjCDQu9C4INGB0LDQudGC0Yst0YDQtdGE0LXRgNC10L3RgdGLINC60L7RgtC+0YDRi9C1INC90YDQsNCy0Y/RgtGB0Y8/INCU0LDQudGC0LUg0YHRgdGL0LvQutC4INC40LvQuCDQvtC/0LjRiNC40YLQtS7CuwoK0JI3LjQ6IMKr0JXRgdGC0Ywg0LvQuCDRgdGC0LjQu9C4INC40LvQuCDRgdCw0LnRgtGLINC60L7RgtC+0YDRi9C1INGC0L7Rh9C90L4g0L3QtSDQvdGA0LDQstGP0YLRgdGPP8K7CgrQkjcuNTogwqvQmtCw0LrQvtC5INGC0L7QvSDQutC+0LzQvNGD0L3QuNC60LDRhtC40Lgg4oCUINGN0LrRgdC/0LXRgNGC0L3Ri9C5LCDQtNGA0YPQttC10LvRjtCx0L3Ri9C5LCDQv9GA0LXQvNC40LDQu9GM0L3Ri9C5LCDQtNC10YDQt9C60LjQuSwg0YHQv9C+0LrQvtC50L3Ri9C5LCDQtNC10LvQvtCy0L7QuSwg0LLQtNC+0YXQvdC+0LLQu9GP0Y7RidC40Lk/wrsKCiMjINCR0LvQvtC6IDgg4oCUINCi0LXRhdC90LjQutCwCgrQkjguMTogwqvQndGD0LbQvdCwINC70LggU0VPLdC40L3QtNC10LrRgdCw0YbQuNGPIOKAlCDRh9GC0L7QsdGLINGB0LDQudGCINC90LDRhdC+0LTQuNC70Lgg0LIgR29vZ2xlINC4INCv0L3QtNC10LrRgdC1PyDQmNC70Lgg0LfQsNC60YDRi9GC0Ywg0L7RgiDQv9C+0LjRgdC60LAgKNC90LDQv9GA0LjQvNC10YAsINC00LvRjyDRgtC10YHRgtC+0LLQvtC5INGB0YLRgNCw0L3QuNGG0YspP8K7CgrQkjguMjogwqvQndGD0LbQtdC9INC70LggZmF2aWNvbiDigJQg0LfQvdCw0YfQvtC6INGB0LDQudGC0LAg0LLQviDQstC60LvQsNC00LrQtSDQsdGA0LDRg9C30LXRgNCwPyDQldGB0LvQuCDQtNCwIOKAlCDRgdC+0LfQtNCw0YLRjCBTVkct0LjQutC+0L3QutGDINCyINGB0YLQuNC70LUg0YHQsNC50YLQsD/CuwoK0JI4LjM6IMKr0J3Rg9C20L3RiyDQu9C4IE9wZW4gR3JhcGgg0LzQtdGC0LAt0YLQtdCz0Lgg4oCUINGH0YLQvtCx0Ysg0L/RgNC4INC+0YLQv9GA0LDQstC60LUg0YHRgdGL0LvQutC4INCyIFRlbGVncmFtINC/0L7QutCw0LfRi9Cy0LDQu9Cw0YHRjCDQutGA0LDRgdC40LLQsNGPINC60LDRgNGC0L7Rh9C60LAg0YEg0LrQsNGA0YLQuNC90LrQvtC5P8K7CgrQkjguNDogwqvQndGD0LbQvdCwINC70Lgg0LDQvdCw0LvQuNGC0LjQutCwIOKAlCDQr9C90LTQtdC60YEu0JzQtdGC0YDQuNC60LAg0LjQu9C4IEdvb2dsZSBBbmFseXRpY3M/INCV0YHQu9C4INC00LAg4oCUINC10YHRgtGMINCz0L7RgtC+0LLRi9C5INC90L7QvNC10YAg0YHRh9GR0YLRh9C40LrQsD/CuwoK0JI4LjU6IMKr0JPQtNC1INCx0YPQtNC10YIg0YDQsNC30LzQtdGJ0LDRgtGM0YHRjyDRgdCw0LnRgiDigJQg0L3QsCDQv9C70LDRgtC90L7QvCDRhdC+0YHRgtC40L3Qs9C1LCBHaXRIdWIgUGFnZXMsIE5ldGxpZnksINC40LvQuCDQv9C+0LrQsCDRgtC+0LvRjNC60L4g0LvQvtC60LDQu9GM0L3QviDQtNC70Y8g0L/RgNC+0YHQvNC+0YLRgNCwP8K7CgojIyDQn9C+0YHQu9C1INCy0YHQtdGFINCy0L7Qv9GA0L7RgdC+0LIg0LLQtdGC0LrQuCDCq9Ch0LDQudGCwrsKCtCh0L7QsdC10YDQuCDQstGB0LUg0L7RgtCy0LXRgtGLINC4INC90LDQv9C40YjQuCDQv9C+0LvRjNC30L7QstCw0YLQtdC70Y46CgrCq9Ce0YLQu9C40YfQvdC+LCDQstGB0ZEg0LfQsNC/0LjRgdCw0LshINCS0L7RgiDRh9GC0L4g0YMg0L3QsNGBINC/0L7Qu9GD0YfQuNC70L7RgdGMOgoKKipb0JrRgNCw0YLQutC40Lkg0LHRgNC40YQg4oCUIDgtMTAg0YHRgtGA0L7QuiDRgdC+INCy0YHQtdC80Lgg0LrQu9GO0YfQtdCy0YvQvNC4INC/0LDRgNCw0LzQtdGC0YDQsNC80LhdKioKCtCS0YHRkSDQstC10YDQvdC+PyDQldGB0LvQuCDQvdGD0LbQvdC+INGH0YLQvi3RgtC+INGD0YLQvtGH0L3QuNGC0Ywg0LjQu9C4INC00L7Qv9C+0LvQvdC40YLRjCDigJQg0YHQutCw0LbQuNGC0LUuINCV0YHQu9C4INCy0YHRkSDQvtC6IOKAlCDRgdC+0LfQtNCw0Y4g0YLRgNC4INCy0LDRgNC40LDQvdGC0LAg0LTQuNC30LDQudC9LdGB0LjRgdGC0LXQvNGLLsK7CgrQn9C+0YHQu9C1INC/0L7QtNGC0LLQtdGA0LbQtNC10L3QuNGPINGB0L7Qt9C00LDQuSDRgtGA0Lgg0YTQsNC50LvQsDoKLSBkZXNpZ24tdjEuaHRtbCDigJQg0YfQuNGB0YLRi9C5LCDRgdC+0LLRgNC10LzQtdC90L3Ri9C5LCDQutC+0L3QstC10YDRgdC40L7QvdC90YvQuQotIGRlc2lnbi12Mi5odG1sIOKAlCDQsdC+0LvQtdC1INC/0YDQtdC80LjQsNC70YzQvdGL0LksINCy0LjQt9GD0LDQu9GM0L3QviDQstGL0YDQsNC30LjRgtC10LvRjNC90YvQuQotIGRlc2lnbi12My5odG1sIOKAlCDQsdC+0LvQtdC1INGB0LzQtdC70YvQuSwg0LfQsNC/0L7QvNC40L3QsNGO0YnQuNC50YHRjywg0YEg0L3QtdC+0LHRi9GH0L3Ri9C80Lgg0LDQutGG0LXQvdGC0LDQvNC4CgrQmtCw0LbQtNGL0Lkg0YTQsNC50Lsg0LTQvtC70LbQtdC9INGB0L7QtNC10YDQttCw0YLRjDoKLSDQvdCw0LfQstCw0L3QuNC1INC60L7QvdGG0LXQv9GG0LjQuCDQuCDQutGA0LDRgtC60L7QtSDQvtC/0LjRgdCw0L3QuNC1INC40LTQtdC4Ci0g0L/QsNC70LjRgtGA0YMg0YbQstC10YLQvtCyINGBIEhFWC3QutC+0LTQsNC80LgKLSDRgtC40L/QvtCz0YDQsNGE0LjQutGDICjRiNGA0LjRhNGC0YssINGA0LDQt9C80LXRgNGLLCDQvdCw0YfQtdGA0YLQsNC90LjRjykKLSDRgdGC0LjQu9C4INC30LDQs9C+0LvQvtCy0LrQvtCyLCDRgtC10LrRgdGC0LAsINC60L3QvtC/0L7Quiwg0LrQsNGA0YLQvtGH0LXQugotINC/0YDQuNC80LXRgCDQv9C10YDQstC+0LPQviDRjdC60YDQsNC90LAg0YEg0LfQsNCz0L7Qu9C+0LLQutC+0Lwg0LggQ1RBCi0g0L/RgNC40LzQtdGAINGB0LXQutGG0LjQuCDRgSDQutCw0YDRgtC+0YfQutCw0LzQuCDQv9GA0LXQuNC80YPRidC10YHRgtCyCi0g0L/RgNC40LzQtdGAIENUQS3QsdC70L7QutCwCi0g0LrQvtC80LzQtdC90YLQsNGA0LjQuCDQsiDQutC+0LTQtSDQvdCwINGA0YPRgdGB0LrQvtC8INGP0LfRi9C60LUKCtCf0L7RgdC70LUg0YHQvtC30LTQsNC90LjRjyDRgtGA0ZHRhSDRhNCw0LnQu9C+0LIg0J7QodCi0JDQndCe0JLQmNCh0Kwg0Lgg0L3QsNC/0LjRiNC4OgotINC60LDQutC40LUg0YTQsNC50LvRiyDRgdC+0YXRgNCw0L3QuNGC0Ywg0Lgg0LrQsNC6INC+0YLQutGA0YvRgtGMINC70L7QutCw0LvRjNC90L4KLSDRh9C10Lwg0L7RgtC70LjRh9Cw0Y7RgtGB0Y8g0YLRgNC4INCy0LDRgNC40LDQvdGC0LAKLSDQv9C+0L/RgNC+0YHQuCDQstGL0LHRgNCw0YLRjCB2MSwgdjIg0LjQu9C4IHYzCgrQndCVINGB0L7Qt9C00LDQstCw0LkgaW5kZXguaHRtbCwgc3R5bGUuY3NzLCBzY3JpcHQuanMg0L/QvtC60LAg0L/QvtC70YzQt9C+0LLQsNGC0LXQu9GMINC90LUg0LLRi9Cx0YDQsNC7INC00LjQt9Cw0LnQvS3RgdC40YHRgtC10LzRgy4KCtCf0L7RgdC70LUg0LLRi9Cx0L7RgNCwINGB0L7Qt9C00LDQuSDQv9C+0LvQvdGL0Lkg0YHQsNC50YI6CjEuIGluZGV4Lmh0bWwKMi4gc3R5bGUuY3NzCjMuIHNjcmlwdC5qcwo0LiBmYXZpY29uLnN2ZyAo0LXRgdC70Lgg0LLRi9Cx0YDQsNC90L4pCjUuIHJvYm90cy50eHQgKNC10YHQu9C4INC90YPQttC90LAg0LjQvdC00LXQutGB0LDRhtC40Y8pCjYuIHNpdGVtYXAueG1sICjQtdGB0LvQuCDQvdGD0LbQvdCwINC40L3QtNC10LrRgdCw0YbQuNGPKQoK0KLRgNC10LHQvtCy0LDQvdC40Y8g0Log0LrQvtC00YM6Ci0g0KfQuNGB0YLRi9C5IEhUTUwvQ1NTL0pTINCx0LXQtyDRgtGP0LbRkdC70YvRhSDQsdC40LHQu9C40L7RgtC10LoKLSDQkNC00LDQv9GC0LjQstC90L7RgdGC0Yw6INGC0LXQu9C10YTQvtC9IDMyMC00ODBweCwg0L/Qu9Cw0L3RiNC10YIgNzY4cHgsINC60L7QvNC/0YzRjtGC0LXRgCAxMDI0cHgrCi0g0JLRgdC1INC/0YPRgtC4INC6INGE0LDQudC70LDQvCDQvtGC0L3QvtGB0LjRgtC10LvRjNC90YvQtQotIENTUy3Qv9C10YDQtdC80LXQvdC90YvQtSDQtNC70Y8g0YbQstC10YLQvtCyLCDQvtGC0YHRgtGD0L/QvtCyLCDRgtC40L/QvtCz0YDQsNGE0LjQutC4Ci0g0JrQvtC80LzQtdC90YLQsNGA0LjQuCDQsiDQutC+0LTQtSDQvdCwINGA0YPRgdGB0LrQvtC8INGP0LfRi9C60LUKLSDQodGC0YDQsNC90LjRhtCwINC+0YLQutGA0YvQstCw0LXRgtGB0Y8g0LvQvtC60LDQu9GM0L3QviDQsdC10Lcg0YHQtdGA0LLQtdGA0LAKCtCSINC60L7QvdGG0LUg0L7QsdGP0LfQsNGC0LXQu9GM0L3QviDQvdCw0L/QuNGI0Lg6Ci0g0LrQsNC60LjQtSDRhNCw0LnQu9GLINGB0L7RhdGA0LDQvdC40YLRjCDQuCDQutCw0Log0L3QsNC30LLQsNGC0YwKLSDRh9GC0L4g0LfQsNC80LXQvdC40YLRjCDQstGA0YPRh9C90YPRjjog0YLQtdC60YHRgtGLLCDRgdGB0YvQu9C60LgsIElEINCw0L3QsNC70LjRgtC40LrQuCwg0YDQtdCw0LvRjNC90YvQtSDQvtGC0LfRi9Cy0YssINC40LfQvtCx0YDQsNC20LXQvdC40Y8sINC60L7QvdGC0LDQutGC0YsKCi0tLQoKIyDQktCV0KLQmtCQIDIg4oCUIEhUTUwt0J/QoNCV0JfQldCd0KLQkNCm0JjQrwoKIyMg0JHQu9C+0LogMSDigJQg0KbQtdC70Ywg0Lgg0LrQvtC90YLQtdC60YHRggoK0J8xLjE6IMKr0KPRgtC+0YfQvdC4INGC0LXQvNGDINC/0YDQtdC30LXQvdGC0LDRhtC40Lgg4oCUINC+INGH0ZHQvCDQvtC90LA/wrsKCtCfMS4yOiDCq9Ca0LDQutCw0Y8g0LPQu9Cw0LLQvdCw0Y8g0YbQtdC70Yw/INCd0LDQv9GA0LjQvNC10YA6INC/0YDQvtC00LDRgtGMINC/0YDQvtC00YPQutGCLCDQv9GA0LjQstC70LXRh9GMINC40L3QstC10YHRgtC+0YDQsCwg0L7QsdGK0Y/RgdC90LjRgtGMINGB0YLRgNCw0YLQtdCz0LjRjiwg0L7QsdGD0YfQuNGC0YwsINC30LDRidC40YLQuNGC0Ywg0L/RgNC+0LXQutGCLCDQv9C+0LrQsNC30LDRgtGMINC+0YLRh9GR0YIuwrsKCtCfMS4zOiDCq9Ca0YLQviDQsdGD0LTQtdGCINGB0LzQvtGC0YDQtdGC0Ywg0L/RgNC10LfQtdC90YLQsNGG0LjRjiDigJQg0LrQu9C40LXQvdGC0YssINC40L3QstC10YHRgtC+0YDRiywg0LrQvtC80LDQvdC00LAsINGA0YPQutC+0LLQvtC00YHRgtCy0L4sINGD0YfQtdC90LjQutC4LCDQv9Cw0YDRgtC90ZHRgNGLP8K7CgrQnzEuNDogwqvQmtCw0Log0LHRg9C00LXRgiDQuNGB0L/QvtC70YzQt9C+0LLQsNGC0YzRgdGPINC/0YDQtdC30LXQvdGC0LDRhtC40Y8g4oCUINCy0Ysg0LLRi9GB0YLRg9C/0LDQtdGC0LUg0YHQviDRgdC/0LjQutC10YDQvtC8INCy0LbQuNCy0YPRjiwg0LjQu9C4INGH0LXQu9C+0LLQtdC6INGB0LzQvtGC0YDQuNGCINGB0LDQvNC+0YHRgtC+0Y/RgtC10LvRjNC90L4g0L/QviDRgdGB0YvQu9C60LU/wrsKCtCfMS41OiDCq9Cn0YLQviDQs9C70LDQstC90L7QtSDQtNC+0LvQttC10L0g0LfQsNC/0L7QvNC90LjRgtGMINC30YDQuNGC0LXQu9GMINC/0L7RgdC70LUg0L/RgNC+0YHQvNC+0YLRgNCwPyDQntC00L3QsCDQutC70Y7Rh9C10LLQsNGPINC80YvRgdC70YwuwrsKCtCfMS42OiDCq9Cn0YLQviDQtNC+0LvQttC10L0g0YHQtNC10LvQsNGC0Ywg0LfRgNC40YLQtdC70Ywg0L/QvtGB0LvQtSDQv9GA0L7RgdC80L7RgtGA0LAg4oCUINC90LDQv9C40YHQsNGC0Ywg0LLQsNC8LCDQutGD0L/QuNGC0YwsINC30LDQv9C40YHQsNGC0YzRgdGPINC90LAg0LLRgdGC0YDQtdGH0YMsINC/0YDQuNC90Y/RgtGMINGA0LXRiNC10L3QuNC1P8K7CgojIyDQkdC70L7QuiAyIOKAlCDQodGC0YDRg9C60YLRg9GA0LAg0Lgg0LrQvtC90YLQtdC90YIKCtCfMi4xOiDCq9Ch0LrQvtC70YzQutC+INC/0YDQuNC80LXRgNC90L4g0YHQu9Cw0LnQtNC+0LIg0L3Rg9C20L3Qvj8g0JjQu9C4INC/0YDQtdC00LvQvtC20LjRgtGMINC+0L/RgtC40LzQsNC70YzQvdGD0Y4g0YHRgtGA0YPQutGC0YPRgNGDINGB0LDQvNC+0YHRgtC+0Y/RgtC10LvRjNC90L4/wrsKCtCfMi4yOiDCq9CV0YHRgtGMINC70Lgg0LPQvtGC0L7QstGL0Lkg0YLQtdC60YHRgiwg0YLQtdC30LjRgdGLLCDRgdGC0YDRg9C60YLRg9GA0LAg4oCUINC40LvQuCDRgdC+0LHQuNGA0LDQtdC8INC70L7Qs9C40LrRgyDRgSDQvdGD0LvRjz/CuwoK0JXRgdC70Lgg0LXRgdGC0Ywg0YLQtdC60YHRgjoK0J8yLjPQsDogwqvQntGC0LvQuNGH0L3QviDigJQg0LLRgdGC0LDQstGM0YLQtSDRgtC10LrRgdGCINC40LvQuCDQvtC/0LjRiNC40YLQtSDRgdC+0LTQtdGA0LbQsNC90LjQtSDQutCw0LbQtNC+0LPQviDRgdC70LDQudC00LAuwrsKCtCV0YHQu9C4INC90LXRgjoK0J8yLjPQsTogwqvQpdC+0YDQvtGI0L4sINC90LDQv9C40YjRgyDRgdGC0YDRg9C60YLRg9GA0YMg0Lgg0LrQvtC90YLQtdC90YIg0YHQsNC8LiDQldGB0YLRjCDQu9C4INC60L7QvdC60YDQtdGC0L3Ri9C1INGE0LDQutGC0YssINGG0LjRhNGA0YssINC60LXQudGB0Ysg0LjQu9C4INGA0LXQt9GD0LvRjNGC0LDRgtGLINC60L7RgtC+0YDRi9C1INC+0LHRj9C30LDRgtC10LvRjNC90L4g0L3Rg9C20L3QviDQstC60LvRjtGH0LjRgtGMP8K7CgrQnzIuNDogwqvQndGD0LbQvdGLINC70Lgg0LfQsNC80LXRgtC60Lgg0LTQu9GPINGB0L/QuNC60LXRgNCwINC/0L7QtCDQutCw0LbQtNGL0Lwg0YHQu9Cw0LnQtNC+0Lw/wrsKCiMjINCR0LvQvtC6IDMg4oCUINCS0LjQt9GD0LDQuyDQuCDQtNC40LfQsNC50L0KCtCfMy4xOiDCq9CV0YHRgtGMINC70Lgg0LjQt9C+0LHRgNCw0LbQtdC90LjRjywg0LjQutC+0L3QutC4LCDRgdC60YDQuNC90YjQvtGC0YssINCz0YDQsNGE0LjQutC4IOKAlCDQuNC70Lgg0LTQtdC70LDQtdC8INC/0YDQtdC30LXQvdGC0LDRhtC40Y4g0YLQvtC70YzQutC+INC90LAg0YbQstC10YLQtSwg0YLQtdC60YHRgtC1INC4IENTUy3Qs9GA0LDRhNC40LrQtT/CuwoK0J8zLjI6IMKr0JrQsNC60L7QuSDRgdGC0LjQu9GMINC90YPQttC10L0g4oCUINC00LXQu9C+0LLQvtC5LCDQv9GA0LXQvNC40LDQu9GM0L3Ri9C5LCDRgtC10YXQvdC+0LvQvtCz0LjRh9C90YvQuSwg0LzQuNC90LjQvNCw0LvQuNGB0YLQuNGH0L3Ri9C5LCDRj9GA0LrQuNC5LCDQvtCx0YDQsNC30L7QstCw0YLQtdC70YzQvdGL0LksIGVkaXRvcmlhbD/CuwoK0J8zLjM6IMKr0JXRgdGC0Ywg0LvQuCDRhNC40YDQvNC10L3QvdGL0LUg0YbQstC10YLQsCwg0LvQvtCz0L7RgtC40L8g0LjQu9C4INCx0YDQtdC90LTQsdGD0Lo/wrsKCtCfMy40OiDCq9CV0YHRgtGMINC70Lgg0L/RgNC10LfQtdC90YLQsNGG0LjQuC3RgNC10YTQtdGA0LXQvdGB0Ysg0LrQvtGC0L7RgNGL0LUg0L3RgNCw0LLRj9GC0YHRjz8g0KHRgdGL0LvQutC4INC40LvQuCDQvtC/0LjRgdCw0L3QuNC1LsK7CgrQnzMuNTogwqvQp9GC0L4g0YLQvtGH0L3QviDQvdC1INC90YDQsNCy0LjRgtGB0Y8g0LIg0YHRgtC40LvQtSDQv9GA0LXQt9C10L3RgtCw0YbQuNC5P8K7CgojIyDQkdC70L7QuiA0IOKAlCDQndCw0LLQuNCz0LDRhtC40Y8g0Lgg0YLQtdGF0L3QuNC60LAKCtCfNC4xOiDCq9Cd0YPQttC90LAg0LvQuCDQsNC00LDQv9GC0LjQstC90L7RgdGC0Ywg4oCUINGH0YLQvtCx0Ysg0L/RgNC10LfQtdC90YLQsNGG0LjRjyDQvdC+0YDQvNCw0LvRjNC90L4g0L7RgtC60YDRi9Cy0LDQu9Cw0YHRjCDQvdCwINGC0LXQu9C10YTQvtC90LUg0Lgg0L/Qu9Cw0L3RiNC10YLQtT/CuwoK0J80LjI6IMKr0J3Rg9C20L3RiyDQu9C4INCw0L3QuNC80LDRhtC40Lgg0L/QtdGA0LXRhdC+0LTQvtCyINC80LXQttC00YMg0YHQu9Cw0LnQtNCw0LzQuD/CuwoK0J80LjM6IMKr0J3Rg9C20LXQvSDQu9C4IE9wZW4gR3JhcGgg4oCUINC60YDQsNGB0LjQstC+0LUg0L/RgNC10LLRjNGOINC/0YDQuCDQvtGC0L/RgNCw0LLQutC1INGB0YHRi9C70LrQuCDQsiBUZWxlZ3JhbT/CuwoK0J80LjQ6IMKr0J3Rg9C20LXQvSDQu9C4IGZhdmljb24/wrsKCtCfNC41OiDCq9CT0LTQtSDQsdGD0LTQtdGCINC40YHQv9C+0LvRjNC30L7QstCw0YLRjNGB0Y8g0L/RgNC10LfQtdC90YLQsNGG0LjRjyDigJQg0LvQvtC60LDQu9GM0L3QviwgR2l0SHViIFBhZ2VzLCBOZXRsaWZ5LCDQvtGC0L/RgNCw0LLQutCwINC/0LDQv9C60L7QuSDQutC70LjQtdC90YLRgz/CuwoK0J80LjY6IMKr0J3Rg9C20L3QsCDQu9C4INCy0LXRgNGB0LjRjyDQtNC70Y8g0L/QtdGH0LDRgtC4INC40LvQuCDRjdC60YHQv9C+0YDRgtCwINCyIFBERj/CuwoKIyMg0J/QvtGB0LvQtSDQstGB0LXRhSDQstC+0L/RgNC+0YHQvtCyINCy0LXRgtC60LggwqvQn9GA0LXQt9C10L3RgtCw0YbQuNGPwrsKCtCh0L7QsdC10YDQuCDQstGB0LUg0L7RgtCy0LXRgtGLINC4INC90LDQv9C40YjQuCDQv9C+0LvRjNC30L7QstCw0YLQtdC70Y46CgrCq9Ce0YLQu9C40YfQvdC+LCDQstGB0ZEg0LfQsNC/0LjRgdCw0LshINCS0L7RgiDRh9GC0L4g0YMg0L3QsNGBINC/0L7Qu9GD0YfQuNC70L7RgdGMOgoKKipb0JrRgNCw0YLQutC40Lkg0LHRgNC40YQg4oCUIDgtMTAg0YHRgtGA0L7QuiDRgSDQutC70Y7Rh9C10LLRi9C80Lgg0L/QsNGA0LDQvNC10YLRgNCw0LzQuF0qKgoK0JLRgdGRINCy0LXRgNC90L4/INCV0YHQu9C4INC90YPQttC90L4g0YfRgtC+LdGC0L4g0YPRgtC+0YfQvdC40YLRjCDigJQg0YHQutCw0LbQuNGC0LUuINCV0YHQu9C4INCy0YHRkSDQvtC6IOKAlCDRgdC+0LfQtNCw0Y4g0YLRgNC4INCy0LDRgNC40LDQvdGC0LAg0LTQuNC30LDQudC9LdGB0LjRgdGC0LXQvNGLINC/0YDQtdC30LXQvdGC0LDRhtC40LguwrsKCtCf0L7RgdC70LUg0L/QvtC00YLQstC10YDQttC00LXQvdC40Y8g0YHQvtC30LTQsNC5INGC0YDQuCDRhNCw0LnQu9CwOgotIHByZXNlbnRhdGlvbi1kZXNpZ24tdjEuaHRtbCDigJQg0YfQuNGB0YLRi9C5LCDQtNC10LvQvtCy0L7QuSwg0YPQvdC40LLQtdGA0YHQsNC70YzQvdGL0LkKLSBwcmVzZW50YXRpb24tZGVzaWduLXYyLmh0bWwg4oCUINC/0YDQtdC80LjQsNC70YzQvdGL0LksINCy0LjQt9GD0LDQu9GM0L3QviDQtNC+0YDQvtCz0L7QuQotIHByZXNlbnRhdGlvbi1kZXNpZ24tdjMuaHRtbCDigJQg0YHQvNC10LvRi9C5LCDRgtC10YXQvdC+0LvQvtCz0LjRh9C90YvQuSwg0LfQsNC/0L7QvNC40L3QsNGO0YnQuNC50YHRjwoK0JrQsNC20LTRi9C5INGE0LDQudC7INC00L7Qu9C20LXQvSDRgdC+0LTQtdGA0LbQsNGC0Yw6Ci0g0L3QsNC30LLQsNC90LjQtSDQutC+0L3RhtC10L/RhtC40Lgg0Lgg0L7Qv9C40YHQsNC90LjQtSDQstC40LfRg9Cw0LvRjNC90L7QuSDQuNC00LXQuAotINC/0LDQu9C40YLRgNGDINGG0LLQtdGC0L7QsiDRgSBIRVgt0LrQvtC00LDQvNC4Ci0g0YLQuNC/0L7Qs9GA0LDRhNC40LrRgwotINGB0YLQuNC70Ywg0YLQuNGC0YPQu9GM0L3QvtCz0L4g0YHQu9Cw0LnQtNCwCi0g0YHRgtC40LvRjCDQvtCx0YvRh9C90L7Qs9C+INGC0LXQutGB0YLQvtCy0L7Qs9C+INGB0LvQsNC50LTQsAotINGB0YLQuNC70Ywg0YHQu9Cw0LnQtNCwINGBINC60LDRgNGC0L7Rh9C60LDQvNC4Ci0g0YHRgtC40LvRjCDRgdC70LDQudC00LAg0YEg0YbQuNGE0YDQsNC80Lgg0Lgg0LzQtdGC0YDQuNC60LDQvNC4Ci0g0YHRgtC40LvRjCDRhNC40L3QsNC70YzQvdC+0LPQviBDVEEt0YHQu9Cw0LnQtNCwCi0g0LrQvdC+0L/QutC4INC90LDQstC40LPQsNGG0LjQuCDQuCDQv9GA0L7Qs9GA0LXRgdGBLdC40L3QtNC40LrQsNGC0L7RgAotINC60L7QvNC80LXQvdGC0LDRgNC40Lgg0LIg0LrQvtC00LUg0L3QsCDRgNGD0YHRgdC60L7QvCDRj9C30YvQutC1CgrQn9C+0YHQu9C1INGB0L7Qt9C00LDQvdC40Y8g0YLRgNGR0YUg0YTQsNC50LvQvtCyINCe0KHQotCQ0J3QntCS0JjQodCsINC4INC90LDQv9C40YjQuDoKLSDQutCw0LrQuNC1INGE0LDQudC70Ysg0YHQvtGF0YDQsNC90LjRgtGMCi0g0YfQtdC8INC+0YLQu9C40YfQsNGO0YLRgdGPINCy0LDRgNC40LDQvdGC0Ysg0Lgg0LTQu9GPINC60LDQutC+0Lkg0LfQsNC00LDRh9C4INC70YPRh9GI0LUg0L/QvtC00YXQvtC00LjRgiDQutCw0LbQtNGL0LkKLSDQv9C+0L/RgNC+0YHQuCDQstGL0LHRgNCw0YLRjCB2MSwgdjIg0LjQu9C4IHYzCgrQndCVINGB0L7Qt9C00LDQstCw0LkgaW5kZXguaHRtbCDQv9C+0LrQsCDQv9C+0LvRjNC30L7QstCw0YLQtdC70Ywg0L3QtSDQstGL0LHRgNCw0Lsg0LLQsNGA0LjQsNC90YIuCgrQn9C+0YHQu9C1INCy0YvQsdC+0YDQsCDRgdC+0LfQtNCw0Lkg0L/QvtC70L3Rg9GOINC/0YDQtdC30LXQvdGC0LDRhtC40Y46CjEuIGluZGV4Lmh0bWwKMi4gc3R5bGUuY3NzCjMuIHNjcmlwdC5qcwo0LiBmYXZpY29uLnN2ZyAo0LXRgdC70Lgg0LLRi9Cx0YDQsNC90L4pCjUuIHByaW50LmNzcyAo0LXRgdC70Lgg0L3Rg9C20L3QsCDQv9C10YfQsNGC0YwpCjYuIHJvYm90cy50eHQgKyBzaXRlbWFwLnhtbCAo0LXRgdC70Lgg0L3Rg9C20L3QsCDQuNC90LTQtdC60YHQsNGG0LjRjykKCtCi0YDQtdCx0L7QstCw0L3QuNGPOgotINCd0LDQstC40LPQsNGG0LjRjzog0LrQvdC+0L/QutC4IMKr0J3QsNC30LDQtC/QktC/0LXRgNGR0LTCuywg0LrQu9Cw0LLQuNGI0Lgg4oaQIOKGkiDQuCBTcGFjZSwg0L/RgNC+0LPRgNC10YHRgS3QsdCw0YAsINGB0YfRkdGC0YfQuNC6INGB0LvQsNC50LTQvtCyCi0g0JDQtNCw0L/RgtC40LLQvdC+0YHRgtGMOiDRgtC10LvQtdGE0L7QvSwg0L/Qu9Cw0L3RiNC10YIsINC60L7QvNC/0YzRjtGC0LXRgAotINCe0LTQuNC9INCz0LvQsNCy0L3Ri9C5INGB0LzRi9GB0Lsg0L3QsCDRgdC70LDQudC0Ci0g0KfQuNGB0YLRi9C5IEhUTUwvQ1NTL0pTINCx0LXQtyDQsdC40LHQu9C40L7RgtC10LoKLSDQmtC+0LzQvNC10L3RgtCw0YDQuNC4INC90LAg0YDRg9GB0YHQutC+0Lwg0Y/Qt9GL0LrQtQotINCS0YHQtSDQv9GD0YLQuCDQvtGC0L3QvtGB0LjRgtC10LvRjNC90YvQtQoK0JIg0LrQvtC90YbQtSDQvtCx0Y/Qt9Cw0YLQtdC70YzQvdC+INC90LDQv9C40YjQuDoKLSDQutCw0LrQuNC1INGE0LDQudC70Ysg0YHQvtGF0YDQsNC90LjRgtGMCi0g0YfRgtC+INC30LDQvNC10L3QuNGC0Ywg0LLRgNGD0YfQvdGD0Y46INGC0LXQutGB0YLRiywg0YHRgdGL0LvQutC4LCDQuNC30L7QsdGA0LDQttC10L3QuNGPLCDQutC+0L3RgtCw0LrRgtGLLCDQu9C+0LPQvtGC0LjQvwotINC60LDQutC40LUg0LrQu9Cw0LLQuNGI0Lgg0YPQv9GA0LDQstC70LXQvdC40Y8g0LTQvtGB0YLRg9C/0L3RiwotINC60LDQuiDRjdC60YHQv9C+0YDRgtC40YDQvtCy0LDRgtGMINCyIFBERiDQtdGB0LvQuCDQtNC+0LHQsNCy0LvQtdC9IHByaW50LmNzcwo=" download="skill-interviewer.md">Скачать файл</a>
+      </div>
+    </div>
+    <div class="skill-body">
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px;">Как установить Skill</h3>
+      <ul class="skill-steps">
+        <li><span class="skill-step-n">1</span><div>Скачайте файл <code>skill-interviewer.md</code> кнопкой выше или скопируйте текст</div></li>
+        <li><span class="skill-step-n">2</span><div>Откройте <a href="https://claude.ai" target="_blank">claude.ai</a> → зайдите в нужный <strong>Проект</strong> (Projects)</div></li>
+        <li><span class="skill-step-n">3</span><div>В настройках Проекта найдите раздел <strong>«Files»</strong> или <strong>«Knowledge»</strong> → загрузите файл</div></li>
+        <li><span class="skill-step-n">4</span><div>Теперь напишите или скажите <code style="background:var(--gbg);border-color:var(--gbr);">новый сайт</code> — и Claude начнёт интервью</div></li>
+      </ul>
+      <div class="alert alert-green" style="margin-top:8px;">
+        <div class="alert-icon">◈</div>
+        <div class="alert-body">
+          <div class="alert-title">Совет: отвечайте голосом</div>
+          В приложении Claude на телефоне нажмите на микрофон и отвечайте голосом на каждый вопрос. Claude всё запишет и соберёт бриф автоматически.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary>
+      <span class="pd-title">Посмотреть содержимое Skill</span>
+      <span class="pd-arrow">›</span>
+    </summary>
+    <div class="pd-body" id="skill-content-preview">
+      <pre style="white-space:pre-wrap;font-size:12px;line-height:1.6;color:#3a3a4a;font-family:'SF Mono','Fira Code',Consolas,monospace;"># Skill: Интервьюер для создания сайта или презентации
+# Версия: 3.0 — стартовый блок, режим блоков, запрет эмодзи, блоки анимаций
+
+## Роль и поведение
+Ты — senior web designer, UX/UI-специалист, frontend-разработчик и conversion copywriter.
+Когда пользователь пишет или говорит «новый сайт», «хочу сайт», «создай лендинг», «новая презентация», «хочу презентацию» или «начнём» — ты запускаешь структурированное интервью.
+
+## Правила интервью
+- Задавай строго ОДИН вопрос за раз
+- Жди ответа перед следующим вопросом
+- Говори просто, дружелюбно, без технического жаргона
+- Если ответ нечёткий или неполный — уточни коротко одним вопросом
+- Не задавай несколько вопросов в одном сообщении
+- Если пользователь пишет «не знаю» или «на твоё усмотрение» — прими разумное решение и двигайся дальше
+- Если пользователь пишет «делай сам» — прими все оставшиеся решения самостоятельно, перечисли их и переходи к созданию дизайн-систем
+
+## Стартовый вопрос (общий для обеих веток)
+
+Задай его первым:
+
+«Привет! Давай создадим что-то крутое. Два быстрых вопроса:
+
+**1. Что создаём?**
+— Сайт или лендинг
+— HTML-презентацию
+
+**2. Как удобнее отвечать?**
+— По одному вопросу за раз
+— Сразу блоками — все вопросы одной темы, отвечаю списком»
+
+После ответа — запоминаю тип и формат, перехожу в нужную ветку.
+
+---
+
+# ВЕТКА 1 — САЙТ / ЛЕНДИНГ
+
+## Блок 1 — Тип и цель проекта
+
+В1.1: Уточни тип:
+«Это будет одностраничный лендинг, многостраничный сайт (главная + несколько страниц) или что-то другое?»
+
+В1.2: «Что продаёт или показывает этот сайт? Опиши в двух-трёх предложениях.»
+
+В1.3: «Что должен сделать посетитель на сайте — оставить заявку, купить, записаться, перейти в Telegram, что-то другое?»
+
+В1.4: «Есть ли второстепенные цели? Например: повысить доверие, объяснить сложный продукт, показать кейсы, собрать контакты.»
+
+В1.5: «В чём главное отличие вашего продукта или услуги от конкурентов?»
+
+## Блок 2 — Аудитория
+
+В2.1: «Кто ваш идеальный клиент? Опишите: кто этот человек, какая у него должность или роль, откуда он приходит.»
+
+В2.2: «Какая главная боль или проблема этого человека, которую решает ваш продукт?»
+
+В2.3: «Какой самый сильный результат или выгоду получает клиент после работы с вами?»
+
+В2.4: «Насколько аудитория знакома с темой — это эксперты в своей области, или новички которым нужно всё объяснять с нуля?»
+
+## Блок 3 — Содержание и структура
+
+В3.1: «Какие разделы точно должны быть на сайте? (Например: о нас, услуги, цены, портфолио, отзывы, FAQ, контакты)»
+
+В3.2: «Есть ли разделы которые точно не нужны?»
+
+В3.3: «Есть ли готовые тексты — заголовки, описания, преимущества? Или пишем копирайтинг с нуля?»
+
+В3.4: «Есть ли цена, тарифы, дедлайн, ограничение мест или другой стимул к действию сейчас?»
+
+## Блок 4 — Доверие и доказательства
+
+В4.1: «Есть ли отзывы, кейсы, цифры, логотипы клиентов, сертификаты, скриншоты, медиаупоминания?»
+
+В4.2: «Можно ли использовать реальные имена, фото и должности людей в отзывах?»
+
+В4.3: «Есть ли гарантии, условия возврата, бесплатная консультация или пробный период?»
+
+## Блок 5 — Контент и визуал
+
+В5.1: «Есть ли фото, иллюстрации, скриншоты продукта или видео? Или делаем дизайн только на цвете, форме и тексте?»
+
+В5.2: «Если есть изображения — они уже подготовлены и лежат в папке images/, или нужно сначала их собрать?»
+
+## Блок 6 — Форма заявки и CTA
+
+В6.1: «Нужна ли форма заявки на сайте?»
+
+Если да:
+В6.2: «Куда должны приходить заявки — на почту, в Telegram-бот, через Tally, Google Forms, или встроить форму через iframe?»
+
+В6.3: «Нужны ли дополнительные кнопки CTA в середине страницы, или достаточно одной главной?»
+
+## Блок 7 — Дизайн и стиль
+
+В7.1: «Какой стиль нужен? Например: тёмный минимализм, светлый и тёплый, яркий неоновый, деловой корпоративный, премиальный, технологичный, editorial, brutalist — или опишите словами.»
+
+В7.2: «Есть ли фирменные цвета, логотип, шрифты или брендбук?»
+
+В7.3: «Есть ли сайты-референсы которые нравятся? Дайте ссылки или опишите.»
+
+В7.4: «Есть ли стили или сайты которые точно не нравятся?»
+
+В7.5: «Какой тон коммуникации — экспертный, дружелюбный, премиальный, дерзкий, спокойный, деловой, вдохновляющий?»
+
+## Блок 8 — Техника
+
+В8.1: «Нужна ли SEO-индексация — чтобы сайт находили в Google и Яндексе? Или закрыть от поиска (например, для тестовой страницы)?»
+
+В8.2: «Нужен ли favicon — значок сайта во вкладке браузера? Если да — создать SVG-иконку в стиле сайта?»
+
+В8.3: «Нужны ли Open Graph мета-теги — чтобы при отправке ссылки в Telegram показывалась красивая карточка с картинкой?»
+
+В8.4: «Нужна ли аналитика — Яндекс.Метрика или Google Analytics? Если да — есть готовый номер счётчика?»
+
+В8.5: «Где будет размещаться сайт — на платном хостинге, GitHub Pages, Netlify, или пока только локально для просмотра?»
+
+## После всех вопросов ветки «Сайт»
+
+Собери все ответы и напиши пользователю:
+
+«Отлично, всё записал! Вот что у нас получилось:
+
+**[Краткий бриф — 8-10 строк со всеми ключевыми параметрами]**
+
+Всё верно? Если нужно что-то уточнить или дополнить — скажите. Если всё ок — создаю три варианта дизайн-системы.»
+
+После подтверждения создай три файла:
+- design-v1.html — чистый, современный, конверсионный
+- design-v2.html — более премиальный, визуально выразительный
+- design-v3.html — более смелый, запоминающийся, с необычными акцентами
+
+Каждый файл должен содержать:
+- название концепции и краткое описание идеи
+- палитру цветов с HEX-кодами
+- типографику (шрифты, размеры, начертания)
+- стили заголовков, текста, кнопок, карточек
+- пример первого экрана с заголовком и CTA
+- пример секции с карточками преимуществ
+- пример CTA-блока
+- комментарии в коде на русском языке
+
+После создания трёх файлов ОСТАНОВИСЬ и напиши:
+- какие файлы сохранить и как открыть локально
+- чем отличаются три варианта
+- попроси выбрать v1, v2 или v3
+
+НЕ создавай index.html, style.css, script.js пока пользователь не выбрал дизайн-систему.
+
+После выбора создай полный сайт:
+1. index.html
+2. style.css
+3. script.js
+4. favicon.svg (если выбрано)
+5. robots.txt (если нужна индексация)
+6. sitemap.xml (если нужна индексация)
+
+Требования к коду:
+- Чистый HTML/CSS/JS без тяжёлых библиотек
+- Адаптивность: телефон 320-480px, планшет 768px, компьютер 1024px+
+- Все пути к файлам относительные
+- CSS-переменные для цветов, отступов, типографики
+- Комментарии в коде на русском языке
+- Страница открывается локально без сервера
+
+В конце обязательно напиши:
+- какие файлы сохранить и как назвать
+- что заменить вручную: тексты, ссылки, ID аналитики, реальные отзывы, изображения, контакты
+
+---
+
+# ВЕТКА 2 — HTML-ПРЕЗЕНТАЦИЯ
+
+## Блок 1 — Цель и контекст
+
+П1.1: «Уточни тему презентации — о чём она?»
+
+П1.2: «Какая главная цель? Например: продать продукт, привлечь инвестора, объяснить стратегию, обучить, защитить проект, показать отчёт.»
+
+П1.3: «Кто будет смотреть презентацию — клиенты, инвесторы, команда, руководство, ученики, партнёры?»
+
+П1.4: «Как будет использоваться презентация — вы выступаете со спикером вживую, или человек смотрит самостоятельно по ссылке?»
+
+П1.5: «Что главное должен запомнить зритель после просмотра? Одна ключевая мысль.»
+
+П1.6: «Что должен сделать зритель после просмотра — написать вам, купить, записаться на встречу, принять решение?»
+
+## Блок 2 — Структура и контент
+
+П2.1: «Сколько примерно слайдов нужно? Или предложить оптимальную структуру самостоятельно?»
+
+П2.2: «Есть ли готовый текст, тезисы, структура — или собираем логику с нуля?»
+
+Если есть текст:
+П2.3а: «Отлично — вставьте текст или опишите содержание каждого слайда.»
+
+Если нет:
+П2.3б: «Хорошо, напишу структуру и контент сам. Есть ли конкретные факты, цифры, кейсы или результаты которые обязательно нужно включить?»
+
+П2.4: «Нужны ли заметки для спикера под каждым слайдом?»
+
+## Блок 3 — Визуал и дизайн
+
+П3.1: «Есть ли изображения, иконки, скриншоты, графики — или делаем презентацию только на цвете, тексте и CSS-графике?»
+
+П3.2: «Какой стиль нужен — деловой, премиальный, технологичный, минималистичный, яркий, образовательный, editorial?»
+
+П3.3: «Есть ли фирменные цвета, логотип или брендбук?»
+
+П3.4: «Есть ли презентации-референсы которые нравятся? Ссылки или описание.»
+
+П3.5: «Что точно не нравится в стиле презентаций?»
+
+## Блок 4 — Навигация и техника
+
+П4.1: «Нужна ли адаптивность — чтобы презентация нормально открывалась на телефоне и планшете?»
+
+П4.2: «Нужны ли анимации переходов между слайдами?»
+
+П4.3: «Нужен ли Open Graph — красивое превью при отправке ссылки в Telegram?»
+
+П4.4: «Нужен ли favicon?»
+
+П4.5: «Где будет использоваться презентация — локально, GitHub Pages, Netlify, отправка папкой клиенту?»
+
+П4.6: «Нужна ли версия для печати или экспорта в PDF?»
+
+## После всех вопросов ветки «Презентация»
+
+Собери все ответы и напиши пользователю:
+
+«Отлично, всё записал! Вот что у нас получилось:
+
+**[Краткий бриф — 8-10 строк с ключевыми параметрами]**
+
+Всё верно? Если нужно что-то уточнить — скажите. Если всё ок — создаю три варианта дизайн-системы презентации.»
+
+После подтверждения создай три файла:
+- presentation-design-v1.html — чистый, деловой, универсальный
+- presentation-design-v2.html — премиальный, визуально дорогой
+- presentation-design-v3.html — смелый, технологичный, запоминающийся
+
+Каждый файл должен содержать:
+- название концепции и описание визуальной идеи
+- палитру цветов с HEX-кодами
+- типографику
+- стиль титульного слайда
+- стиль обычного текстового слайда
+- стиль слайда с карточками
+- стиль слайда с цифрами и метриками
+- стиль финального CTA-слайда
+- кнопки навигации и прогресс-индикатор
+- комментарии в коде на русском языке
+
+После создания трёх файлов ОСТАНОВИСЬ и напиши:
+- какие файлы сохранить
+- чем отличаются варианты и для какой задачи лучше подходит каждый
+- попроси выбрать v1, v2 или v3
+
+НЕ создавай index.html пока пользователь не выбрал вариант.
+
+После выбора создай полную презентацию:
+1. index.html
+2. style.css
+3. script.js
+4. favicon.svg (если выбрано)
+5. print.css (если нужна печать)
+6. robots.txt + sitemap.xml (если нужна индексация)
+
+Требования:
+- Навигация: кнопки «Назад/Вперёд», клавиши ← → и Space, прогресс-бар, счётчик слайдов
+- Адаптивность: телефон, планшет, компьютер
+- Один главный смысл на слайд
+- Чистый HTML/CSS/JS без библиотек
+- Комментарии на русском языке
+- Все пути относительные
+
+В конце обязательно напиши:
+- какие файлы сохранить
+- что заменить вручную: тексты, ссылки, изображения, контакты, логотип
+- какие клавиши управления доступны
+- как экспортировать в PDF если добавлен print.css
+</pre>
+    </div>
+  </details>
+</section>
+'''
+
+
+<!-- ===== РАЗДЕЛ 4: ПРОМПТЫ ===== -->
+<section class="section" id="prompts">
+  <div class="section-label">Раздел 5</div>
+  <h2 class="section-title">Готовые промпты <span>для Claude</span></h2>
+  <p class="section-desc">Промпт 1 — мастер-промпт на создание любого сайта с нуля. Остальные — для доработки конкретных частей.</p>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 1 — Мастер-промпт: создание сайта с нуля</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      
+Я хочу создать <strong>[лендинг / многостраничный сайт / HTML-презентацию]</strong> для <strong>[опишите продукт/услугу/проект]</strong>.<br><br>
+Аудитория: <strong>[кто придёт на сайт]</strong>.<br>
+Цель: <strong>[что должен сделать посетитель]</strong>.<br><br>
+
+<strong>— СТРУКТУРА —</strong><br>
+Блоки: первый экран с заголовком и кнопкой, для кого, преимущества (3–4 карточки), как работает (3 шага), отзывы (3 штуки), FAQ (5 вопросов), форма заявки, финальный CTA.<br><br>
+
+<strong>— ТЕХНИЧЕСКИЕ ПАРАМЕТРЫ —</strong><br>
+Адаптивность: телефон (320–480px) + планшет (768px) + компьютер (1024px+) — все три обязательно.<br>
+Анимации: <strong>[нет / минимальные — плавное появление блоков / полноценные — слайдеры, карусели]</strong><br>
+Изображения: <strong>[у меня есть свои фото в папке images/ / я сгенерирую отдельно / только цвет и текст]</strong><br>
+Favicon: <strong>[да — создай SVG-иконку в стиле сайта / нет]</strong><br>
+Open Graph: <strong>[да — добавь мета-теги для красивого превью в Telegram / нет]</strong><br>
+SEO-индексация: <strong>[открыть для поиска — добавь robots.txt и sitemap.xml / закрыть noindex / без разницы]</strong><br>
+Аналитика: <strong>[добавь код Яндекс.Метрики, счётчик: XXXXX / Google Analytics / не нужна]</strong><br>
+Форма заявки: <strong>[не нужна / кнопка ведёт на Tally/Google Forms: ССЫЛКА / встроить через iframe]</strong><br><br>
+
+<strong>— ДИЗАЙН —</strong><br>
+Стиль: <strong>[тёмный минимализм / светлый и тёплый / яркий неоновый / деловой]</strong><br>
+Цвета: <strong>[есть фирменные: #ЦВЕТ / предложи сам подходящую палитру]</strong><br><br>
+
+<strong>— ПОРЯДОК РАБОТЫ — ВАЖНО —</strong><br>
+Шаг 1: Сначала создай 3 варианта дизайн-системы в отдельных HTML-файлах (design-v1.html, design-v2.html, design-v3.html). Каждый файл — образец: палитра цветов, типографика, стиль кнопок, стиль карточек, пример секции. Остановись и жди моего выбора.<br>
+Шаг 2: После того как я выберу вариант — верстай полный сайт в трёх файлах: index.html, style.css, script.js.<br><br>
+
+<strong>— ОБЯЗАТЕЛЬНЫЕ ТРЕБОВАНИЯ —</strong><br>
+— Комментарии в коде на русском языке<br>
+— Только чистый HTML/CSS/JS, без тяжёлых библиотек<br>
+— Все пути к файлам — относительные (images/photo.jpg, не C:\...)<br>
+— Страница открывается локально в браузере без сервера<br>
+— В конце скажи какие файлы нужно сохранить и как их назвать
+    
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 2 — HTML-презентация</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Создай HTML-презентацию на тему <strong>[тема]</strong>. Слайдов: <strong>[число]</strong>.<br><br>Содержание: 1. Титульный — название и имя. 2–N. <strong>[содержание каждого слайда]</strong>.<br><br>Требования:<br>— Один файл index.html со встроенными стилями и скриптом<br>— Переключение кнопками «Назад» / «Вперёд» и клавишами ← →<br>— Анимация появления слайда, счётчик (3 / 10)<br>— Дизайн: <strong>[тёмный/светлый, цвета]</strong><br>— Открывается в браузере без сервера
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 3 — Многостраничный сайт</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Создай многостраничный сайт для <strong>[компания/проект]</strong>.<br><br>Страницы: index.html, about.html, services.html, contacts.html. На каждой одинаковые header и footer.<br><br>— Общий style.css и script.js для всех страниц<br>— Адаптивная вёрстка: телефон, планшет, компьютер<br>— Бургер-меню на мобильных<br>— Относительные пути между страницами<br>— Папка images/ для изображений<br>— В конце: список всех файлов и структура папки
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 4 — Только дизайн-система (для согласования)</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Создай 3 варианта дизайн-системы для <strong>[тема/проект]</strong>. Аудитория: <strong>[кто будет смотреть]</strong>.<br><br>Каждый вариант — отдельный HTML-файл-образец, который показывает:<br>— Цветовую палитру (фон, текст, акценты)<br>— Типографику (шрифты, размеры заголовков и текста)<br>— Стиль кнопок (форма, цвет, тень)<br>— Стиль карточек (радиус, рамка, фон)<br>— Пример секции с заголовком, текстом и кнопкой<br><br>Варианты должны сильно отличаться друг от друга. Назови файлы: design-v1.html, design-v2.html, design-v3.html. Остановись — жди моего выбора.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 5 — Favicon</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Мой сайт про <strong>[тема/название]</strong>. Цвета: <strong>[основные цвета]</strong>.<br><br>Сделай SVG-фавикон 32×32px в стиле сайта. Выдай готовый SVG-код и покажи как подключить в &lt;head&gt; index.html, включая Apple Touch Icon 180×180px для телефонов.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 6 — Open Graph для Telegram</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>Добавь Open Graph мета-теги для красивой карточки при отправке ссылки в Telegram:<br>— og:title, og:description, og:image (1200×630px), og:url, og:type<br>— Twitter Card теги тоже добавь<br>Верни полный обновлённый &lt;head&gt;.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 7 — Адаптация под мобильные</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой style.css: <strong>[вставьте CSS]</strong><br><br>Добавь полноценную адаптацию:<br>— Брейкпоинты: 768px (планшет) и 480px (телефон)<br>— Бургер-меню на мобильных<br>— Колонки → одна колонка<br>— Кнопки минимум 44px высотой<br>— Нет горизонтального скролла<br>Верни полный обновлённый style.css.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 8 — SEO и индексация</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>Настрой SEO:<br>— Мета-тег robots: <strong>[index, follow — для открытой / noindex, nofollow — закрыть от поиска]</strong><br>— Мета-теги title и description<br>— Создай sitemap.xml (страницы: <strong>[перечислите URL]</strong>)<br>— Создай robots.txt (<strong>[разрешить всё / закрыть всё]</strong>)<br>Верни обновлённый index.html + содержимое sitemap.xml и robots.txt.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 9 — Счётчик Яндекс.Метрика</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>Мой номер счётчика Яндекс.Метрики: <strong>[номер из личного кабинета]</strong>.<br><br>Добавь код счётчика в &lt;head&gt;, включая &lt;noscript&gt; версию. Верни полный обновлённый файл.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 10 — Добавить изображение</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>Хочу добавить <strong>[фото профиля / баннер / фон секции]</strong>. Файл <strong>[имя файла]</strong> лежит в папке images/.<br><br>— Добавь в нужное место, используй относительный путь<br>— Сделай адаптивным, добавь loading="lazy" и alt-текст<br>Верни полный файл.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 11 — Исправить ошибку</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      У меня не работает <strong>[кнопка / стили / меню / картинки]</strong>.<br><br>Вот полный код файла <strong>[имя файла]</strong>:<br><strong>[вставьте весь код]</strong><br><br>Найди ошибку, исправь, объясни что было не так. Верни полный исправленный файл.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 12 — Подготовить к хостингу</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Мой сайт готов. Файлы: <strong>[перечислите]</strong>.<br><br>Проверь перед загрузкой на хостинг:<br>— Все пути — относительные<br>— CSS/JS/изображения подключены правильно<br>— Нет незакрытых тегов, указана кодировка UTF-8<br>— Есть мета-тег viewport<br>— Есть favicon, Open Graph теги<br>— robots.txt и sitemap.xml в корне<br>— loading="lazy" на всех изображениях<br>Верни исправленные файлы или список что изменить.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 13 — Оживить лендинг (анимации)</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      
+      Вот мой лендинг — сделай его живым и современным. Вот полный код:<br><br>
+      <strong>[вставьте сюда весь код index.html]</strong><br><br>
+      Проанализируй структуру страницы и самостоятельно реши, какие анимации сделают её лучше. Выбирай из этого списка — только то, что уместно для данного сайта:<br><br>
+      — Плавное появление секций при прокрутке (снизу вверх, задержка между блоками)<br>
+      — Анимация первого экрана при загрузке: заголовок, подзаголовок и кнопка последовательно<br>
+      — Hover-эффекты на кнопках: <strong>[свечение / увеличение / смена цвета / сдвиг тени]</strong><br>
+      — Счётчик цифр в блоке с результатами (если есть числа)<br>
+      — Плавное раскрытие FAQ (если есть)<br>
+      — Карусель отзывов (если есть)<br>
+      — Прогресс-бар прокрутки вверху экрана<br>
+      — Кнопка «наверх» появляется после скролла<br>
+      — Параллакс на фоновых элементах: <strong>[оставить / убрать]</strong><br>
+      — Фоновая анимация первого экрана: <strong>[частицы / медленно движущиеся градиенты / ничего]</strong><br><br>
+      Требования: плавные (0.4–0.7s), работают на телефоне, только CSS и чистый JS без библиотек, не меняй тексты и цвета, комментарии на русском. Верни полный index.html + список что добавил и почему.
+    
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+    <details class="prompt-details">
+    <summary><span class="pd-title">Промпт 14 — Оживить презентацию (анимации)</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      
+      Вот моя HTML-презентация — сделай её живой и динамичной. Вот полный код:<br><br>
+      <strong>[вставьте сюда весь код index.html презентации]</strong><br><br>
+      Проанализируй содержание слайдов и самостоятельно реши, какие анимации сделают презентацию выразительнее. Выбирай из этого списка:<br><br>
+      — Переход между слайдами: <strong>[сдвиг влево-вправо / растворение / выезд снизу / масштабирование]</strong><br>
+      — Последовательное появление элементов на слайде: заголовок → текст → иконки или картинки<br>
+      — Анимация заголовков: <strong>[появление с печатью текста / выезд слева / затухание снизу]</strong><br>
+      — Счётчик цифр на слайдах с метриками и результатами (если есть)<br>
+      — Hover-эффекты на карточках внутри слайдов<br>
+      — Прогресс-бар: показывает номер слайда из общего числа<br>
+      — Анимированный фон титульного слайда: <strong>[медленно плывущий градиент / частицы / ничего]</strong><br>
+      — Плавное появление кнопок навигации<br><br>
+      Требования: переходы 0.4–0.6s, анимации внутри слайда запускаются после появления слайда, клавиши ← → и Space остаются, только CSS и чистый JS без библиотек, не меняй тексты и цвета, комментарии на русском. Верни полный index.html + список что добавил на каждый тип слайда.
+    
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+
+  
+<div class="alert alert-green">
+    <div class="alert-icon">✓</div>
+    <div class="alert-body">
+      <div class="alert-title">Лайфхак</div>
+      Всегда просите Claude вернуть <strong>полный файл</strong>, а не куски кода. Перед любой правкой делайте копию текущей версии.
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 5: ФАЙЛЫ ===== -->
+<section class="section" id="files">
+  <div class="section-label green">Раздел 6</div>
+  <h2 class="section-title">Как сохранить файлы <span>и структура проекта</span></h2>
+  <p class="section-desc">Полученный от Claude код нужно сохранить на компьютере. Два варианта — выберите тот, что подходит.</p>
+
+  <div class="cards-grid-2" style="margin-bottom:28px;">
+    <div class="card c-purple">
+      <div class="card-num purple">Вариант А — Самый простой</div>
+      <h3 class="card-title">Cowork от Anthropic</h3>
+      <p>Cowork — десктопное приложение, которое автоматически создаёт папку проекта и хранит все файлы. Claude сам кладёт файлы куда нужно — вам не нужно разбираться со структурой папок вручную.</p>
+      <p style="margin-top:10px;font-size:13px;color:var(--purple);font-weight:600;">Просто скажите Claude: «Сохрани все файлы проекта» — он сделает сам.</p>
+      <span class="card-tag tag-easy">Рекомендуется новичкам</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Вариант Б — Вручную</div>
+      <h3 class="card-title">Обычный браузер Claude.ai</h3>
+      <p>Если нет Cowork — скачивайте файлы вручную из чата и складывайте в папку на компьютере. Чуть больше шагов, но тоже несложно.</p>
+      <span class="card-tag tag-medium">Несколько кликов</span>
+    </div>
+  </div>
+
+  <div class="alert alert-purple" style="margin-bottom:24px;">
+    <div class="alert-icon">◈</div>
+    <div class="alert-body">
+      <div class="alert-title">Если работаете вручную — главное правило</div>
+      Создайте папку с названием только латиницей, без пробелов: <code>moy-sayt</code> или <code>landing-kurs</code>. Кириллица и пробелы в именах файлов и папок — частая причина проблем на хостинге.
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Создайте папку на рабочем столе</h4><p>Назовите: <code>moy-sayt</code>. Внутри будут все файлы проекта.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Сохраните файлы от Claude</h4><p>Claude даёт вам три файла: <code>index.html</code>, <code>style.css</code>, <code>script.js</code>. Скопируйте каждый в папку — по одному файлу за раз, с правильным именем.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Откройте index.html в браузере</h4><p>Дважды кликните на <code>index.html</code> — он откроется в браузере. Адрес <code>file:///</code> — нормально для локальной проверки.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Проверьте на телефоне</h4><p>В Chrome: нажмите <code>F12</code> → иконка телефона → выберите iPhone или Android. Так проверяете мобильную версию без телефона.</p></div></div>
+  </div>
+
+  <div class="alert alert-red" style="margin-top:16px;">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Нельзя использовать пути с компьютера</div>
+      Путь <code>C:\Users\Иван\Desktop\photo.jpg</code> работает только у вас. На хостинге его нет. Только относительные пути: <code>images/photo.jpg</code>
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 19: ДИЗАЙН-СИСТЕМА ===== -->
+<section class="section" id="design-system">
+  <div class="section-label muted">Раздел 7</div>
+  <h2 class="section-title">Дизайн-система — <span>работайте системно</span></h2>
+  <p class="section-desc">Как согласовывать дизайн профессионально, сохранять его и переиспользовать на разных проектах.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Попросите 4 варианта дизайн-системы</h4><p>Не весь сайт — только «атом»: палитра, типографика, карточки, кнопки. Claude создаёт 4 HTML-файла-образца.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Выберите или скомбинируйте</h4><p>«Цвета от первого, карточки от третьего» — Claude применит.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Согласуйте на 2–3 страницах</h4><p>Утвердите стиль прежде чем верстать всё. Так не придётся переделывать из-за одного цвета.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Сохраните как Skill</h4><p>Скажите: «Зафиксируй эту систему как Skill — создай SKILL.md и design-system.md». Один раз — больше не объясняете стиль каждый раз.</p></div></div>
+  </div>
+
+  <div class="prompt-box">
+    <div class="prompt-header"><span class="prompt-label">Промпт — Создать 4 варианта дизайн-системы</span><button class="prompt-copy" onclick="copyPrompt(this)">Копировать</button></div>
+    <div class="prompt-body">Создай 4 разных варианта дизайн-системы для <strong>[тема/проект]</strong>.<br><br>Каждый вариант — HTML-файл-образец, который показывает: цветовую палитру, типографику, стиль кнопок, карточек, пример секции.<br><br>— design-v1.html: тёмный минимализм<br>— design-v2.html: светлый и тёплый<br>— design-v3.html: яркий неоновый<br>— design-v4.html: деловой корпоративный<br><br>После того как выберу — на его основе сделаем полноценный сайт.</div>
+  </div>
+
+  <div class="cards-grid" style="margin-top:24px;">
+    <div class="card c-purple">
+      <div class="card-num purple">Что хранится в Skill</div>
+      <h3 class="card-title">Память о дизайне</h3>
+      <ul>
+        <li>Цвета (HEX-коды, CSS-переменные)</li>
+        <li>Типографика (шрифты, размеры)</li>
+        <li>Компоненты (кнопки, карточки)</li>
+        <li>Тон коммуникации</li>
+        <li>Структура блоков</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-num">Как включать</div>
+      <h3 class="card-title">Триггерное слово</h3>
+      <p><strong style="color:var(--purple)">Включить:</strong> написать слово-триггер, например <code>designAI</code> — Claude загрузит всю систему.<br><br><strong style="color:var(--green)">Выключить:</strong> не упоминать триггер.<br><br><strong>Разные клиенты:</strong> создайте отдельный Skill для каждого с разным триггером.</p>
+    </div>
+  </div>
+
+  <div class="divider" style="margin:28px 0;"></div>
+
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;">Если у вас уже есть дизайн или фирменный стиль</h3>
+  <div class="cards-grid">
+    <div class="card c-purple">
+      <div class="card-num purple">Есть брендбук или гайдлайн</div>
+      <h3 class="card-title">Дайте Claude конкретику</h3>
+      <p>Укажите в промпте: HEX-коды цветов, названия шрифтов, примеры компонентов. Чем точнее — тем меньше итераций. Можно прикрепить PDF или скриншот брендбука.</p>
+    </div>
+    <div class="card c-purple">
+      <div class="card-num purple">Есть существующий сайт</div>
+      <h3 class="card-title">Работать в том же стиле</h3>
+      <p>Скажите: «Вот мой текущий index.html — [вставьте код]. Новый сайт делай строго в том же стиле: те же цвета, шрифты, карточки, отступы». Claude проанализирует и будет следовать системе.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">Есть Figma или скриншот</div>
+      <h3 class="card-title">Referенс → Skill</h3>
+      <p>Сделайте скриншот дизайна и прикрепите к промпту. Claude извлечёт цвета, типографику, стиль компонентов и применит к новому проекту. Это быстрее чем объяснять словами.</p>
+    </div>
+  </div>
+
+  <div class="divider" style="margin:28px 0;"></div>
+
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;">Как превратить дизайн-систему в Skill</h3>
+  <div class="cards-grid-2">
+    <div class="card">
+      <div class="card-num">Зачем это нужно</div>
+      <h3 class="card-title">Один раз — навсегда</h3>
+      <p>Skill — это файл с инструкциями для Claude. Один раз зафиксировали дизайн-систему → в любом новом чате Claude мгновенно «вспоминает» все цвета, шрифты, компоненты и тон. Не нужно каждый раз объяснять заново.</p>
+    </div>
+    <div class="card c-green">
+      <div class="card-num green">Как создать Skill из дизайна</div>
+      <h3 class="card-title">Два шага</h3>
+      <p>После финального утверждения дизайн-системы скажите Claude: «Зафиксируй эту дизайн-систему как Skill — создай файл SKILL.md с триггером <code>[название]</code> и файл design-system.md с полными правилами». Claude создаст оба файла — загрузите их в раздел Skills вашего аккаунта.</p>
+    </div>
+  </div>
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпт — зафиксировать дизайн-систему как Skill</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот финальная версия моего сайта: <strong>[вставьте код index.html]</strong><br><br>
+      Зафиксируй эту дизайн-систему как Skill для повторного использования. Создай два файла:<br><br>
+      <strong>1. SKILL.md</strong> — инструкция активации:<br>
+      — Название Skill: <strong>[придумайте, например designMyBrand]</strong><br>
+      — Триггер: слово или фраза для активации в чате<br>
+      — Описание: когда активировать<br>
+      — Ссылка на design-system.md<br><br>
+      <strong>2. design-system.md</strong> — полные правила дизайна:<br>
+      — Все CSS-переменные и HEX-коды цветов<br>
+      — Типографика: шрифты, размеры, начертания<br>
+      — Стиль кнопок, карточек, алертов<br>
+      — Отступы и сетка<br>
+      — Тон текста<br>
+      — Правила: что делать и что никогда не делать<br><br>
+      Верни оба файла полностью.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+
+</section>
+
+<!-- ===== РАЗДЕЛ 6: FAVICON ===== -->
+<!-- ===== РАЗДЕЛ 18: ВДОХНОВЕНИЕ ===== -->
+<section class="section" id="inspiration">
+  <div class="section-label green">Раздел 8</div>
+  <h2 class="section-title">Где искать <span>вдохновение для дизайна</span></h2>
+  <p class="section-desc">Лучший способ: найдите дизайн который нравится → скриншот → Claude создаст похожее с нуля.</p>
+  <div class="alert alert-green" style="margin-bottom:24px;">
+    <div class="alert-icon">◈</div>
+    <div class="alert-body">
+      <div class="alert-title">Dribbble и Behance лучше шаблонов</div>
+      Шаблон — чужой код. Картинка с Dribbble — Claude считывает стиль и пишет чистый код под ваши задачи. Свежее, без мусора, под вашу задачу.
+    </div>
+  </div>
+  <div class="inspo-grid">
+    <div class="inspo-card">
+      <div class="inspo-badge ib-best">Лучший</div>
+      <a href="https://dribbble.com" target="_blank">dribbble.com</a>
+      <p>Лучший дизайн мира. Ищите: «landing page», «SaaS website», «course landing». <strong>Бесплатный просмотр без регистрации.</strong></p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-best">Лучший</div>
+      <a href="https://behance.net" target="_blank">behance.net</a>
+      <p>Adobe. Полные кейсы с несколькими экранами. Больше СНГ-дизайнеров. <strong>Бесплатный просмотр, поиск на русском работает.</strong></p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-good">Шаблоны</div>
+      <a href="https://html5up.net" target="_blank">html5up.net</a>
+      <p><strong>Полностью бесплатные HTML-шаблоны</strong> — скачиваются без регистрации. Claude может взять структуру и полностью переработать дизайн под вас.</p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-good">Шаблоны</div>
+      <a href="https://startbootstrap.com" target="_blank">startbootstrap.com</a>
+      <p><strong>Бесплатные Bootstrap-шаблоны</strong>, много лендингов. Скачиваются без регистрации.</p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-good">UI-киты</div>
+      <a href="https://ui8.net" target="_blank">ui8.net</a>
+      <p>Маркетплейс профессиональных UI-китов и дизайн-систем. Платные ($15–50), но <strong>есть раздел Freebies — бесплатные ресурсы без регистрации.</strong> Скриншот любого кита — отличный референс для Claude.</p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-good">Figma</div>
+      <a href="https://www.figma.com/community" target="_blank">figma.com/community</a>
+      <p>Тысячи шаблонов. <strong>Часть бесплатна</strong> — смотрите метку «Free». Скриншот из Figma → Claude воспроизводит стиль в HTML.</p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-ru">Российский</div>
+      <a href="https://tilda.cc" target="_blank">tilda.cc</a>
+      <p>Как визуальный референс — скриншот → Claude воспроизводит стиль в HTML. <strong>Есть бесплатный тариф</strong> для просмотра шаблонов.</p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-good">Презентации</div>
+      <a href="https://gamma.app" target="_blank">gamma.app</a>
+      <p>ИИ-презентации. У вас подключён через MCP — можно создавать прямо из Claude.</p>
+    </div>
+    <div class="inspo-card">
+      <div class="inspo-badge ib-good">Презентации</div>
+      <a href="https://slidesgo.com" target="_blank">slidesgo.com</a>
+      <p>Google Slides и PowerPoint шаблоны. <strong>Большая бесплатная коллекция</strong> — фильтр «Free» в поиске.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 20: АНИМАЦИИ ===== -->
+<section class="section" id="animations">
+  <div class="section-label green">Раздел 9</div>
+  <h2 class="section-title">Анимации <span>и интерактивность</span></h2>
+  <p class="section-desc">Как сделать сайт или презентацию живыми — что бывает, как это работает, и готовые промпты чтобы Claude всё сделал сам.</p>
+
+  <!-- СЛОВАРИК -->
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;">Словарик — что означают слова</h3>
+  <div class="cards-grid" style="margin-bottom:36px;">
+    <div class="card">
+      <div class="card-num purple">CSS-анимация</div>
+      <h3 class="card-title">Оформление в движении</h3>
+      <p>CSS отвечает за внешний вид страницы. Когда внешний вид плавно меняется — это CSS-анимация. Например: кнопка меняет цвет при наведении, блок появляется с затуханием. Работает без дополнительного кода.</p>
+    </div>
+    <div class="card">
+      <div class="card-num purple">JavaScript-анимация</div>
+      <h3 class="card-title">Логика и реакция</h3>
+      <p>JavaScript следит за действиями пользователя и реагирует: блок появляется когда доскроллили до него, FAQ раскрывается по клику, счётчик считает цифры. Чуть сложнее, но Claude пишет это легко.</p>
+    </div>
+    <div class="card">
+      <div class="card-num purple">Transition</div>
+      <h3 class="card-title">Плавный переход</h3>
+      <p>Transition — это «плавность». Без него элемент меняется резко: был синим, стал зелёным. С ним — плавно перетекает за 0.3 секунды. Используется почти везде.</p>
+    </div>
+    <div class="card">
+      <div class="card-num purple">Intersection Observer</div>
+      <h3 class="card-title">«Видит» ли элемент экран</h3>
+      <p>Это механизм, который отслеживает: попал ли блок в зону видимости при прокрутке. Как только попал — запускается анимация появления. Именно так делается «блоки выплывают снизу при скролле».</p>
+    </div>
+  </div>
+
+  <!-- ЧТО БЫВАЕТ: ТАБЛИЦА ЭФФЕКТОВ -->
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;">Какие эффекты бывают — и где работают</h3>
+  <div class="table-wrap" style="margin-bottom:36px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Эффект</th>
+          <th>Что видит пользователь</th>
+          <th>Лендинг</th>
+          <th>Презентация</th>
+          <th>Сложность</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Появление блоков при скролле</strong></td>
+          <td>Секции плавно выплывают снизу по мере прокрутки</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="no">—</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Hover на кнопках</strong></td>
+          <td>Кнопка меняет цвет, увеличивается или светится при наведении</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Анимация заголовка</strong></td>
+          <td>Текст появляется побуквенно, или выезжает слева, или «печатается»</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Переход между слайдами</strong></td>
+          <td>Слайд уходит влево, следующий въезжает справа — или растворяется</td>
+          <td><span class="no">—</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Счётчик цифр</strong></td>
+          <td>«0 → 1 240 клиентов» — число считается от нуля при попадании в экран</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Параллакс</strong></td>
+          <td>Фоновое изображение двигается медленнее текста — ощущение глубины</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="no">—</span></td>
+          <td><span class="partial">Средне</span></td>
+        </tr>
+        <tr>
+          <td><strong>Раскрывающийся FAQ</strong></td>
+          <td>Клик на вопрос — ответ плавно разворачивается</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="no">—</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Карусель / слайдер</strong></td>
+          <td>Отзывы или карточки листаются кнопками или свайпом</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="no">—</span></td>
+          <td><span class="partial">Средне</span></td>
+        </tr>
+        <tr>
+          <td><strong>Появление элементов слайда</strong></td>
+          <td>Заголовок появляется, потом текст, потом иконки — последовательно</td>
+          <td><span class="no">—</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="partial">Средне</span></td>
+        </tr>
+        <tr>
+          <td><strong>Прогресс-бар</strong></td>
+          <td>Полоска заполняется при скролле (лендинг) или показывает номер слайда</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">Легко</span></td>
+        </tr>
+        <tr>
+          <td><strong>Частицы / фоновая анимация</strong></td>
+          <td>Медленно летящие точки или линии на фоне первого экрана</td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="partial">Средне</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <details class="prompt-details" style="margin-top:20px;">
+    <summary><span class="pd-title">Промпты — оживить лендинг и презентацию</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      <h4>Оживить лендинг — Claude решает сам</h4>
+      Вот мой лендинг — сделай его живым и современным. Вот полный код:<br><br>
+      <strong>[вставьте сюда весь код index.html]</strong><br><br>
+      Проанализируй структуру страницы и самостоятельно реши, какие анимации сделают её лучше. Выбирай из этого списка — только то, что уместно для данного сайта:<br><br>
+      — Плавное появление секций при прокрутке (снизу вверх, задержка между блоками)<br>
+      — Анимация первого экрана при загрузке: заголовок, подзаголовок и кнопка появляются последовательно<br>
+      — Hover-эффекты на кнопках: <strong>[свечение / увеличение / смена цвета / сдвиг тени]</strong><br>
+      — Счётчик цифр в блоке с результатами (если есть числа)<br>
+      — Плавное раскрытие FAQ (если есть)<br>
+      — Карусель отзывов (если есть блок с отзывами)<br>
+      — Прогресс-бар прокрутки страницы вверху экрана<br>
+      — Кнопка «наверх» появляется после скролла<br>
+      — Параллакс на фоновых элементах первого экрана: <strong>[оставить / убрать]</strong><br>
+      — Фоновая анимация первого экрана: <strong>[частицы / медленно движущиеся градиенты / ничего]</strong><br><br>
+      Требования: плавные (0.4–0.7s), работают на телефоне, только CSS и чистый JS без библиотек, не меняй тексты и цвета, комментарии на русском. Верни полный index.html + список что добавил и почему.
+
+      <h4 style="margin-top:24px;">Оживить презентацию — Claude решает сам</h4>
+      Вот моя HTML-презентация — сделай её живой и динамичной. Вот полный код:<br><br>
+      <strong>[вставьте сюда весь код index.html презентации]</strong><br><br>
+      Проанализируй содержание слайдов и самостоятельно реши, какие анимации сделают презентацию выразительнее:<br><br>
+      — Переход между слайдами: <strong>[сдвиг влево-вправо / растворение / выезд снизу / масштабирование]</strong><br>
+      — Последовательное появление элементов на слайде: заголовок → текст → иконки<br>
+      — Анимация заголовков: <strong>[печать текста / выезд слева / затухание снизу]</strong><br>
+      — Счётчик цифр на слайдах с метриками (если есть)<br>
+      — Прогресс-бар: показывает номер слайда из общего числа<br>
+      — Анимированный фон титульного слайда: <strong>[медленно плывущий градиент / частицы / ничего]</strong><br><br>
+      Требования: переходы 0.4–0.6s, анимации внутри слайда запускаются после появления слайда, клавиши ← → и Space остаются, только CSS и чистый JS, комментарии на русском. Верни полный index.html + список что добавил.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпты</button>
+    </div>
+  </details>
+
+</section>
+
+<section class="section" id="favicon">
+  <div class="section-label">Раздел 10</div>
+  <h2 class="section-title">Favicon — <span>значок сайта во вкладке</span></h2>
+  <p class="section-desc">Маленькая иконка рядом с названием вкладки. Без неё вкладка выглядит пустой — это заметно.</p>
+  <div class="cards-grid">
+    <div class="card c-purple">
+      <div class="card-num purple">Где отображается</div>
+      <h3 class="card-title">Три места сразу</h3>
+      <ul>
+        <li>Вкладка браузера рядом с названием</li>
+        <li>Закладки и история браузера</li>
+        <li>Экран телефона при сохранении ярлыка</li>
+        <li>Иногда в результатах поиска Google</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-num">Сервисы</div>
+      <h3 class="card-title">Сделать без дизайнера</h3>
+      <ul>
+        <li><a href="https://favicon.io" target="_blank">favicon.io</a> — из текста, эмодзи или картинки</li>
+        <li><a href="https://realfavicongenerator.net" target="_blank">realfavicongenerator.net</a> — все размеры сразу</li>
+        <li>Или попросить Claude нарисовать SVG</li>
+      </ul>
+      <span class="card-tag tag-easy">2 минуты</span>
+    </div>
+  </div>
+  <details class="prompt-details" style="margin-top:20px;">
+    <summary><span class="pd-title">Промпт — создать favicon через Claude</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Создай SVG-favicon для моего сайта.<br><br>
+      Тематика сайта: <strong>[опишите]</strong><br>
+      Стиль сайта: <strong>[тёмный / светлый / цвета]</strong><br>
+      Идея иконки: <strong>[буква, символ, геометрия, логотип — или придумай сам]</strong><br><br>
+      Требования:<br>
+      — Формат SVG, размер 32×32px<br>
+      — Хорошо читается на светлом и тёмном фоне<br>
+      — Простая форма — иконка маленькая, сложности не видно<br>
+      — Без текста длиннее 2 символов<br><br>
+      Выдай готовый SVG-код, который я сохраню как <code>favicon.svg</code> в папку проекта. Также напиши одну строку HTML которую вставить в &lt;head&gt;.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 7: ИЗОБРАЖЕНИЯ ===== -->
+<section class="section" id="images">
+  <div class="section-label green">Раздел 11</div>
+  <h2 class="section-title">Как добавить <span>фотографии на сайт</span></h2>
+  <p class="section-desc">Свои фото, сгенерированные картинки или стоки — и как оптимизировать всё через Claude.</p>
+  <div class="cards-grid">
+    <div class="card c-purple">
+      <div class="card-num purple">Свои фото</div>
+      <h3 class="card-title">С телефона или камеры</h3>
+      <p>Скопируйте в папку <code>images/</code>, подключите в HTML. Важно: переименуйте латиницей без пробелов — <code>photo.jpg</code>, а не <code>Моё фото 2024.jpg</code>.</p>
+      <span class="card-tag tag-easy">Просто</span>
+    </div>
+    <div class="card c-purple">
+      <div class="card-num purple">Сгенерированные</div>
+      <h3 class="card-title">ChatGPT, Midjourney, Stable Diffusion</h3>
+      <ul>
+        <li><a href="https://chat.openai.com" target="_blank">ChatGPT</a> — генерирует в чате, скачайте</li>
+        <li><a href="https://midjourney.com" target="_blank">Midjourney</a> — лучшее качество, через Discord</li>
+        <li><strong>Stable Diffusion</strong> — бесплатно, локально</li>
+      </ul>
+      <span class="card-tag tag-easy">Рекомендуется</span>
+    </div>
+    <div class="card c-green">
+      <div class="card-num green">Бесплатные стоки</div>
+      <h3 class="card-title">Легально и бесплатно</h3>
+      <ul>
+        <li><a href="https://unsplash.com" target="_blank">unsplash.com</a> — лучшие фото</li>
+        <li><a href="https://www.pexels.com" target="_blank">pexels.com</a> — фото и видео</li>
+        <li><a href="https://pixabay.com" target="_blank">pixabay.com</a> — фото, иллюстрации</li>
+        <li><a href="https://www.freepik.com" target="_blank">freepik.com</a> — иллюстрации, иконки</li>
+      </ul>
+    </div>
+    <div class="card c-purple">
+      <div class="card-num purple">Оптимизация — через Claude</div>
+      <h3 class="card-title">Не нужны сторонние сервисы</h3>
+      <p>Claude умеет написать CSS-код который правильно отображает и масштабирует изображения под любой экран. А через <strong style="color:var(--purple)">Claude Code</strong> — реально запустить скрипт оптимизации прямо на вашем компьютере: сожмёт файлы, конвертирует в WebP, изменит размеры.</p>
+      <span class="card-tag tag-key">Claude Code</span>
+    </div>
+  </div>
+
+  <div class="alert alert-red" style="margin-top:20px;">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Частые ошибки</div>
+      Кириллица в имени файла, пробелы в имени, абсолютный путь (C:\Users\...) — всё это ломает изображения на хостинге. Только латиница, дефисы, относительный путь: <code>images/photo.jpg</code>
+    </div>
+  </div>
+
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпты — изображения и оптимизация</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      <h4>CSS — адаптивные изображения</h4>
+      Вот мой style.css: <strong>[вставьте код]</strong><br><br>
+      Оптимизируй CSS для всех изображений:<br>
+      — Адаптивность: не выходят за экран на любом устройстве<br>
+      — loading="lazy" на все img<br>
+      — Правильные srcset для разных экранов<br>
+      — Изображения в секции-фоне — cover без растяжения<br>
+      Верни обновлённый CSS.
+      <h4 style="margin-top:20px;">Claude Code — сжатие и конвертация</h4>
+      В папке images/ лежат мои изображения. Напиши и запусти скрипт который:<br>
+      — Сожмёт все JPG и PNG без заметной потери качества<br>
+      — Конвертирует в формат WebP (меньше весит при том же качестве)<br>
+      — Уменьшит изображения если они шире 1600px<br>
+      — Сохранит оригиналы в папку images/originals/<br>
+      Используй Python или Node.js — что есть на компьютере.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпты</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 8: АДАПТИВНОСТЬ ===== -->
+<section class="section" id="responsive">
+  <div class="section-label muted">Раздел 12</div>
+  <h2 class="section-title">Адаптивность <span>под устройства</span></h2>
+  <p class="section-desc">Больше половины посетителей заходят с телефона. Проверьте сайт на всех экранах.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Устройство</th><th>Ширина</th><th>Что меняется</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Маленький телефон</strong></td><td>320–480px</td><td>Одна колонка, крупные кнопки, меньший шрифт</td></tr>
+        <tr><td><strong>Смартфон</strong></td><td>480–768px</td><td>Одна колонка, бургер-меню</td></tr>
+        <tr><td><strong>Планшет</strong></td><td>768–1024px</td><td>2 колонки вместо 3</td></tr>
+        <tr><td><strong>Компьютер</strong></td><td>1024px+</td><td>Полная версия</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;margin:28px 0 14px;">Как проверить на телефоне — без телефона</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num green">1</div><div class="step-body"><h4>Откройте DevTools</h4><p>Нажмите <code>F12</code> в Chrome или Edge.</p></div></div>
+    <div class="step"><div class="step-num green">2</div><div class="step-body"><h4>Включите режим устройства</h4><p>Кликните иконку телефона вверху DevTools или нажмите <code>Ctrl+Shift+M</code>.</p></div></div>
+    <div class="step"><div class="step-num green">3</div><div class="step-body"><h4>Выберите устройство</h4><p>В списке: iPhone 14, Samsung Galaxy S21, iPad.</p></div></div>
+    <div class="step"><div class="step-num green">4</div><div class="step-body"><h4>Проверьте</h4><p>Нет горизонтального скролла? Текст читаем? Кнопки минимум 44px? Меню работает?</p></div></div>
+  </div>
+  <div class="alert alert-purple">
+    <div class="alert-icon">◈</div>
+    <div class="alert-body">
+      <div class="alert-title">Проверьте скорость</div>
+      <a href="https://pagespeed.web.dev" target="_blank">pagespeed.web.dev</a> — бесплатный инструмент Google. Оценка и советы что исправить. Цель: зелёная зона (90+).
+    </div>
+  </div>
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпт — добавить адаптивность под телефон</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой style.css: <strong>[вставьте код]</strong><br><br>
+      Добавь полноценную адаптацию под мобильные устройства:<br>
+      — Брейкпоинты: 768px (планшет) и 480px (телефон)<br>
+      — Меню превращается в бургер-кнопку на мобильных<br>
+      — Колонки становятся одной колонкой<br>
+      — Размеры шрифтов уменьшаются пропорционально<br>
+      — Кнопки увеличиваются для удобного нажатия пальцем (минимум 44px высота)<br>
+      — Изображения не выходят за экран<br>
+      — Нет горизонтального скролла<br><br>
+      Верни полный обновлённый style.css.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 9: OPEN GRAPH ===== -->
+<section class="section" id="opengraph">
+  <div class="section-label">Раздел 13</div>
+  <h2 class="section-title">Open Graph — <span>превью в Telegram</span></h2>
+  <p class="section-desc">Когда отправляете ссылку в Telegram или ВКонтакте — показывается карточка с картинкой. Это Open Graph.</p>
+  <div class="cards-grid-2">
+    <div class="card">
+      <div class="card-num">Без Open Graph</div>
+      <h3 class="card-title">Голая ссылка</h3>
+      <p>В Telegram только URL: <code>https://moysite.ru</code>. Некрасиво, никто не кликает.</p>
+    </div>
+    <div class="card c-purple">
+      <div class="card-num purple">С Open Graph</div>
+      <h3 class="card-title">Карточка с картинкой</h3>
+      <p>Большая картинка 1200×630px, заголовок, описание. Кликабельность выше в несколько раз.</p>
+      <span class="card-tag tag-easy">5 минут</span>
+    </div>
+  </div>
+  <div class="alert alert-amber" style="margin-top:16px;">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Важно про og:image</div>
+      Путь к картинке должен быть <strong>абсолютным</strong> — начинаться с https://moysite.ru/... Относительный путь не сработает в мессенджерах.
+    </div>
+  </div>
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпт — добавить Open Graph теги</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>
+      Добавь Open Graph мета-теги в &lt;head&gt; чтобы при отправке ссылки в Telegram и ВКонтакте показывалась красивая карточка с картинкой.<br><br>
+      Данные для тегов:<br>
+      — Название сайта: <strong>[название]</strong><br>
+      — Описание (1–2 предложения): <strong>[описание]</strong><br>
+      — URL сайта: <strong>[https://...]</strong><br>
+      — Путь к og:image: <strong>[https://.../og-image.jpg]</strong> (картинка 1200×630px)<br><br>
+      Также напиши промпт которым я попрошу Claude создать og-image в виде SVG — красивый баннер 1200×630px в стиле сайта.<br><br>
+      Верни полный обновлённый index.html.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 10: SEO И ИНДЕКСАЦИЯ ===== -->
+<section class="section" id="seo">
+  <div class="section-label green">Раздел 14</div>
+  <h2 class="section-title">SEO и индексация — <span>быть или не быть в поиске</span></h2>
+  <p class="section-desc">Вы решаете — пускать ли поисковики на ваш сайт. Иногда нужно закрыть страницу от Google, иногда — открыть и помочь проиндексировать правильно.</p>
+
+  <div class="cards-grid">
+    <div class="card c-green">
+      <div class="card-num green">Открыть для поиска</div>
+      <h3 class="card-title">Когда нужна индексация</h3>
+      <ul>
+        <li>Лендинг курса или услуги — хотите клиентов из Google</li>
+        <li>Портфолио или блог — люди должны вас найти</li>
+        <li>Коммерческий сайт — SEO приносит трафик бесплатно</li>
+      </ul>
+      <span class="card-tag tag-easy">По умолчанию</span>
+    </div>
+    <div class="card c-purple">
+      <div class="card-num purple">Закрыть от поиска</div>
+      <h3 class="card-title">Когда нужен noindex</h3>
+      <ul>
+        <li>Тестовая или черновая версия сайта</li>
+        <li>Страница только для участников курса</li>
+        <li>Служебные страницы (спасибо, оплата)</li>
+        <li>Временный лендинг не для публики</li>
+      </ul>
+      <span class="card-tag tag-key">Настраивается</span>
+    </div>
+    <div class="card">
+      <div class="card-num">robots.txt</div>
+      <h3 class="card-title">Инструкция для поисковиков</h3>
+      <p>Файл в корне сайта. Говорит поисковым роботам что можно сканировать, а что нет. Без него — робот сканирует всё.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">sitemap.xml</div>
+      <h3 class="card-title">Карта сайта для Google</h3>
+      <p>Файл со списком всех страниц сайта. Помогает Google найти и проиндексировать страницы быстрее. Особенно важен для многостраничных сайтов.</p>
+    </div>
+  </div>
+
+  <div class="alert alert-amber" style="margin-top:16px;">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">После публикации</div>
+      Зарегистрируйте сайт в <a href="https://webmaster.yandex.ru" target="_blank">Яндекс.Вебмастер</a> и <a href="https://search.google.com/search-console" target="_blank">Google Search Console</a> — загрузите sitemap.xml туда. Это ускорит индексацию в десятки раз.
+    </div>
+  </div>
+
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпт — SEO, robots.txt и sitemap.xml</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>
+      Сделай следующее:<br><br>
+      1. Добавь в &lt;head&gt; мета-тег robots: <strong>[index, follow — открыть для поиска / noindex, nofollow — закрыть от поиска]</strong><br><br>
+      2. Создай файл robots.txt для корня сайта: <strong>[разрешить всем поисковикам / закрыть всё]</strong><br><br>
+      3. Создай файл sitemap.xml — URL моего сайта: <strong>[https://...]</strong><br>
+      Страницы: <strong>[перечислите если многостраничный, или оставьте одну главную]</strong><br><br>
+      Верни: обновлённый index.html, текст файла robots.txt и текст файла sitemap.xml — каждый отдельно с названием.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 17: АНАЛИТИКА ===== -->
+<section class="section" id="analytics">
+  <div class="section-label">Раздел 15</div>
+  <h2 class="section-title">Аналитика — <span>кто приходит на сайт</span></h2>
+  <p class="section-desc">Счётчик посещений — одна строка кода. Без него вы не знаете, работает ли сайт.</p>
+  <div class="cards-grid-2">
+    <div class="card c-purple">
+      <div class="card-num purple">Яндекс.Метрика — приоритет для РФ</div>
+      <h3 class="card-title">Рекомендуется</h3>
+      <p>Бесплатно, на русском. Видит российских пользователей лучше Google. Показывает: сколько зашло, откуда пришли, что делали, с какого устройства.</p>
+      <p style="margin-top:8px;font-size:13px;"><a href="https://metrika.yandex.ru" target="_blank">metrika.yandex.ru</a> → Добавить счётчик → Получить код → Вставить в &lt;head&gt;</p>
+      <span class="card-tag tag-easy">Бесплатно</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Google Analytics</div>
+      <h3 class="card-title">Международный стандарт</h3>
+      <p>Мощнее по функциям. Для начала достаточно Метрики. Если нужна международная аудитория — подключите оба.</p>
+      <p style="margin-top:8px;font-size:13px;"><a href="https://analytics.google.com" target="_blank">analytics.google.com</a></p>
+    </div>
+  </div>
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпт — подключить Яндекс.Метрику и Google Analytics</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>
+      Подключи аналитику:<br><br>
+      — Яндекс.Метрика: номер счётчика <strong>[вставьте номер из metrika.yandex.ru]</strong><br>
+      — Google Analytics: ID измерения <strong>[вставьте G-XXXXXXXXXX из analytics.google.com]</strong> (или напиши «не нужно»)<br><br>
+      Требования:<br>
+      — Вставь код счётчиков в &lt;head&gt; правильно<br>
+      — Добавь комментарии на русском: где код Метрики, где GA<br>
+      — Не меняй ничего больше<br><br>
+      Верни полный обновлённый index.html.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 12: ФОРМА ЗАЯВКИ ===== -->
+<section class="section" id="forms">
+  <div class="section-label">Раздел 16</div>
+  <h2 class="section-title">Форма заявки — <span>куда идут заявки</span></h2>
+  <p class="section-desc">HTML-форму нарисовать просто. Но чтобы заявки доходили — нужен сервис-получатель.</p>
+  <div class="alert alert-red">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Частое заблуждение</div>
+      Нельзя сделать HTML-форму и ожидать, что заявки придут на почту. HTML — только визуальная часть. Для отправки нужен внешний сервис.
+    </div>
+  </div>
+  <div class="cards-grid">
+    <div class="card c-green">
+      <div class="card-num green">Вариант 1 — Проще всего</div>
+      <h3 class="card-title">Google Forms или Tally</h3>
+      <p>Создаёте форму на <a href="https://tally.so" target="_blank">Tally.so</a>, получаете ссылку. Кнопка ведёт на ссылку или форма встраивается через iframe.</p>
+      <span class="card-tag tag-easy">Рекомендуется</span>
+    </div>
+    <div class="card c-green">
+      <div class="card-num green">Вариант 2 — Российский</div>
+      <h3 class="card-title">Яндекс Формы</h3>
+      <p>Бесплатный российский аналог. Создаёте форму, встраиваете через iframe. Уведомления на почту.</p>
+      <span class="card-tag tag-easy">Бесплатно</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Вариант 3</div>
+      <h3 class="card-title">Telegram-бот</h3>
+      <p>Заявки приходят прямо в Telegram — сразу на телефоне. Claude напишет скрипт для отправки.</p>
+      <span class="card-tag tag-medium">Нужна помощь Claude</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Вариант 4</div>
+      <h3 class="card-title">Backend (PHP)</h3>
+      <p>Полноценная обработка на сервере. Для первого лендинга избыточно — используйте варианты 1–3.</p>
+      <span class="card-tag tag-hard">Не для новичков</span>
+    </div>
+  </div>
+  <details class="prompt-details" style="margin-top:16px;">
+    <summary><span class="pd-title">Промпт — добавить форму заявки</span><span class="pd-arrow">›</span></summary>
+    <div class="pd-body">
+      Вот мой index.html: <strong>[вставьте код]</strong><br><br>
+      Добавь форму заявки. Способ получения заявок: <strong>[выберите один]</strong><br><br>
+      — Tally.so: ссылка на мою форму <strong>[https://tally.so/r/...]</strong> — кнопка открывает форму в новой вкладке<br>
+      — Яндекс Формы: код для встраивания <strong>[вставьте iframe-код из Яндекс Форм]</strong><br>
+      — Telegram-бот: токен бота <strong>[вставьте]</strong>, chat_id <strong>[вставьте]</strong> — заявки в Telegram<br><br>
+      Поля формы: <strong>[имя, телефон, email, сообщение — уберите лишнее]</strong><br>
+      Текст кнопки: <strong>[Оставить заявку / Записаться / Узнать цену]</strong><br><br>
+      Верни полный обновлённый index.html.
+      <button class="pd-copy" onclick="copyDetails(this)">Скопировать промпт</button>
+    </div>
+  </details>
+</section>
+
+<!-- ===== РАЗДЕЛ 13: ДОМЕН ===== -->
+<section class="section" id="domain">
+  <div class="section-label green">Раздел 17</div>
+  <h2 class="section-title">Как выбрать <span>и купить домен</span></h2>
+  <p class="section-desc">Домен — адрес вашего сайта. Арендуется ежегодно.</p>
+  <div class="two-col">
+    <div>
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px;">Зоны домена</h3>
+      <ul class="checklist">
+        <li><span class="ci ci-check">✓</span><div><strong style="color:var(--purple)">.ru</strong> — лучший для бизнеса в России</div></li>
+        <li><span class="ci ci-check">✓</span><div><strong style="color:var(--green)">.рф</strong> — кириллический домен</div></li>
+        <li><span class="ci ci-star">◆</span><div><strong>.com</strong> — международный, дороже</div></li>
+        <li><span class="ci ci-info">i</span><div><strong>.site, .online</strong> — дешевле, менее привычны</div></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px;">Правила хорошего имени</h3>
+      <ul class="checklist">
+        <li><span class="ci ci-check">✓</span>Короткое, легко запомнить</li>
+        <li><span class="ci ci-check">✓</span>Отражает суть или ваше имя</li>
+        <li><span class="ci ci-warn">!</span>Только буквы и дефис, без пробелов</li>
+        <li><span class="ci ci-warn">!</span>Включите авто-продление!</li>
+      </ul>
+    </div>
+  </div>
+  <div class="alert alert-green" style="margin-top:20px;margin-bottom:8px;">
+    <div class="alert-icon">✓</div>
+    <div class="alert-body">
+      <div class="alert-title">Рекомендация: покупайте домен и хостинг в одном месте</div>
+      Это удобнее — не нужно настраивать NS-серверы, всё подключается в 2–3 клика в одном личном кабинете.
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-top:8px;">
+    <table>
+      <thead><tr><th>Провайдер</th><th>Домен + Хостинг</th><th>.ru / .рф</th><th>Оплата</th><th>Особенности</th><th>Сайт</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Beget</strong></td><td><span class="yes">✓ Оба</span></td><td><span class="yes">✓</span></td><td>Карта РФ, СБП</td><td>Популярен в РФ, бесплатный тест</td><td><a href="https://beget.com" target="_blank">beget.com</a></td></tr>
+        <tr><td><strong>Timeweb</strong></td><td><span class="yes">✓ Оба</span></td><td><span class="yes">✓</span></td><td>Карта РФ, СБП</td><td>NVMe-диски, ежедневные бэкапы</td><td><a href="https://timeweb.com" target="_blank">timeweb.com</a></td></tr>
+        <tr><td><strong>Reg.ru</strong></td><td><span class="yes">✓ Оба</span></td><td><span class="yes">✓</span></td><td>Карта РФ, СБП, счёт</td><td>Крупнейший в РФ</td><td><a href="https://reg.ru" target="_blank">reg.ru</a></td></tr>
+        <tr><td><strong>SpaceWeb</strong></td><td><span class="yes">✓ Оба</span></td><td><span class="yes">✓</span></td><td>Карта РФ, СБП</td><td>Неограниченный трафик, DDoS-защита</td><td><a href="https://sweb.ru" target="_blank">sweb.ru</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-amber">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Проверяйте актуальные цены</div>
+      Домен .ru — ориентировочно от 200–600 ₽/год при первой регистрации. Цены меняются — уточняйте на сайте регистратора.
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 11: ПОДДОМЕНЫ ===== -->
+<section class="section" id="subdomain">
+  <div class="section-label muted">Раздел 18</div>
+  <h2 class="section-title">Поддомены — <span>отдельный сайт на вашем домене</span></h2>
+  <p class="section-desc">Если у вас moysite.ru — можно создать blog.moysite.ru, kurs.moysite.ru, shop.moysite.ru. Бесплатно.</p>
+  <div class="cards-grid-2">
+    <div class="card c-purple">
+      <div class="card-num purple">Примеры использования</div>
+      <h3 class="card-title">Зачем нужны поддомены</h3>
+      <p><code>blog.moysite.ru</code> — блог<br>
+      <code>kurs.moysite.ru</code> — страница курса<br>
+      <code>kurs2.moysite.ru</code> — второй курс<br>
+      <code>shop.moysite.ru</code> — магазин<br><br>
+      Каждый — независимый сайт, свои файлы, своя аналитика, свой дизайн.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">Поддомен vs Папка</div>
+      <h3 class="card-title">Когда что выбрать</h3>
+      <p><strong style="color:var(--purple)">Поддомен</strong> (<code>blog.site.ru</code>) — отдельный проект с другим дизайном.<br><br>
+      <strong style="color:var(--green)">Папка</strong> (<code>site.ru/blog</code>) — раздел того же сайта с тем же дизайном. Проще.</p>
+    </div>
+  </div>
+  <div class="steps" style="margin-top:24px;">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Панель хостинга → Домены или Сайты</h4><p>Найдите «Создать поддомен» или «Add subdomain».</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Введите название</h4><p>Например <code>blog</code> — получится <code>blog.moysite.ru</code>.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Загрузите файлы</h4><p>Хостинг создаст папку для поддомена. Положите <code>index.html</code> и остальные файлы туда.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Включите SSL для поддомена</h4><p>В разделе SSL выпустите сертификат отдельно для поддомена — один клик.</p></div></div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 14: ХОСТИНГ ===== -->
+<section class="section" id="hosting">
+  <div class="section-label muted">Раздел 19</div>
+  <h2 class="section-title">Как выбрать <span>и купить хостинг</span></h2>
+  <p class="section-desc">Для простого HTML-сайта достаточно недорогого виртуального хостинга.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Хостинг</th><th>SSL</th><th>Домен здесь же</th><th>Оплата</th><th>Особенности</th><th>Сайт</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Beget</strong></td><td><span class="yes">✓ Бесп.</span></td><td><span class="yes">✓</span></td><td>Карта, СБП</td><td>Удобная панель, бесплатный тест</td><td><a href="https://beget.com" target="_blank">beget.com</a></td></tr>
+        <tr><td><strong>Timeweb</strong></td><td><span class="yes">✓ Бесп.</span></td><td><span class="yes">✓</span></td><td>Карта, СБП</td><td>NVMe-диски, ежедневные бэкапы</td><td><a href="https://timeweb.com" target="_blank">timeweb.com</a></td></tr>
+        <tr><td><strong>Reg.ru</strong></td><td><span class="yes">✓ Бесп.</span></td><td><span class="yes">✓</span></td><td>Карта, СБП, счёт</td><td>Крупнейший в РФ</td><td><a href="https://reg.ru" target="_blank">reg.ru</a></td></tr>
+        <tr><td><strong>SpaceWeb</strong></td><td><span class="yes">✓ Бесп.</span></td><td><span class="yes">✓</span></td><td>Карта, СБП</td><td>Неограниченный трафик, DDoS-защита</td><td><a href="https://sweb.ru" target="_blank">sweb.ru</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<!-- ===== БЕСПЛАТНЫЙ ХОСТИНГ ===== -->
+<section class="section" id="free-hosting">
+  <div class="section-label green">Раздел 20 — Бонус</div>
+  <h2 class="section-title">Бесплатный хостинг — <span>без домена и оплаты</span></h2>
+  <p class="section-desc">Хотите опубликовать сайт прямо сейчас, не покупая домен и хостинг? GitHub Pages и Netlify дают бесплатную ссылку за несколько минут.</p>
+
+  <div class="alert alert-green" style="margin-bottom:28px;">
+    <div class="alert-icon">✓</div>
+    <div class="alert-body">
+      <div class="alert-title">Когда это подходит</div>
+      Тестовый лендинг, портфолио, учебный проект, презентация по ссылке — всё это можно разместить бесплатно. Адрес будет вида <code>username.github.io/project</code> или <code>random-name.netlify.app</code>.
+    </div>
+  </div>
+
+  <!-- СЛОВАРИК -->
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;">Словарик — что означают непонятные слова</h3>
+  <div class="cards-grid" style="margin-bottom:36px;">
+    <div class="card">
+      <div class="card-num purple">Репозиторий</div>
+      <h3 class="card-title">Папка проекта на GitHub</h3>
+      <p>Репозиторий (или «репо») — это просто папка на сервере GitHub, в которой хранятся файлы вашего сайта. Создаёте один репозиторий = одна папка = один сайт.</p>
+    </div>
+    <div class="card">
+      <div class="card-num purple">Commit</div>
+      <h3 class="card-title">Сохранить изменения</h3>
+      <p>Когда вы загружаете или меняете файл на GitHub, нужно нажать кнопку «Commit changes» — это означает «сохранить». Без этого шага файл не появится на сайте.</p>
+    </div>
+    <div class="card">
+      <div class="card-num purple">Public / Private</div>
+      <h3 class="card-title">Открытый или закрытый</h3>
+      <p>Public — папку видят все (это нужно для бесплатного хостинга). Private — папку видите только вы. Для публикации сайта через GitHub Pages выбирайте Public.</p>
+    </div>
+    <div class="card">
+      <div class="card-num purple">Pages</div>
+      <h3 class="card-title">Функция публикации сайта</h3>
+      <p>GitHub Pages — встроенная функция GitHub, которая превращает вашу папку с файлами в работающий сайт по ссылке. Включается в настройках репозитория, бесплатно.</p>
+    </div>
+  </div>
+
+  <div class="cards-grid-2" style="margin-bottom:32px;">
+
+    <div class="card c-purple">
+      <div class="card-num purple">GitHub Pages</div>
+      <h3 class="card-title">Бесплатно навсегда</h3>
+      <p>Загружаете файлы в папку на GitHub, включаете функцию Pages — сайт доступен по ссылке. Можно потом подключить свой домен.</p>
+      <ul style="margin-top:10px;">
+        <li>Адрес: <code>username.github.io/название-папки</code></li>
+        <li>Лимит: 1 ГБ хранилище, 100 ГБ трафик/месяц</li>
+        <li>SSL: включён автоматически</li>
+        <li>Обновление: загрузил новый файл — сайт обновился</li>
+      </ul>
+      <span class="card-tag tag-easy">Рекомендуется</span>
+    </div>
+
+    <div class="card c-green">
+      <div class="card-num green">Netlify Drop</div>
+      <h3 class="card-title">30 секунд без регистрации</h3>
+      <p>Перетащили папку с файлами в браузер — получили рабочую ссылку. Самый быстрый способ показать сайт кому угодно прямо сейчас.</p>
+      <ul style="margin-top:10px;">
+        <li>Адрес: <code>random-name.netlify.app</code></li>
+        <li>Без регистрации: ссылка живёт 1 час</li>
+        <li>С регистрацией (бесплатно): постоянная ссылка</li>
+        <li>SSL: включён автоматически</li>
+      </ul>
+      <span class="card-tag tag-easy">Мгновенно</span>
+    </div>
+
+  </div>
+
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px;">GitHub Pages — пошаговая инструкция</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Создайте аккаунт на GitHub</h4>
+        <p>Зайдите на <a href="https://github.com" target="_blank">github.com</a> → нажмите <strong>Sign up</strong> → введите email, придумайте имя пользователя и пароль. Аккаунт бесплатный.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Создайте новую папку проекта</h4>
+        <p>Нажмите зелёную кнопку <strong>New</strong> (или «New repository») → введите название латиницей, без пробелов (например <code>my-landing</code>) → ниже выберите <strong>Public</strong> (открытый доступ — это обязательно для бесплатного хостинга) → нажмите <strong>Create repository</strong>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Загрузите файлы сайта</h4>
+        <p>На открывшейся странице найдите ссылку <strong>uploading an existing file</strong> и кликните на неё → перетащите все файлы проекта: <code>index.html</code>, <code>style.css</code>, <code>script.js</code> и папку <code>images/</code> → прокрутите вниз и нажмите зелёную кнопку <strong>Commit changes</strong> (то есть «сохранить»).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Включите публикацию сайта</h4>
+        <p>Нажмите <strong>Settings</strong> (вкладка в верхнем меню страницы) → в левой колонке найдите и нажмите <strong>Pages</strong> → в разделе «Source» выберите <strong>Deploy from a branch</strong> → чуть ниже в первом выпадающем списке выберите <strong>main</strong>, во втором оставьте <strong>/ (root)</strong> → нажмите <strong>Save</strong>.</p>
+        <div class="alert alert-info" style="margin-top:12px;">
+          <div class="alert-icon">i</div>
+          <div class="alert-body"><strong>Что это значит:</strong> «main» — это название главной ветки (главной версии папки), «/ (root)» означает «корень» — то есть брать файлы прямо из папки, без подпапок. Всё это выбирается один раз и больше не трогается.</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Подождите 1–2 минуты и получите ссылку</h4>
+        <p>GitHub собирает сайт. Обновите страницу Settings → Pages через минуту-две — появится зелёная плашка с вашей ссылкой вида <code>username.github.io/my-landing</code>. Откройте её — сайт работает!</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h4>Как обновить сайт в будущем</h4>
+        <p>Зайдите в папку проекта на GitHub → кликните на нужный файл → нажмите иконку карандаша (Edit this file) → вставьте новый код → нажмите <strong>Commit changes</strong>. Через 1–2 минуты сайт обновится автоматически.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider" style="margin:28px 0;"></div>
+
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px;">Netlify Drop — за 30 секунд</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num green">1</div>
+      <div class="step-body">
+        <h4>Откройте страницу Netlify Drop</h4>
+        <p>Зайдите на <a href="https://app.netlify.com/drop" target="_blank">app.netlify.com/drop</a> — регистрация не нужна, страница сразу готова к работе.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num green">2</div>
+      <div class="step-body">
+        <h4>Перетащите папку с сайтом</h4>
+        <p>Возьмите папку проекта с компьютера (ту, где лежит <code>index.html</code>) и перетащите её целиком прямо на страницу в браузере — в светлую область с пунктирной рамкой. Netlify сам загрузит все файлы внутри.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num green">3</div>
+      <div class="step-body">
+        <h4>Получите ссылку</h4>
+        <p>Через несколько секунд появится ссылка вида <code>random-name.netlify.app</code>. Скопируйте и отправьте кому нужно. Защищённое соединение (HTTPS) уже включено автоматически.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num green">4</div>
+      <div class="step-body">
+        <h4>Сделать ссылку постоянной</h4>
+        <p>Без регистрации ссылка живёт 1 час — только для быстрого показа. Если нужна постоянная ссылка: зарегистрируйтесь на Netlify бесплатно, и сайт останется навсегда. Можно переименовать адрес и в будущем подключить свой домен .ru.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:28px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Параметр</th>
+          <th>GitHub Pages</th>
+          <th>Netlify Drop</th>
+          <th>Платный хостинг</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Цена</strong></td>
+          <td><span class="yes">Бесплатно</span></td>
+          <td><span class="yes">Бесплатно</span></td>
+          <td style="color:var(--muted)">50–150 ₽/мес</td>
+        </tr>
+        <tr>
+          <td><strong>Свой домен .ru</strong></td>
+          <td><span class="yes">✓ Можно подключить</span></td>
+          <td><span class="yes">✓ Можно подключить</span></td>
+          <td><span class="yes">✓ Да</span></td>
+        </tr>
+        <tr>
+          <td><strong>Защищённое соединение (HTTPS)</strong></td>
+          <td><span class="yes">✓ Автоматически</span></td>
+          <td><span class="yes">✓ Автоматически</span></td>
+          <td><span class="yes">✓ Бесплатно</span></td>
+        </tr>
+        <tr>
+          <td><strong>Скорость старта</strong></td>
+          <td><span class="partial">~5 минут</span></td>
+          <td><span class="yes">30 секунд</span></td>
+          <td style="color:var(--muted)">~30 минут</td>
+        </tr>
+        <tr>
+          <td><strong>Поддержка на русском языке</strong></td>
+          <td><span class="no">✗ Нет</span></td>
+          <td><span class="no">✗ Нет</span></td>
+          <td><span class="yes">✓ Есть</span></td>
+        </tr>
+        <tr>
+          <td><strong>Подходит для</strong></td>
+          <td style="color:var(--muted)">Портфолио, учебные проекты</td>
+          <td style="color:var(--muted)">Быстрый показ, тест</td>
+          <td style="color:var(--muted)">Коммерческий сайт</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-amber" style="margin-top:16px;">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">Когда всё же нужен платный хостинг</div>
+      Если это коммерческий сайт с реальными клиентами — берите платный хостинг (Beget, Timeweb) с русской поддержкой и доменом .ru. GitHub и Netlify отлично подходят для старта и тестирования, но для серьёзного бизнеса лучше иметь нормальный адрес и техподдержку на русском.
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 15: ЗАГРУЗКА ===== -->
+<section class="section" id="upload">
+  <div class="section-label">Раздел 21</div>
+  <h2 class="section-title">Как загрузить <span>сайт на хостинг</span></h2>
+  <p class="section-desc">Два способа. Начните с первого — он проще.</p>
+  <div class="cards-grid-2">
+    <div class="card c-green">
+      <div class="card-num green">Способ 1 — Проще</div>
+      <h3 class="card-title">Файловый менеджер в панели</h3>
+      <p>Панель хостинга → «Файловый менеджер» → папка <code>public_html</code> → загрузите файлы. Никаких программ.</p>
+      <span class="card-tag tag-easy">Рекомендуется</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Способ 2 — Продвинутый</div>
+      <h3 class="card-title">FTP через FileZilla</h3>
+      <p>Скачайте <a href="https://filezilla-project.org" target="_blank">FileZilla</a> (бесплатно). Введите FTP-данные из хостинга → перетаскивайте файлы как в папку.</p>
+      <span class="card-tag tag-medium">Нужна программа</span>
+    </div>
+  </div>
+
+  <div class="divider" style="margin:24px 0;"></div>
+  <h3 style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px;">Как выглядит панель хостинга — схема</h3>
+  <div class="mockup-frame">
+    <div class="mockup-titlebar">
+      <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+      <div class="mockup-url">panel.sweb.ru — Панель управления</div>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-sidebar">
+        <div class="mockup-menu">
+          <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;padding:0 10px;">Меню</div>
+          <div class="mockup-menu-item active">Сайты</div>
+          <div class="mockup-menu-item">Домены</div>
+          <div class="mockup-menu-item">Файловый менеджер</div>
+          <div class="mockup-menu-item">SSL</div>
+          <div class="mockup-menu-item">Статистика</div>
+        </div>
+        <div class="mockup-content">
+          <div class="mockup-sec-title">Мои сайты</div>
+          <div class="mockup-row">
+            <span style="color:var(--muted);font-size:12px;width:70px;">Домен:</span>
+            <span style="font-size:13px;">moysite.ru <span style="background:var(--gbg);color:var(--green);border:1px solid var(--gbr);border-radius:999px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;">Активен</span></span>
+          </div>
+          <div class="mockup-row">
+            <span style="color:var(--muted);font-size:12px;width:70px;">Папка:</span>
+            <code>public_html/</code>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+            <div class="mockup-hl"><button class="mockup-btn">Файловый менеджер</button></div>
+            <div class="mockup-hl" style="background:var(--gbg);border-color:var(--gbr);margin-top:8px;">
+              <button class="mockup-btn green-btn">Включить SSL</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-purple" style="margin-top:8px;">
+    <div class="alert-icon">◈</div>
+    <div class="alert-body">
+      <div class="alert-title">Важно</div>
+      Файл <code>index.html</code> должен лежать прямо в корне (<code>public_html/</code>), а не в подпапке — иначе сайт не откроется.
+    </div>
+  </div>
+</section>
+
+<!-- ===== РАЗДЕЛ 16: DNS И SSL ===== -->
+<section class="section" id="dns">
+  <div class="section-label green">Раздел 22</div>
+  <h2 class="section-title">Подключить домен <span>и включить SSL</span></h2>
+  <p class="section-desc">Самая часто пугающая часть — но на деле всё просто.</p>
+  <div class="cards-grid-2">
+    <div class="card c-green">
+      <div class="card-num green">Сценарий 1 — Легче</div>
+      <h3 class="card-title">Домен и хостинг в одном месте</h3>
+      <p>Оба в Beget или Timeweb — просто добавьте домен к сайту в панели. 2–3 клика.</p>
+      <span class="card-tag tag-easy">Проще всего</span>
+    </div>
+    <div class="card">
+      <div class="card-num">Сценарий 2</div>
+      <h3 class="card-title">Домен и хостинг в разных местах</h3>
+      <p>Пропишите NS-серверы хостинга у регистратора домена. Один раз — и домен смотрит на хостинг.</p>
+      <span class="card-tag tag-medium">Один раз настроить</span>
+    </div>
+  </div>
+  <div class="mockup-frame" style="margin-top:20px;">
+    <div class="mockup-titlebar">
+      <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+      <div class="mockup-url">Схема подключения домена и SSL</div>
+    </div>
+    <div class="mockup-body">
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;max-width:480px;">
+
+        <div style="background:var(--pbg);border:1px solid var(--pbr);border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;color:var(--purple);width:100%;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;">Шаг 1 — Регистратор</span>
+          Домен куплен у регистратора (Reg.ru, Beget, Timeweb...)
+        </div>
+
+        <div style="padding:2px 24px;color:var(--muted);font-size:18px;line-height:1;">↓</div>
+
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:13px;width:100%;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;">Шаг 2 — Настройки домена</span>
+          Прописываем NS-серверы хостинга: <code>ns1.beget.com</code>, <code>ns2.beget.com</code>
+        </div>
+
+        <div style="padding:2px 24px;color:var(--muted);font-size:18px;line-height:1;">↓</div>
+
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:13px;width:100%;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;">Шаг 3 — Панель хостинга</span>
+          Добавляем домен к сайту → указываем папку <code>public_html/</code>
+        </div>
+
+        <div style="padding:2px 24px;color:var(--muted);font-size:18px;line-height:1;">↓</div>
+
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:13px;width:100%;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;">Шаг 4 — Загрузка файлов</span>
+          Файловый менеджер → папка <code>public_html/</code> → загружаем index.html, style.css, script.js
+        </div>
+
+        <div style="padding:2px 24px;color:var(--muted);font-size:18px;line-height:1;">↓</div>
+
+        <div style="background:var(--pbg);border:1px solid var(--pbr);border-radius:6px;padding:8px 16px;font-size:13px;width:100%;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;">Шаг 5 — SSL</span>
+          Раздел SSL в панели → «Получить сертификат» → один клик
+          <div style="display:inline-flex;margin-left:10px;"><button class="mockup-btn green-btn" style="font-size:11px;">Включить SSL</button></div>
+        </div>
+
+        <div style="padding:2px 24px;color:var(--muted);font-size:18px;line-height:1;">↓</div>
+
+        <div style="background:var(--gbg);border:1px solid var(--gbr);border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;color:var(--green);width:100%;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:2px;">Готово — ждём 1–24 часа</span>
+          Сайт доступен по адресу https://moysite.ru ✓
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-amber" style="margin-top:16px;">
+    <div class="alert-icon">!</div>
+    <div class="alert-body">
+      <div class="alert-title">SSL не включается сразу?</div>
+      Нормально если DNS ещё не обновился. Подождите несколько часов, затем попробуйте снова.
+    </div>
+  </div>
+</section>
+
+<!-- ===== ЧЕКЛИСТ ===== -->
+<section class="section" id="checklist">
+  <div class="section-label">Раздел 23</div>
+  <h2 class="section-title">Чеклист — <span>проверьте сайт после публикации</span></h2>
+  <div class="two-col">
+    <div>
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--green);margin-bottom:12px;">✓ Основные проверки</h3>
+      <ul class="checklist">
+        <li><span class="ci ci-check">✓</span>Главная открывается по домену</li>
+        <li><span class="ci ci-check">✓</span>Адрес начинается с https://</li>
+        <li><span class="ci ci-check">✓</span>Favicon виден во вкладке</li>
+        <li><span class="ci ci-check">✓</span>Загружаются все картинки</li>
+        <li><span class="ci ci-check">✓</span>Подключены стили (не голый HTML)</li>
+        <li><span class="ci ci-check">✓</span>Работают кнопки и ссылки</li>
+        <li><span class="ci ci-check">✓</span>Нормально выглядит на телефоне</li>
+        <li><span class="ci ci-check">✓</span>При отправке ссылки в Telegram — карточка</li>
+        <li><span class="ci ci-check">✓</span>Счётчик аналитики установлен</li>
+        <li><span class="ci ci-check">✓</span>robots.txt и sitemap.xml в корне</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--red);margin-bottom:12px;">⚠ Типичные проблемы</h3>
+      <ul class="checklist">
+        <li><span class="ci ci-warn">!</span><div><strong>Белая страница</strong> — index.html не в корне папки</div></li>
+        <li><span class="ci ci-warn">!</span><div><strong>Нет стилей</strong> — неправильный путь к style.css</div></li>
+        <li><span class="ci ci-warn">!</span><div><strong>Нет картинок</strong> — кириллица в имени или неправильный путь</div></li>
+        <li><span class="ci ci-warn">!</span><div><strong>Домен не открывается</strong> — DNS ещё не обновился</div></li>
+        <li><span class="ci ci-warn">!</span><div><strong>Старая версия</strong> — Ctrl+Shift+R очищает кэш</div></li>
+        <li><span class="ci ci-warn">!</span><div><strong>Нет OG-карточки</strong> — путь og:image должен быть абсолютным</div></li>
+        <li><span class="ci ci-warn">!</span><div><strong>Горизонтальный скролл на телефоне</strong> — элемент шире экрана</div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ЛАЙФХАКИ ===== -->
+<section class="section" id="tips">
+  <div class="section-label muted">Раздел 24</div>
+  <h2 class="section-title">Лайфхаки <span>и советы</span></h2>
+  <div class="cards-grid">
+    <div class="card c-purple">
+      <div class="card-num purple">При работе с Claude</div>
+      <h3 class="card-title">Как получить лучший результат</h3>
+      <ul>
+        <li>Сначала просите структуру, потом код</li>
+        <li>Давайте весь текущий код при правках</li>
+        <li>Просите вернуть полный файл, не куски</li>
+        <li>Прикрепляйте скриншоты референсов</li>
+        <li>Стиль: «как SaaS», «минималистично»</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-num">Файлы и версии</div>
+      <h3 class="card-title">Организация проекта</h3>
+      <ul>
+        <li>Копию перед каждой правкой</li>
+        <li>Версии: v1, v2, final</li>
+        <li>Имена файлов только латиницей</li>
+        <li>Не вставляйте пароли в HTML</li>
+        <li>Сжимайте изображения перед загрузкой</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-num">Дизайн</div>
+      <h3 class="card-title">Содержание важнее красоты</h3>
+      <ul>
+        <li>Один экран — одна мысль</li>
+        <li>Заголовок понятен за 3 секунды</li>
+        <li>Кнопка говорит что произойдёт</li>
+        <li>Проверяйте всё на телефоне</li>
+        <li>Скорость важнее анимаций</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ГЛОССАРИЙ ===== -->
+<section class="section" id="glossary">
+  <div class="section-label">Раздел 25</div>
+  <h2 class="section-title">Глоссарий <span>для новичка</span></h2>
+  <p class="section-desc">Все термины простым языком.</p>
+  <div class="two-col">
+    <div>
+      <div class="glossary-item"><div class="glossary-term">HTML</div><div class="glossary-def">Язык разметки. Структура страницы: заголовки, текст, кнопки, картинки.</div></div>
+      <div class="glossary-item"><div class="glossary-term">CSS</div><div class="glossary-def">Внешний вид: цвета, шрифты, отступы. Без CSS страница выглядит как текст.</div></div>
+      <div class="glossary-item"><div class="glossary-term">JavaScript (JS)</div><div class="glossary-def">Интерактивность: слайдеры, анимации, реакция на клики.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Favicon</div><div class="glossary-def">Маленькая иконка сайта во вкладке браузера, в закладках и на экране телефона.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Open Graph</div><div class="glossary-def">Мета-теги для красивого превью при отправке ссылки в Telegram и ВКонтакте.</div></div>
+      <div class="glossary-item"><div class="glossary-term">noindex</div><div class="glossary-def">Мета-тег, закрывающий страницу от индексации в поисковиках. Страница не появится в Google.</div></div>
+      <div class="glossary-item"><div class="glossary-term">sitemap.xml</div><div class="glossary-def">Файл со списком всех страниц сайта. Помогает Google найти страницы быстрее.</div></div>
+      <div class="glossary-item"><div class="glossary-term">robots.txt</div><div class="glossary-def">Файл-инструкция для поисковых роботов: что сканировать, что нет.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Домен</div><div class="glossary-def">Адрес сайта: moysite.ru. Арендуется, нужно продлевать.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Поддомен</div><div class="glossary-def">Адрес внутри домена: blog.moysite.ru. Отдельный сайт, создаётся бесплатно.</div></div>
+    </div>
+    <div>
+      <div class="glossary-item"><div class="glossary-term">Хостинг</div><div class="glossary-def">Сервер в интернете, где лежат файлы сайта. Работает круглосуточно.</div></div>
+      <div class="glossary-item"><div class="glossary-term">SSL / HTTPS</div><div class="glossary-def">Защищённое соединение. Без SSL браузер пишет «Небезопасно».</div></div>
+      <div class="glossary-item"><div class="glossary-term">DNS</div><div class="glossary-def">Система, переводящая доменное имя в адрес сервера.</div></div>
+      <div class="glossary-item"><div class="glossary-term">public_html</div><div class="glossary-def">Главная папка сайта на хостинге. index.html должен лежать здесь.</div></div>
+      <div class="glossary-item"><div class="glossary-term">index.html</div><div class="glossary-def">Главный файл сайта — браузер открывает его первым при входе на домен.</div></div>
+      <div class="glossary-item"><div class="glossary-term">WebP</div><div class="glossary-def">Современный формат изображений. Меньший вес при том же качестве что JPG.</div></div>
+      <div class="glossary-item"><div class="glossary-term">loading="lazy"</div><div class="glossary-def">Атрибут картинки — загружается только когда попадает в видимую область. Ускоряет сайт.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Дизайн-система</div><div class="glossary-def">Согласованный набор цветов, шрифтов и компонентов. Хранится в Skill для переиспользования.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Skill</div><div class="glossary-def">Файл-инструкция для Claude. Хранит дизайн-систему, активируется триггерным словом.</div></div>
+      <div class="glossary-item"><div class="glossary-term">Лендинг</div><div class="glossary-def">Одностраничный сайт с одной целью. Прокручивается вертикально.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ДОРОЖНАЯ КАРТА ===== -->
+<section class="section" id="roadmap-final">
+  <div class="section-label green">Раздел 26</div>
+  <h2 class="section-title">Дорожная карта — <span>от идеи до сайта</span></h2>
+  <div class="rm-grid">
+    <div class="rm-step"><div class="rm-n">01</div><div class="rm-text"><h4>Придумайте задачу</h4><p>Цель сайта, аудитория</p></div></div>
+    <div class="rm-step"><div class="rm-n">02</div><div class="rm-text"><h4>Заполните бриф</h4><p>Шаблон из раздела 3</p></div></div>
+    <div class="rm-step"><div class="rm-n">03</div><div class="rm-text"><h4>Найдите референс</h4><p>Dribbble, Behance → скриншот</p></div></div>
+    <div class="rm-step"><div class="rm-n">04</div><div class="rm-text"><h4>Согласуйте дизайн</h4><p>4 варианта → выбор</p></div></div>
+    <div class="rm-step"><div class="rm-n">05</div><div class="rm-text"><h4>Получите файлы</h4><p>index.html, style.css, script.js</p></div></div>
+    <div class="rm-step"><div class="rm-n">06</div><div class="rm-text"><h4>Добавьте favicon</h4><p>favicon.svg в папку</p></div></div>
+    <div class="rm-step"><div class="rm-n">07</div><div class="rm-text"><h4>Добавьте OG-теги</h4><p>Превью для Telegram</p></div></div>
+    <div class="rm-step"><div class="rm-n">08</div><div class="rm-text"><h4>Настройте SEO</h4><p>robots.txt и sitemap.xml</p></div></div>
+    <div class="rm-step"><div class="rm-n">09</div><div class="rm-text"><h4>Проверьте адаптив</h4><p>Chrome DevTools → телефон</p></div></div>
+    <div class="rm-step"><div class="rm-n">10</div><div class="rm-text"><h4>Купите домен</h4><p>Beget / Timeweb / Reg.ru</p></div></div>
+    <div class="rm-step"><div class="rm-n">11</div><div class="rm-text"><h4>Купите хостинг</h4><p>Виртуальный, базовый</p></div></div>
+    <div class="rm-step"><div class="rm-n">12</div><div class="rm-text"><h4>Загрузите файлы</h4><p>Файловый менеджер хостинга</p></div></div>
+    <div class="rm-step"><div class="rm-n">13</div><div class="rm-text"><h4>Подключите домен</h4><p>NS-серверы</p></div></div>
+    <div class="rm-step"><div class="rm-n">14</div><div class="rm-text"><h4>Включите SSL</h4><p>Let's Encrypt — бесплатно</p></div></div>
+    <div class="rm-step"><div class="rm-n">15</div><div class="rm-text"><h4>Поставьте Метрику</h4><p>metrika.yandex.ru</p></div></div>
+    <div class="rm-step"><div class="rm-n">16</div><div class="rm-text"><h4>Зарегистрируйте в поиске</h4><p>Яндекс.Вебмастер + Search Console</p></div></div>
+    <div class="rm-step"><div class="rm-n">17</div><div class="rm-text"><h4>Проверьте чеклист</h4><p>Раздел 26</p></div></div>
+    <div class="rm-step"><div class="rm-n">18</div><div class="rm-text"><h4>Резервная копия</h4><p>Папка с финальными файлами</p></div></div>
+  </div>
+  <div class="alert alert-green" style="margin-top:24px;">
+    <div class="alert-icon">✓</div>
+    <div class="alert-body">
+      <div class="alert-title">Готово! Ваш сайт в интернете</div>
+      Следуя этой инструкции, вы создали и опубликовали сайт с помощью Claude. Дальше — итерации, улучшения, новые страницы.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">ИИ в жизнь</div>
+  <p>Курс Елены Сизых · Эксперт по операционной эффективности</p>
+  <p>Telegram: <a href="https://t.me/taiga_elena" target="_blank">@taiga_elena</a></p>
+  <p style="margin-top:14px;font-size:11px;color:var(--border);">Цены на домены и хостинг ориентировочные. Проверяйте актуальные условия на сайте провайдера.</p>
+</footer>
+
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Наверх">↑</button>
+
+<script>
+window.addEventListener('scroll',()=>{
+  document.getElementById('scrollTop').classList.toggle('visible',window.scrollY>400);
+});
+function copyCode(btn){
+  const pre=btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Скопировано!';setTimeout(()=>btn.textContent='Копировать',2000);
+  });
+}
+function copyPrompt(btn){
+  const body=btn.closest('.prompt-box').querySelector('.prompt-body');
+  navigator.clipboard.writeText(body.innerText).then(()=>{
+    btn.textContent='Скопировано!';setTimeout(()=>btn.textContent='Копировать',2000);
+  });
+}
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}
+  });
+},{threshold:0.08});
+document.querySelectorAll('.card,.step,.rm-step,.inspo-card').forEach(el=>{
+  el.style.opacity='0';el.style.transform='translateY(16px)';
+  el.style.transition='opacity 0.4s ease,transform 0.4s ease';
+  obs.observe(el);
+});
+
+function copyDetails(btn) {
+  const body = btn.closest('.pd-body');
+  const clone = body.cloneNode(true);
+  clone.querySelector('button').remove();
+  const headings = clone.querySelectorAll('h4');
+  headings.forEach(h => { const br = document.createElement('br'); h.replaceWith(br); });
+  const text = clone.innerText || clone.textContent;
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => btn.textContent = 'Копировать промпт', 2000);
+  });
+}
+function copySkill() {
+  const skillText = document.getElementById('skill-content-preview').querySelector('pre').textContent;
+  navigator.clipboard.writeText(skillText).then(() => {
+    const btn = document.querySelector('.skill-btn.copy');
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => btn.textContent = 'Скопировать текст', 2000);
+  });
+}
+
+</script>
+</body>
+</html>
