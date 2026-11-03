@@ -356,6 +356,30 @@
       .about-right { grid-template-columns: 1fr; }
       .stat-wide { grid-column: auto; }
     }
+    /* ── PAYMENT MODAL ───────────────────────── */
+    .pay-overlay { position:fixed; inset:0; background:rgba(0,0,0,.8); backdrop-filter:blur(10px); z-index:300; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .3s; }
+    .pay-overlay.open { opacity:1; pointer-events:all; }
+    .pay-box { background:#0d0f1a; border:1.5px solid rgba(168,85,247,.35); border-radius:24px; padding:40px 44px; max-width:460px; width:100%; position:relative; box-shadow:0 0 80px rgba(168,85,247,.18); }
+    .pay-box-close { position:absolute; top:16px; right:20px; background:none; border:none; color:var(--muted); font-size:26px; cursor:pointer; line-height:1; transition:color .2s; }
+    .pay-box-close:hover { color:var(--text); }
+    .pay-box h3 { font-size:22px; font-weight:900; margin-bottom:6px; }
+    .pay-meta { font-size:13px; color:var(--muted); margin-bottom:28px; }
+    .pay-meta strong { color:var(--p2); }
+    .f-field { margin-bottom:14px; }
+    .f-field label { display:block; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+    .f-field input { width:100%; background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.1); border-radius:12px; padding:12px 16px; font-size:15px; color:var(--text); outline:none; font-family:inherit; transition:border-color .2s; }
+    .f-field input:focus { border-color:rgba(168,85,247,.5); }
+    .f-field input::placeholder { color:var(--muted); }
+    .f-check { display:flex; align-items:flex-start; gap:10px; margin:18px 0 24px; }
+    .f-check input[type=checkbox] { margin-top:3px; accent-color:var(--p); flex-shrink:0; width:16px; height:16px; }
+    .f-check label { font-size:12px; color:var(--muted); line-height:1.55; }
+    .f-check a { color:var(--c); text-decoration:none; }
+    @media (max-width:500px) { .pay-box { padding:28px 20px; } }
+
+    /* ── INDIVIDUAL MINI ─────────────────────── */
+    .individual-mini { text-align:center; margin-top:32px; }
+    .individual-mini a { color:var(--muted); font-size:14px; text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.2); transition:color .2s; }
+    .individual-mini a:hover { color:var(--text); }
   </style>
 </head>
 <body>
@@ -395,7 +419,7 @@
       <div class="meta-pill">Нулевой уровень</div>
     </div>
     <div class="hero-btns">
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank">Записаться и заполнить анкету</a>
+      <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="border:none;cursor:pointer">Записаться на курс</button>
       <a href="#program" class="btn btn-ghost">Программа</a>
       <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
     </div>
@@ -407,22 +431,24 @@
   <div class="ticker-track">
     <div class="ticker-item"><span class="ticker-dot"></span>ChatGPT</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Claude</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Perplexity</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Gemini</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>NotebookLM</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Практика с первого дня</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>GPTs и плагины</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Агенты</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>MCP</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Живые кейсы</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Нулевой уровень — OK</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Реальные задачи</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Малая группа</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>16–17 ноября</div>
     <div class="ticker-item"><span class="ticker-dot"></span>ChatGPT</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Claude</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Perplexity</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Gemini</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>NotebookLM</div>
-    <div class="ticker-item"><span class="ticker-dot"></span>Практика с первого дня</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>GPTs и плагины</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Агенты</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>MCP</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>Живые кейсы</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Нулевой уровень — OK</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Реальные задачи</div>
     <div class="ticker-item"><span class="ticker-dot"></span>Малая группа</div>
+    <div class="ticker-item"><span class="ticker-dot"></span>16–17 ноября</div>
   </div>
 </div>
 
@@ -769,39 +795,26 @@
     <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
     <div class="price-grid">
       <div class="price-card glass neon-border reveal">
-        <div class="price-special">Специальная цена для первой группы</div>
-        <div class="price-name">Групповой курс</div>
-        <div class="price-desc">2 встречи в малой группе</div>
-        <div class="price-amount grad-text">6 000</div>
+        <div class="price-special">16–17 ноября · Малая группа</div>
+        <div class="price-name">Групповой интенсив</div>
+        <div class="price-desc">2 встречи — ChatGPT и Claude с нуля</div>
+        <div class="price-amount grad-text">6 161</div>
         <div class="price-period">₽ за весь курс</div>
         <ul class="price-list">
           <li>2 встречи по 1.5 часа онлайн</li>
-          <li>Разбор общих задач на 2-й встрече</li>
+          <li>Живые кейсы и демо на каждой встрече</li>
           <li>Анкета участника перед стартом</li>
           <li>Запись встреч остаётся у тебя</li>
           <li>Чат участников после курса</li>
+          <li>Материалы и гайды для самостоятельного изучения</li>
         </ul>
         <div class="price-btn-wrap">
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank" style="width:100%;justify-content:center">Записаться</a>
+          <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
         </div>
       </div>
-      <div class="price-card glass neon-border featured reveal">
-        <div class="price-special">Индивидуально</div>
-        <div class="price-name">Личная консультация</div>
-        <div class="price-desc">Один на один с Еленой</div>
-        <div class="price-amount" style="background:linear-gradient(135deg,var(--c),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">от 20 000</div>
-        <div class="price-period">₽ · от 2 часов · под запрос</div>
-        <ul class="price-list">
-          <li>Минимум 2 часа — только твои задачи</li>
-          <li>Настройка инструментов под тебя</li>
-          <li>Персональные промпты</li>
-          <li>Личный план внедрения ИИ</li>
-          <li>Поддержка неделю в Telegram</li>
-        </ul>
-        <div class="price-btn-wrap">
-          <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Записаться</a>
-        </div>
-      </div>
+    </div>
+    <div class="individual-mini reveal">
+      <a href="#individual">Нужна индивидуальная работа? Смотреть формат 1:1 →</a>
     </div>
   </div>
 </section>
@@ -828,7 +841,7 @@
     <h2 class="reveal">Готовы начать?<br><span class="grad-text">Давай.</span></h2>
     <p class="reveal">Места ограничены — маленькая группа, живой формат. Заполни анкету — и я свяжусь с тобой.</p>
     <div class="cta-btns reveal">
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="btn btn-primary" target="_blank">Заполнить анкету и записаться</a>
+      <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="border:none;cursor:pointer">Записаться на курс</button>
       <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
     </div>
   </div>
@@ -880,9 +893,41 @@
   </div>
 </section>
 
+<!-- ════ PAYMENT MODAL ════ -->
+<div class="pay-overlay" id="payModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="pay-box">
+    <button class="pay-box-close" onclick="document.getElementById('payModal').classList.remove('open')">&times;</button>
+    <h3>Записаться на курс</h3>
+    <div class="pay-meta">16–17 ноября · 19:00 МСК · <strong>6 161 ₽</strong></div>
+    <form action="https://formsubmit.co/lenoktaiga@gmail.com" method="POST">
+      <input type="hidden" name="_subject" value="Новая запись: курс ИИ в жизнь">
+      <input type="hidden" name="_next" value="https://paylink.tbank.ru/5cc02573-9134-45de-85d0-67ec9a7b3ddd">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <div class="f-field">
+        <label>Имя и фамилия</label>
+        <input type="text" name="Имя и фамилия" placeholder="Мария Иванова" required>
+      </div>
+      <div class="f-field">
+        <label>Email — туда придёт чек</label>
+        <input type="email" name="Email" placeholder="maria@example.com" required>
+      </div>
+      <div class="f-field">
+        <label>Telegram или телефон</label>
+        <input type="text" name="Telegram или телефон" placeholder="@username или +7..." required>
+      </div>
+      <div class="f-check">
+        <input type="checkbox" id="payConsent" required>
+        <label for="payConsent">Соглашаюсь с <a href="oferta.html" target="_blank">публичной офертой</a> и <a href="privacy.html" target="_blank">политикой конфиденциальности</a></label>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer;font-size:16px">Перейти к оплате →</button>
+    </form>
+  </div>
+</div>
+
 <!-- ════ FOOTER ════ -->
 <footer>
-  <p>© 2026 ИП Сизых Елена Андреевна · ИНН 381710347015 · <a href="oferta.html">Публичная оферта</a> · <a href="https://t.me/taiga_elena">@taiga_elena</a></p>
+  <p>© 2026 ИП Сизых Елена Андреевна · ИНН 381710347015 · <a href="oferta.html">Публичная оферта</a> · <a href="privacy.html">Политика конфиденциальности</a> · <a href="https://t.me/taiga_elena">@taiga_elena</a></p>
 </footer>
 
 <script>
