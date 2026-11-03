@@ -212,6 +212,7 @@
     .tool-badge { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; margin-bottom: 10px; display: inline-block; }
     .tool-badge-main { background: linear-gradient(135deg,var(--p),#7c3aed); color: white; }
     .tool-badge-overview { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid rgba(255,255,255,.1); }
+    .tool-badge-self { background: rgba(34,211,238,.08); color: var(--c); border: 1px solid rgba(34,211,238,.2); }
     .tool-logo { width: 52px; height: 52px; border-radius: 14px; object-fit: contain; margin-bottom: 14px; background: rgba(255,255,255,.06); padding: 6px; transition: transform .3s; }
     .tool-card:hover .tool-logo { transform: scale(1.15); }
     .tool-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
@@ -377,9 +378,9 @@
 <!-- ════ HERO ════ -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-badge">Онлайн-интенсив · Малая группа · Старт скоро</div>
+    <div class="hero-badge">Онлайн-интенсив · Малая группа · 16–17 ноября в 19:00</div>
     <h1><span class="grad-text">ИИ в жизнь:</span><br>старт с нуля</h1>
-    <p class="hero-sub">За 2 встречи освоишь ChatGPT, Claude, Perplexity и другие инструменты — и сразу применишь их к своим реальным задачам</p>
+    <p class="hero-sub">За 2 встречи разберёшься в ChatGPT и Claude — с нуля до уверенного использования. По Perplexity, Gemini и NotebookLM дам материалы для самостоятельного изучения.</p>
     <div class="waitlist-banner">
       <div class="waitlist-card">
         <div class="waitlist-label">Набор открыт</div>
@@ -466,28 +467,32 @@
       <div class="session glass neon-border reveal">
         <div class="s-num s-num-1">1</div>
         <div>
-          <h3>Ориентация: кто есть кто и как это работает</h3>
-          <div class="s-dur">15 мая · 15:00 МСК · 1.5 часа · Онлайн</div>
+          <h3>ChatGPT: с нуля до первых реальных результатов</h3>
+          <div class="s-dur">16 ноября · 19:00 МСК · 1.5 часа · Онлайн</div>
           <ul>
-            <li>Что такое ИИ-ассистенты и почему они меняют всё прямо сейчас</li>
-            <li>Обзор ChatGPT, Claude, Perplexity, Gemini, NotebookLM — чем отличаются и когда что выбирать</li>
-            <li>Регистрация и настройка с учётом российских ограничений — пошагово, без технических сложностей</li>
-            <li>Бесплатное vs. платное: что реально нужно, за что переплачивать не стоит</li>
-            <li>Живые демо: как использую ИИ сама каждый день — реальные примеры из работы</li>
+            <li>Что такое ИИ-ассистент — и почему это не просто чат, а инструмент для работы</li>
+            <li>Регистрация и настройка с учётом российских ограничений — пошагово</li>
+            <li>Бесплатное vs. платное: что реально нужно, за что не стоит переплачивать</li>
+            <li>Что такое GPTs и плагины — подключаем и используем</li>
+            <li>Живые кейсы: голосовая заметка → задачи с приоритетами, тренировка переговоров в ролевой игре, анализ договора за 2 минуты, письмо или пост за 3 минуты</li>
+            <li>Как использую ChatGPT сама каждый день — реальные примеры из работы</li>
           </ul>
         </div>
       </div>
       <div class="session glass neon-border reveal">
         <div class="s-num s-num-2">2</div>
         <div>
-          <h3>Практика: разбираем задачи группы</h3>
-          <div class="s-dur" style="color:var(--c)">19 мая · 15:00 МСК · 1.5 часа · Онлайн</div>
+          <h3>Claude: мощнее, глубже — и разбираем твои задачи</h3>
+          <div class="s-dur" style="color:var(--c)">17 ноября · 19:00 МСК · 1.5 часа · Онлайн</div>
           <ul>
-            <li>Разбор анкеты — анализируем средний срез по группе и общие запросы участников</li>
-            <li>Учимся правильно формулировать запросы (промпты)</li>
+            <li>Чем Claude отличается от ChatGPT — и когда какой использовать</li>
+            <li>Что такое MCP: подключаем сервисы к Claude (сборщик почты, Google Drive и другие)</li>
+            <li>Что такое агенты — объясняю без технического жаргона</li>
+            <li>Учимся правильно формулировать запросы (промпты) — разбираем на практике</li>
+            <li>Живые кейсы: переписка из чата → протокол со задачами, маршрут поездки с умом, 100 страниц отчёта → ключевые выводы, лендинг без программиста</li>
             <li>Работаем с реальными задачами: тексты, письма, анализ, планирование, поиск информации</li>
             <li>Как встроить ИИ в повседневную работу, чтобы он реально экономил время</li>
-            <li>Q&amp;A: задаёшь любые вопросы, разбираем вместе</li>
+            <li>Живые демо: как использую ИИ сама каждый день — реальные примеры из работы</li>
           </ul>
         </div>
       </div>
@@ -511,39 +516,44 @@
     <div class="modal-block">
       <div class="modal-block-title">Чему научишься</div>
       <ul>
-        <li>Регистрироваться и настраивать ИИ-программы — даже с учётом российских ограничений</li>
-        <li>Использовать ИИ не как чат, а как помощника для решения реальных задач</li>
+        <li>Зарегистрироваться и настроить ChatGPT и Claude — с учётом российских ограничений</li>
+        <li>Перестать использовать ИИ «как болталку» и начать реально экономить время</li>
         <li>Формулировать запросы так, чтобы ИИ давал действительно полезные ответы</li>
-        <li>Разбираться в инструментах: ChatGPT, Claude, Perplexity, Gemini, NotebookLM — и выбирать нужный</li>
-        <li>Встроить ИИ в повседневную работу: тексты, анализ, планирование, поиск, коммуникации</li>
+        <li>Понять, чем ChatGPT и Claude отличаются — и когда что выбирать</li>
+        <li>Разобраться в GPTs, плагинах, MCP и агентах — простыми словами, без жаргона</li>
+        <li>Встроить ИИ в повседневную работу: тексты, анализ, планирование, переписка, документы</li>
       </ul>
     </div>
 
     <div class="modal-block">
-      <div class="modal-block-title">Блок 1 — Ориентация · 15 мая · 15:00 МСК</div>
+      <div class="modal-block-title">Встреча 1 — ChatGPT · 16 ноября · 19:00 МСК</div>
       <ul>
-        <li>Что такое ИИ-ассистенты и почему они меняют всё прямо сейчас</li>
-        <li>Обзор ключевых инструментов: ChatGPT, Claude, Perplexity, Gemini, NotebookLM — чем отличаются и когда что выбирать</li>
-        <li>Регистрация и настройка с учётом российских ограничений — пошагово, без технических сложностей</li>
-        <li>Бесплатное vs. платное: что реально нужно, за что переплачивать не стоит</li>
-        <li>Живые демо: как использую ИИ сама каждый день</li>
+        <li>Что такое ИИ-ассистент — и почему это не просто чат, а инструмент для работы</li>
+        <li>Регистрация и настройка с учётом российских ограничений — пошагово</li>
+        <li>Бесплатное vs. платное: что реально нужно, за что не стоит переплачивать</li>
+        <li>Что такое GPTs и плагины — подключаем и используем</li>
+        <li>Живые кейсы: голосовая заметка → задачи с приоритетами, тренировка переговоров в ролевой игре, анализ договора за 2 минуты, письмо или пост за 3 минуты</li>
+        <li>Как использую ChatGPT сама каждый день — реальные примеры из работы</li>
       </ul>
     </div>
 
     <div class="modal-block">
-      <div class="modal-block-title">Блок 2 — Практика · 19 мая · 15:00 МСК</div>
+      <div class="modal-block-title">Встреча 2 — Claude · 17 ноября · 19:00 МСК</div>
       <ul>
-        <li>Разбор анкеты — анализируем средний срез по группе и общие запросы участников</li>
-        <li>Учимся правильно формулировать запросы (промпты)</li>
-        <li>Работаем с реальными задачами: тексты, письма, планирование, поиск, анализ</li>
-        <li>Как встроить ИИ в свою жизнь так, чтобы он реально экономил время</li>
-        <li>Q&amp;A: задаёшь любые вопросы, разбираем вместе</li>
+        <li>Чем Claude отличается от ChatGPT — и когда какой использовать</li>
+        <li>Что такое MCP: подключаем сервисы к Claude (сборщик почты, Google Drive и другие)</li>
+        <li>Что такое агенты — объясняю без технического жаргона</li>
+        <li>Учимся правильно формулировать запросы (промпты) — разбираем на практике</li>
+        <li>Живые кейсы: переписка → протокол со задачами, маршрут поездки с умом, 100 страниц отчёта → выводы, лендинг без программиста</li>
+        <li>Работаем с реальными задачами: тексты, письма, анализ, планирование, поиск информации</li>
+        <li>Как встроить ИИ в повседневную работу, чтобы он реально экономил время</li>
+        <li>Живые демо: как использую ИИ сама каждый день — реальные примеры из работы</li>
       </ul>
     </div>
 
     <div class="modal-meta-grid">
-      <div class="modal-meta-card"><div class="mm-label">Первая встреча</div><div class="mm-val">15 мая · 15:00 МСК</div></div>
-      <div class="modal-meta-card"><div class="mm-label">Вторая встреча</div><div class="mm-val">19 мая · 15:00 МСК</div></div>
+      <div class="modal-meta-card"><div class="mm-label">Первая встреча</div><div class="mm-val">16 ноября · 19:00 МСК</div></div>
+      <div class="modal-meta-card"><div class="mm-label">Вторая встреча</div><div class="mm-val">17 ноября · 19:00 МСК</div></div>
       <div class="modal-meta-card"><div class="mm-label">Формат</div><div class="mm-val">Онлайн, живой эфир</div></div>
       <div class="modal-meta-card"><div class="mm-label">Материалы</div><div class="mm-val">Инструкции и шаблоны</div></div>
     </div>
@@ -589,41 +599,41 @@
   <div class="container">
     <div class="s-label reveal">Инструменты</div>
     <h2 class="s-title reveal">Что разберём</h2>
-    <p class="s-sub reveal">Пять инструментов — один глубоко, остальные в обзоре</p>
+    <p class="s-sub reveal">Два инструмента разбираем глубоко — три остальных с материалами для самостоятельного изучения</p>
     <div class="tools-grid">
       <a href="https://claude.ai" target="_blank" class="tool-card glass neon-border reveal tool-main">
         <span class="tool-badge tool-badge-main">Основной инструмент</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="Claude">
         <h4>Claude</h4>
-        <p>Изучаем глубоко — тексты, анализ, длинные диалоги, работа с документами</p>
+        <p>Тексты, анализ документов, MCP, агенты — разбираем глубоко на встрече 2</p>
         <span class="tool-link">claude.ai</span>
       </a>
-      <a href="https://chatgpt.com" target="_blank" class="tool-card glass neon-border reveal">
-        <span class="tool-badge tool-badge-overview">Обзор</span>
+      <a href="https://chatgpt.com" target="_blank" class="tool-card glass neon-border reveal tool-main">
+        <span class="tool-badge tool-badge-main">Основной инструмент</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" alt="ChatGPT">
         <h4>ChatGPT</h4>
-        <p>Самый популярный — с него многие начинают</p>
+        <p>GPTs, плагины, живые кейсы — разбираем глубоко на встрече 1</p>
         <span class="tool-link">chatgpt.com</span>
       </a>
       <a href="https://www.perplexity.ai" target="_blank" class="tool-card glass neon-border reveal">
-        <span class="tool-badge tool-badge-overview">Обзор</span>
+        <span class="tool-badge tool-badge-self">Самостоятельно</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=perplexity.ai&sz=64" alt="Perplexity">
         <h4>Perplexity</h4>
-        <p>ИИ-поиск — находит и проверяет источники</p>
+        <p>ИИ-поиск с источниками — дам гайд для самостоятельного изучения</p>
         <span class="tool-link">perplexity.ai</span>
       </a>
       <a href="https://gemini.google.com" target="_blank" class="tool-card glass neon-border reveal">
-        <span class="tool-badge tool-badge-overview">Обзор</span>
+        <span class="tool-badge tool-badge-self">Самостоятельно</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64" alt="Gemini">
         <h4>Gemini</h4>
-        <p>Экосистема Google — удобен в Gmail и Docs</p>
+        <p>Экосистема Google — дам гайд для самостоятельного изучения</p>
         <span class="tool-link">gemini.google.com</span>
       </a>
       <a href="https://notebooklm.google.com" target="_blank" class="tool-card glass neon-border reveal">
-        <span class="tool-badge tool-badge-overview">Обзор</span>
+        <span class="tool-badge tool-badge-self">Самостоятельно</span>
         <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=64" alt="NotebookLM">
         <h4>NotebookLM</h4>
-        <p>Загружаешь документы — ИИ их изучает и отвечает</p>
+        <p>Работа с документами через ИИ — дам гайд для самостоятельного изучения</p>
         <span class="tool-link">notebooklm.google.com</span>
       </a>
     </div>
@@ -804,7 +814,7 @@
     <div class="faq-grid">
       <details class="reveal"><summary>Нужен ли опыт или технические знания?</summary><div class="faq-ans">Совсем нет. Курс создан именно для нулевого уровня. Если ты умеешь пользоваться браузером и мессенджером — этого достаточно.</div></details>
       <details class="reveal"><summary>Нужно ли что-то устанавливать или платить заранее?</summary><div class="faq-ans">Для начала — ничего. Большинство инструментов работают в браузере и имеют бесплатные версии. Разберём, что стоит попробовать бесплатно, а где платная подписка реально окупается.</div></details>
-      <details class="reveal"><summary>Когда проходят встречи и где?</summary><div class="faq-ans">Онлайн — через Zoom или аналог. Первая встреча 15 мая в 15:00 МСК, вторая — 19 мая в 15:00 МСК. Заполни анкету — и я пришлю ссылку.</div></details>
+      <details class="reveal"><summary>Когда проходят встречи и где?</summary><div class="faq-ans">Онлайн — через Zoom или аналог. Первая встреча 16 ноября в 19:00 МСК, вторая — 17 ноября в 19:00 МСК. Заполни анкету — и я пришлю ссылку.</div></details>
       <details class="reveal"><summary>Что если у меня нет VPN или зарубежной карты?</summary><div class="faq-ans">Именно для этого есть анкета — отметишь свою ситуацию, и мы разберём её индивидуально. Часть инструментов доступна без VPN, для других помогу с настройкой.</div></details>
       <details class="reveal"><summary>Будет ли запись встреч?</summary><div class="faq-ans">Да, записи остаются у участников. Можно пересматривать в удобное время.</div></details>
       <details class="reveal"><summary>А если у меня специфическая сфера — поможет ли курс?</summary><div class="faq-ans">Да — именно для этого есть анкета перед курсом и вторая встреча с разбором задач. Мы работаем с общим срезом группы и подбираем примеры, релевантные для большинства участников.</div></details>
@@ -872,7 +882,7 @@
 
 <!-- ════ FOOTER ════ -->
 <footer>
-  <p>© 2026 Елена Сизых · <a href="https://t.me/taiga_elena">@taiga_elena</a></p>
+  <p>© 2026 ИП Сизых Елена Андреевна · ИНН 381710347015 · <a href="oferta.html">Публичная оферта</a> · <a href="https://t.me/taiga_elena">@taiga_elena</a></p>
 </footer>
 
 <script>
