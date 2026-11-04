@@ -861,7 +861,7 @@
     <h2 class="s-title reveal" style="text-align:center">Выбери свой формат</h2>
     <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
     <div class="price-grid">
-      <div class="price-card glass neon-border reveal">
+      <div class="price-card glass neon-border reveal featured">
         <div class="price-special">16–17 ноября · Малая группа</div>
         <div class="price-name">Групповой интенсив</div>
         <div class="price-desc">2 встречи — ChatGPT и Claude с нуля</div>
@@ -879,9 +879,24 @@
           <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
         </div>
       </div>
-    </div>
-    <div class="individual-mini reveal">
-      <a href="#individual">Нужна индивидуальная работа? Смотреть формат 1:1 →</a>
+      <div class="price-card glass neon-border reveal" style="border-color:rgba(34,211,238,.3)!important;">
+        <div class="price-special" style="color:var(--c);background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.25)">Индивидуально · 1:1</div>
+        <div class="price-name">Личная консультация</div>
+        <div class="price-desc">Только твои задачи, твой темп, твой запрос</div>
+        <div class="price-amount" style="background:linear-gradient(135deg,var(--c),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:40px">от 20 000</div>
+        <div class="price-period">₽ · от 2 часов</div>
+        <ul class="price-list">
+          <li>Глубокий разбор именно твоих задач</li>
+          <li>Настройка инструментов под тебя</li>
+          <li>Персональный план внедрения</li>
+          <li>Поддержка неделю в Telegram</li>
+          <li>Рассчитывается индивидуально</li>
+        </ul>
+        <div class="price-btn-wrap" style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="width:100%;justify-content:center;border-color:rgba(34,211,238,.35);color:var(--c);cursor:pointer">Подробнее →</button>
+          <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Написать в Telegram</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -987,6 +1002,58 @@
   </div>
 </section>
 
+
+<!-- ════ INDIVIDUAL MODAL ════ -->
+<div class="modal-overlay" id="indivModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('indivModal').classList.remove('open')">&times;</button>
+    <div style="display:inline-block;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);color:var(--c);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:999px;margin-bottom:14px">Формат 1:1</div>
+    <h2>Личная консультация</h2>
+    <p class="modal-sub">Только твои задачи, твои инструменты, твой темп — один на один</p>
+
+    <div class="modal-meta-grid" style="margin-bottom:32px">
+      <div class="modal-meta-card">
+        <div class="mm-label">Стоимость</div>
+        <div class="mm-val" style="background:linear-gradient(135deg,var(--c),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:20px;font-weight:900">от 20 000 ₽</div>
+      </div>
+      <div class="modal-meta-card">
+        <div class="mm-label">Длительность</div>
+        <div class="mm-val">от 2 часов</div>
+      </div>
+      <div class="modal-meta-card">
+        <div class="mm-label">Формат</div>
+        <div class="mm-val">Онлайн, 1 на 1</div>
+      </div>
+      <div class="modal-meta-card">
+        <div class="mm-label">Цена</div>
+        <div class="mm-val">рассчитывается под запрос</div>
+      </div>
+    </div>
+
+    <div class="modal-block">
+      <div class="modal-block-title">Что входит</div>
+      <ul>
+        <li>До встречи — анкета, чтобы я поняла твои задачи и подготовилась</li>
+        <li>На встрече — разбираем каждую задачу, которую хочешь делегировать ИИ</li>
+        <li>Выбираем нужные инструменты, настраиваем, пишем твои первые рабочие промпты</li>
+        <li>Уходишь с чётким списком: что использовать, для каких задач, как встроить в режим</li>
+        <li>Поддержка неделю в Telegram — вопросы после встречи, чтобы не потеряться на старте</li>
+      </ul>
+    </div>
+
+    <div class="modal-block">
+      <div class="modal-block-title">Подходит, если…</div>
+      <ul>
+        <li>Работаешь в узкой сфере и хочешь настройку именно под неё</li>
+        <li>Хочешь быстро и без группы — один на один</li>
+        <li>Уже пробовал ИИ, но не сделал это системой</li>
+        <li>Нужна личная инструкция, а не общий обзор</li>
+      </ul>
+    </div>
+
+    <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Написать в Telegram — обсудим →</a>
+  </div>
+</div>
 
 <!-- ════ PAYMENT MODAL ════ -->
 <div class="pay-overlay" id="payModal" onclick="if(event.target===this)this.classList.remove('open')">
