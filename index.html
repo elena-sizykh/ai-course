@@ -426,7 +426,7 @@
   <div class="nav-links">
     <a href="#program">Программа</a>
     <a href="#price">Цена</a>
-    <a href="#individual">1:1</a>
+    <a href="#" onclick="event.preventDefault();document.getElementById('indivModal').classList.add('open')">1:1</a>
     <a href="slides/">Материалы</a>
     <button onclick="document.getElementById('payModal').classList.add('open')" class="nav-cta" style="border:none;cursor:pointer;font-family:inherit">Записаться</button>
   </div>
@@ -454,7 +454,7 @@
     <div class="hero-btns">
       <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="border:none;cursor:pointer">Записаться на курс</button>
       <a href="#program" class="btn btn-ghost">Программа</a>
-      <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
+      <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="border:none;cursor:pointer">Хочу 1:1</button>
     </div>
   </div>
 </section>
@@ -788,72 +788,6 @@
   </div>
 </section>
 
-<!-- ════ ОТЗЫВЫ ════ -->
-<section class="testimonials">
-  <div class="container">
-    <div class="s-label reveal">Отзывы</div>
-    <h2 class="s-title reveal">Что говорят участники</h2>
-    <p class="s-sub reveal">Первый поток завершился — и люди уже применяют ИИ в своей работе</p>
-    <div class="testi-grid">
-      <div class="testi-card glass neon-border reveal">
-        <span class="testi-quote">"</span>
-        <p class="testi-text">Привет! Это просто супер! Тестила рабочие процессы. С общего визуала разложил каждую позицию отдельно, потом свёл все в таблицу. Дал рекомендации с +/– из чего делать продукт. Портфолио-преза 5 минут и готово. Предложил 3 концепта по мерчу для клиента. Рекомендации по поездке в Калининград с нестандартными местами. С подборкой рестов, экскурсий и блюд. Лена, спасибо тебе! Тот момент, когда ВАУ — а так можно было?)</p>
-        <div class="testi-author">
-          <div class="testi-avatar">Е</div>
-          <div>
-            <div class="testi-name">Екатерина</div>
-            <div class="testi-label">Первый поток · май 2026</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card glass neon-border reveal">
-        <span class="testi-quote">"</span>
-        <p class="testi-text">Это я делала в Claude — целый сайт для яхт-клуба. Так что я молчу, но всем пользуюсь. Спасибо тебе ❤️</p>
-        <div class="testi-author">
-          <div class="testi-avatar">П</div>
-          <div>
-            <div class="testi-name">Полина</div>
-            <div class="testi-label">Первый поток · май 2026</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card glass neon-border reveal">
-        <span class="testi-quote">"</span>
-        <p class="testi-text">Спасибо тебе за урок! ❤️ Ты прирождённый Учитель. До встречи во вторник)</p>
-        <div class="testi-author">
-          <div class="testi-avatar">А</div>
-          <div>
-            <div class="testi-name">Александр</div>
-            <div class="testi-label">Первый поток · май 2026</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card glass neon-border reveal">
-        <span class="testi-quote">"</span>
-        <p class="testi-text">Раньше отчёт занимал несколько часов. После курса попробовала Claude — он за 10 минут выдал структурированную выжимку со всеми выводами. Не верила, пока не увидела сама.</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--c2),var(--c))">Е</div>
-          <div>
-            <div class="testi-name">Евгения</div>
-            <div class="testi-label">Первый поток · май 2026</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card glass neon-border reveal">
-        <span class="testi-quote">"</span>
-        <p class="testi-text">Думала, это для айтишников. На следующий день после курса начала использовать ChatGPT для писем клиентам — экономлю минимум час в день. Жалею, что не попробовала раньше.</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--pk),var(--p))">Т</div>
-          <div>
-            <div class="testi-name">Татьяна</div>
-            <div class="testi-label">Первый поток · май 2026</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ════ PRICE ════ -->
 <section class="price-sec" id="price">
   <div class="container">
@@ -875,8 +809,9 @@
           <li>Чат участников после курса</li>
           <li>Материалы и гайды для самостоятельного изучения</li>
         </ul>
-        <div class="price-btn-wrap">
+        <div class="price-btn-wrap" style="display:flex;flex-direction:column;gap:10px">
           <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
+          <button onclick="document.getElementById('programModal').classList.add('open')" class="btn btn-ghost" style="width:100%;justify-content:center;border-color:rgba(168,85,247,.35);cursor:pointer">Подробнее →</button>
         </div>
       </div>
       <div class="price-card glass neon-border reveal" style="border-color:rgba(34,211,238,.3)!important;">
@@ -901,78 +836,72 @@
   </div>
 </section>
 
-<!-- ════ INDIVIDUAL ════ -->
-<section class="individual" id="individual">
+<!-- ════ ОТЗЫВЫ ════ -->
+<section class="testimonials">
   <div class="container">
-    <div class="s-label reveal">Индивидуально</div>
-    <h2 class="s-title reveal">Личная консультация<br><span class="grad-text">под твой запрос</span></h2>
-    <p class="s-sub reveal">Один на один — глубже, быстрее, точнее под тебя</p>
-    <div class="indiv-wrap">
-      <div class="indiv-main glass neon-border reveal">
-        <div class="indiv-header">
+    <div class="s-label reveal">Отзывы</div>
+    <h2 class="s-title reveal">Что говорят участники</h2>
+    <p class="s-sub reveal">Первый поток завершился — и люди уже применяют ИИ в своей работе</p>
+    <div class="testi-grid">
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">“</span>
+        <p class="testi-text">Привет! Это просто супер! Тестила рабочие процессы. С общего визуала разложил каждую позицию отдельно, потом свёл все в таблицу. Дал рекомендации с +/– из чего делать продукт. Портфолио-преза 5 минут и готово. Предложил 3 концепта по мерчу для клиента. Рекомендации по поездке в Калининград с нестандартными местами. С подборкой рестов, экскурсий и блюд. Лена, спасибо тебе! Тот момент, когда ВАУ — а так можно было?)</p>
+        <div class="testi-author">
+          <div class="testi-avatar">Е</div>
           <div>
-            <div class="indiv-badge">Формат 1:1</div>
-            <h3>Персональная сессия</h3>
-            <p>Только твои задачи, твои инструменты, твой темп</p>
-          </div>
-          <div class="indiv-price-box">
-            <div class="indiv-price-row">
-              <div class="indiv-price-val">от 20 000 ₽</div>
-              <div class="indiv-price-dur">· от 2 часов</div>
-            </div>
-            <div class="indiv-price-hint">рассчитывается индивидуально<br>под запрос</div>
+            <div class="testi-name">Екатерина</div>
+            <div class="testi-label">Первый поток · май 2026</div>
           </div>
         </div>
-        <div class="indiv-features">
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Глубокий разбор задач</strong>
-              <p>До встречи — анкета, на встрече — разбираем каждую задачу, которую хочешь делегировать ИИ</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Настройка под тебя</strong>
-              <p>Выбираем нужные инструменты, настраиваем, пишем твои первые рабочие промпты</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Персональный план</strong>
-              <p>Уходишь с чётким списком: что использовать, для каких задач, как встроить в режим</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Поддержка неделю</strong>
-              <p>Вопросы в Telegram после встречи — чтобы закрепить и не потеряться на старте</p>
-            </div>
-          </div>
-        </div>
-        <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank">Записаться на личную консультацию</a>
       </div>
-      <div class="indiv-sidebar reveal">
-        <div class="side-card glass neon-border">
-          <h4>Подходит, если…</h4>
-          <ul class="check-list">
-            <li>Работаешь в узкой сфере и хочешь настройку именно под неё</li>
-            <li>Хочешь быстро и без группы — один на один</li>
-            <li>Уже пробовал ИИ, но не сделал это системой</li>
-            <li>Нужна личная инструкция, а не общий обзор</li>
-          </ul>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">“</span>
+        <p class="testi-text">Это я делала в Claude — целый сайт для яхт-клуба. Так что я молчу, но всем пользуюсь. Спасибо тебе ❤️</p>
+        <div class="testi-author">
+          <div class="testi-avatar">П</div>
+          <div>
+            <div class="testi-name">Полина</div>
+            <div class="testi-label">Первый поток · май 2026</div>
+          </div>
         </div>
-        <div class="side-card glass neon-border" style="border-color:rgba(168,85,247,.2)!important;background:rgba(168,85,247,.05)">
-          <h4>Можно совместить</h4>
-          <p style="font-size:14px;color:var(--muted);line-height:1.65">Сначала групповой курс — получаешь базу, потом личная сессия — докручиваем под конкретные задачи</p>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">“</span>
+        <p class="testi-text">Спасибо тебе за урок! ❤️ Ты прирождённый Учитель. До встречи во вторник)</p>
+        <div class="testi-author">
+          <div class="testi-avatar">А</div>
+          <div>
+            <div class="testi-name">Александр</div>
+            <div class="testi-label">Первый поток · май 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">“</span>
+        <p class="testi-text">Раньше отчёт занимал несколько часов. После курса попробовала Claude — он за 10 минут выдал структурированную выжимку со всеми выводами. Не верила, пока не увидела сама.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--c2),var(--c))">Е</div>
+          <div>
+            <div class="testi-name">Евгения</div>
+            <div class="testi-label">Первый поток · май 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">“</span>
+        <p class="testi-text">Думала, это для айтишников. На следующий день после курса начала использовать ChatGPT для писем клиентам — экономлю минимум час в день. Жалею, что не попробовала раньше.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--pk),var(--p))">Т</div>
+          <div>
+            <div class="testi-name">Татьяна</div>
+            <div class="testi-label">Первый поток · май 2026</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
 
 <!-- ════ FAQ ════ -->
 <section class="faq">
@@ -997,7 +926,7 @@
     <p class="reveal">Места ограничены — маленькая группа, живой формат. Заполни анкету — и я свяжусь с тобой.</p>
     <div class="cta-btns reveal">
       <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="border:none;cursor:pointer">Записаться на курс</button>
-      <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
+      <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="border:none;cursor:pointer">Хочу 1:1</button>
     </div>
   </div>
 </section>
