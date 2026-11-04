@@ -311,6 +311,26 @@
     .materials-card .mat-text p { font-size: 14px; color: var(--muted); line-height: 1.5; }
     @media (max-width: 560px) { .materials-card { padding: 20px; gap: 14px; } }
 
+    /* ── TRANSFORM ──────────────────────────── */
+    .transform { background: var(--bg); }
+    .tr-head { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 16px; padding: 0 28px 10px; }
+    .tr-head-label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .tr-head-label.lbl-before { color: var(--muted); }
+    .tr-head-label.lbl-after  { color: var(--g); }
+    .tr-grid { display: grid; gap: 10px; }
+    .tr-row { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 16px; align-items: center; padding: 18px 28px; border-radius: 14px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); transition: border-color .25s, background .25s; }
+    .tr-row:hover { border-color: rgba(168,85,247,.25); background: rgba(168,85,247,.04); }
+    .tr-before { font-size: 15px; color: var(--muted); line-height: 1.5; }
+    .tr-after  { font-size: 15px; color: var(--text); font-weight: 600; line-height: 1.5; }
+    .tr-arr { color: var(--p2); font-size: 18px; text-align: center; flex-shrink: 0; }
+    @media (max-width:580px) {
+      .tr-head { display: none; }
+      .tr-row { grid-template-columns: 1fr; gap: 6px; }
+      .tr-arr { display: none; }
+      .tr-before::before { content: 'Было: '; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); opacity: .6; display: block; margin-bottom: 2px; }
+      .tr-after::before  { content: 'Стало: '; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--g); display: block; margin-bottom: 2px; }
+    }
+
     /* ── TESTIMONIALS ───────────────────────── */
     .testimonials { background: var(--bg2); }
     .testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; }
@@ -491,6 +511,47 @@
         <div class="fw-num">4</div>
         <h3>Хочешь результат сразу</h3>
         <p>Не теорию, а практику — разобрать свои конкретные задачи и уйти с готовыми решениями</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ ДО / ПОСЛЕ ════ -->
+<section class="transform">
+  <div class="container">
+    <div class="s-label reveal">До и после</div>
+    <h2 class="s-title reveal">Что меняется<br>после двух встреч</h2>
+    <p class="s-sub reveal">Конкретные сдвиги — не абстрактные "стал лучше работать"</p>
+    <div class="tr-head">
+      <div class="tr-head-label lbl-before">Было</div>
+      <div></div>
+      <div class="tr-head-label lbl-after">Стало</div>
+    </div>
+    <div class="tr-grid">
+      <div class="tr-row reveal">
+        <div class="tr-before">«Не знаю с чего начать» — ИИ пугает или кажется бесполезным</div>
+        <div class="tr-arr">→</div>
+        <div class="tr-after">Используешь ChatGPT и Claude каждый день — по делу, не ради эксперимента</div>
+      </div>
+      <div class="tr-row reveal">
+        <div class="tr-before">Отчёт, договор или большой документ — несколько часов вручную</div>
+        <div class="tr-arr">→</div>
+        <div class="tr-after">Claude прочитал 100 страниц и выдал ключевые выводы за 10 минут</div>
+      </div>
+      <div class="tr-row reveal">
+        <div class="tr-before">Письма, посты и тексты съедают время — сидишь и думаешь с чего начать</div>
+        <div class="tr-arr">→</div>
+        <div class="tr-after">Черновик готов за 2 минуты — остаётся подправить под себя</div>
+      </div>
+      <div class="tr-row reveal">
+        <div class="tr-before">Планирование поездки, встречи или проекта — долго и хаотично</div>
+        <div class="tr-arr">→</div>
+        <div class="tr-after">Структурированный план с подборкой мест, задач или вопросов — мгновенно</div>
+      </div>
+      <div class="tr-row reveal">
+        <div class="tr-before">Переговоры, сложные разговоры или презентации даются тяжело</div>
+        <div class="tr-arr">→</div>
+        <div class="tr-after">Потренировался с ИИ в ролевой игре — прихожу подготовленным</div>
       </div>
     </div>
   </div>
