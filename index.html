@@ -990,29 +990,17 @@
     <button class="pay-box-close" onclick="document.getElementById('payModal').classList.remove('open')">&times;</button>
     <h3>Записаться на курс</h3>
     <div class="pay-meta">16–17 ноября · 19:00–21:00 МСК · <strong>6 161 ₽</strong></div>
-    <form action="https://formsubmit.co/lenoktaiga@gmail.com" method="POST">
-      <input type="hidden" name="_subject" value="Новая запись: курс ИИ в жизнь">
-      <input type="hidden" name="_next" value="https://paylink.tbank.ru/5cc02573-9134-45de-85d0-67ec9a7b3ddd">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-      <div class="f-field">
-        <label>Имя и фамилия</label>
-        <input type="text" name="Имя и фамилия" placeholder="Мария Иванова" required>
-      </div>
-      <div class="f-field">
-        <label>Email — туда придёт чек</label>
-        <input type="email" name="Email" placeholder="maria@example.com" required>
-      </div>
-      <div class="f-field">
-        <label>Telegram или телефон</label>
-        <input type="text" name="Telegram или телефон" placeholder="@username или +7..." required>
-      </div>
-      <div class="f-check">
-        <input type="checkbox" id="payConsent" required>
-        <label for="payConsent">Соглашаюсь с <a href="oferta.html" target="_blank">публичной офертой</a> и <a href="privacy.html" target="_blank">политикой конфиденциальности</a></label>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer;font-size:16px">Перейти к оплате →</button>
-    </form>
+    <ul style="list-style:none;display:grid;gap:8px;margin-bottom:24px">
+      <li style="font-size:14px;color:var(--muted);display:flex;gap:8px"><span style="color:#4ade80;flex-shrink:0">✓</span>2 встречи по 2 часа онлайн</li>
+      <li style="font-size:14px;color:var(--muted);display:flex;gap:8px"><span style="color:#4ade80;flex-shrink:0">✓</span>Запись встреч остаётся у тебя</li>
+      <li style="font-size:14px;color:var(--muted);display:flex;gap:8px"><span style="color:#4ade80;flex-shrink:0">✓</span>Материалы и гайды</li>
+      <li style="font-size:14px;color:var(--muted);display:flex;gap:8px"><span style="color:#4ade80;flex-shrink:0">✓</span>Чат участников после курса</li>
+    </ul>
+    <a href="https://paylink.tbank.ru/5cc02573-9134-45de-85d0-67ec9a7b3ddd" target="_blank" class="btn btn-primary" style="display:block;width:100%;text-align:center;font-size:16px;text-decoration:none;box-sizing:border-box" onclick="document.getElementById('payModal').classList.remove('open')">Перейти к оплате →</a>
+    <div style="margin-top:16px;padding:14px 16px;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2);border-radius:12px;font-size:13px;color:var(--muted);line-height:1.6">
+      После оплаты напишите мне в Telegram <a href="https://t.me/taiga_elena" target="_blank" style="color:var(--c);text-decoration:none">@taiga_elena</a> — пришлю ссылку на встречу и все материалы
+    </div>
+    <p style="font-size:11px;color:rgba(155,153,181,.5);text-align:center;margin-top:12px">Нажимая «Перейти к оплате», вы соглашаетесь с <a href="oferta.html" target="_blank" style="color:inherit;text-decoration:underline">офертой</a></p>
   </div>
 </div>
 
