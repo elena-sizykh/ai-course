@@ -426,7 +426,7 @@
   <div class="nav-links">
     <a href="#program">Программа</a>
     <a href="#price">Цена</a>
-    <a href="#individual">1:1</a>
+    <a href="#" onclick="event.preventDefault();document.getElementById('indivModal').classList.add('open')">1:1</a>
     <a href="slides/">Материалы</a>
     <button onclick="document.getElementById('payModal').classList.add('open')" class="nav-cta" style="border:none;cursor:pointer;font-family:inherit">Записаться</button>
   </div>
@@ -454,7 +454,7 @@
     <div class="hero-btns">
       <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="border:none;cursor:pointer">Записаться на курс</button>
       <a href="#program" class="btn btn-ghost">Программа</a>
-      <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
+      <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="border:none;cursor:pointer">Хочу 1:1</button>
     </div>
   </div>
 </section>
@@ -788,6 +788,54 @@
   </div>
 </section>
 
+<!-- ════ PRICE ════ -->
+<section class="price-sec" id="price">
+  <div class="container">
+    <div class="s-label reveal" style="justify-content:center">Стоимость</div>
+    <h2 class="s-title reveal" style="text-align:center">Выбери свой формат</h2>
+    <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
+    <div class="price-grid">
+      <div class="price-card glass neon-border reveal featured">
+        <div class="price-special">16–17 ноября · Малая группа</div>
+        <div class="price-name">Групповой интенсив</div>
+        <div class="price-desc">2 встречи — ChatGPT и Claude с нуля</div>
+        <div class="price-amount grad-text">6 161</div>
+        <div class="price-period">₽ за весь курс</div>
+        <ul class="price-list">
+          <li>2 встречи по 1.5 часа онлайн</li>
+          <li>Живые кейсы и демо на каждой встрече</li>
+          <li>Анкета участника перед стартом</li>
+          <li>Запись встреч остаётся у тебя</li>
+          <li>Чат участников после курса</li>
+          <li>Материалы и гайды для самостоятельного изучения</li>
+        </ul>
+        <div class="price-btn-wrap" style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
+          <button onclick="document.getElementById('programModal').classList.add('open')" class="btn btn-ghost" style="width:100%;justify-content:center;border-color:rgba(168,85,247,.35);cursor:pointer">Подробнее →</button>
+        </div>
+      </div>
+      <div class="price-card glass neon-border reveal" style="border-color:rgba(34,211,238,.3)!important;">
+        <div class="price-special" style="color:var(--c);background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.25)">Индивидуально · 1:1</div>
+        <div class="price-name">Личная консультация</div>
+        <div class="price-desc">Только твои задачи, твой темп, твой запрос</div>
+        <div class="price-amount" style="background:linear-gradient(135deg,var(--c),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:40px">от 20 000</div>
+        <div class="price-period">₽ · от 2 часов</div>
+        <ul class="price-list">
+          <li>Глубокий разбор именно твоих задач</li>
+          <li>Настройка инструментов под тебя</li>
+          <li>Персональный план внедрения</li>
+          <li>Поддержка неделю в Telegram</li>
+          <li>Рассчитывается индивидуально</li>
+        </ul>
+        <div class="price-btn-wrap" style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="width:100%;justify-content:center;border-color:rgba(34,211,238,.35);color:var(--c);cursor:pointer">Подробнее →</button>
+          <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Написать в Telegram</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ════ ОТЗЫВЫ ════ -->
 <section class="testimonials">
   <div class="container">
@@ -854,125 +902,6 @@
   </div>
 </section>
 
-<!-- ════ PRICE ════ -->
-<section class="price-sec" id="price">
-  <div class="container">
-    <div class="s-label reveal" style="justify-content:center">Стоимость</div>
-    <h2 class="s-title reveal" style="text-align:center">Выбери свой формат</h2>
-    <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
-    <div class="price-grid">
-      <div class="price-card glass neon-border reveal featured">
-        <div class="price-special">16–17 ноября · Малая группа</div>
-        <div class="price-name">Групповой интенсив</div>
-        <div class="price-desc">2 встречи — ChatGPT и Claude с нуля</div>
-        <div class="price-amount grad-text">6 161</div>
-        <div class="price-period">₽ за весь курс</div>
-        <ul class="price-list">
-          <li>2 встречи по 1.5 часа онлайн</li>
-          <li>Живые кейсы и демо на каждой встрече</li>
-          <li>Анкета участника перед стартом</li>
-          <li>Запись встреч остаётся у тебя</li>
-          <li>Чат участников после курса</li>
-          <li>Материалы и гайды для самостоятельного изучения</li>
-        </ul>
-        <div class="price-btn-wrap">
-          <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
-        </div>
-      </div>
-      <div class="price-card glass neon-border reveal" style="border-color:rgba(34,211,238,.3)!important;">
-        <div class="price-special" style="color:var(--c);background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.25)">Индивидуально · 1:1</div>
-        <div class="price-name">Личная консультация</div>
-        <div class="price-desc">Только твои задачи, твой темп, твой запрос</div>
-        <div class="price-amount" style="background:linear-gradient(135deg,var(--c),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:40px">от 20 000</div>
-        <div class="price-period">₽ · от 2 часов</div>
-        <ul class="price-list">
-          <li>Глубокий разбор именно твоих задач</li>
-          <li>Настройка инструментов под тебя</li>
-          <li>Персональный план внедрения</li>
-          <li>Поддержка неделю в Telegram</li>
-          <li>Рассчитывается индивидуально</li>
-        </ul>
-        <div class="price-btn-wrap" style="display:flex;flex-direction:column;gap:10px">
-          <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="width:100%;justify-content:center;border-color:rgba(34,211,238,.35);color:var(--c);cursor:pointer">Подробнее →</button>
-          <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank" style="width:100%;justify-content:center">Написать в Telegram</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ════ INDIVIDUAL ════ -->
-<section class="individual" id="individual">
-  <div class="container">
-    <div class="s-label reveal">Индивидуально</div>
-    <h2 class="s-title reveal">Личная консультация<br><span class="grad-text">под твой запрос</span></h2>
-    <p class="s-sub reveal">Один на один — глубже, быстрее, точнее под тебя</p>
-    <div class="indiv-wrap">
-      <div class="indiv-main glass neon-border reveal">
-        <div class="indiv-header">
-          <div>
-            <div class="indiv-badge">Формат 1:1</div>
-            <h3>Персональная сессия</h3>
-            <p>Только твои задачи, твои инструменты, твой темп</p>
-          </div>
-          <div class="indiv-price-box">
-            <div class="indiv-price-row">
-              <div class="indiv-price-val">от 20 000 ₽</div>
-              <div class="indiv-price-dur">· от 2 часов</div>
-            </div>
-            <div class="indiv-price-hint">рассчитывается индивидуально<br>под запрос</div>
-          </div>
-        </div>
-        <div class="indiv-features">
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Глубокий разбор задач</strong>
-              <p>До встречи — анкета, на встрече — разбираем каждую задачу, которую хочешь делегировать ИИ</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Настройка под тебя</strong>
-              <p>Выбираем нужные инструменты, настраиваем, пишем твои первые рабочие промпты</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Персональный план</strong>
-              <p>Уходишь с чётким списком: что использовать, для каких задач, как встроить в режим</p>
-            </div>
-          </div>
-          <div class="i-feat">
-            <div class="i-feat-icon">→</div>
-            <div>
-              <strong>Поддержка неделю</strong>
-              <p>Вопросы в Telegram после встречи — чтобы закрепить и не потеряться на старте</p>
-            </div>
-          </div>
-        </div>
-        <a href="https://t.me/taiga_elena" class="btn btn-cyan" target="_blank">Записаться на личную консультацию</a>
-      </div>
-      <div class="indiv-sidebar reveal">
-        <div class="side-card glass neon-border">
-          <h4>Подходит, если…</h4>
-          <ul class="check-list">
-            <li>Работаешь в узкой сфере и хочешь настройку именно под неё</li>
-            <li>Хочешь быстро и без группы — один на один</li>
-            <li>Уже пробовал ИИ, но не сделал это системой</li>
-            <li>Нужна личная инструкция, а не общий обзор</li>
-          </ul>
-        </div>
-        <div class="side-card glass neon-border" style="border-color:rgba(168,85,247,.2)!important;background:rgba(168,85,247,.05)">
-          <h4>Можно совместить</h4>
-          <p style="font-size:14px;color:var(--muted);line-height:1.65">Сначала групповой курс — получаешь базу, потом личная сессия — докручиваем под конкретные задачи</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ════ FAQ ════ -->
 <section class="faq">
@@ -997,7 +926,7 @@
     <p class="reveal">Места ограничены — маленькая группа, живой формат. Заполни анкету — и я свяжусь с тобой.</p>
     <div class="cta-btns reveal">
       <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="border:none;cursor:pointer">Записаться на курс</button>
-      <a href="#individual" class="btn btn-ghost">Хочу 1:1</a>
+      <button onclick="document.getElementById('indivModal').classList.add('open')" class="btn btn-ghost" style="border:none;cursor:pointer">Хочу 1:1</button>
     </div>
   </div>
 </section>
