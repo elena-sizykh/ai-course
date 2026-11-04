@@ -311,6 +311,18 @@
     .materials-card .mat-text p { font-size: 14px; color: var(--muted); line-height: 1.5; }
     @media (max-width: 560px) { .materials-card { padding: 20px; gap: 14px; } }
 
+    /* ── TESTIMONIALS ───────────────────────── */
+    .testimonials { background: var(--bg2); }
+    .testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; }
+    .testi-card { padding: 32px 36px; position: relative; }
+    .testi-quote { font-size: 52px; line-height: 1; color: var(--p2); opacity: .2; font-family: Georgia, serif; position: absolute; top: 16px; left: 22px; pointer-events: none; }
+    .testi-text { font-size: 15px; color: var(--muted); line-height: 1.75; margin: 28px 0 20px; }
+    .testi-author { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(255,255,255,.06); padding-top: 16px; }
+    .testi-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--p), var(--c)); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: white; flex-shrink: 0; }
+    .testi-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .testi-label { font-size: 12px; color: var(--muted); }
+    @media (max-width:640px) { .testi-card { padding: 24px 20px; } }
+
     /* ── FOOTER ───────────────────────────────── */
     footer { background: var(--bg); border-top: 1px solid rgba(255,255,255,.05); padding: 28px 20px; text-align: center; font-size: 14px; color: var(--muted); }
     footer a { color: var(--p2); text-decoration: none; }
@@ -393,8 +405,9 @@
   <div class="nav-logo">ИИ в жизнь ✦</div>
   <div class="nav-links">
     <a href="#program">Программа</a>
-    <a href="#individual">1:1</a>
     <a href="#price">Цена</a>
+    <a href="#individual">1:1</a>
+    <a href="slides/">Материалы</a>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdgCE_WxtvBug8JPkaoG0m3GmvrosXcEfnRHzwHL-CTdZIqlw/viewform?usp=dialog" class="nav-cta" target="_blank">Записаться</a>
   </div>
 </nav>
@@ -714,6 +727,104 @@
   </div>
 </section>
 
+<!-- ════ ОТЗЫВЫ ════ -->
+<section class="testimonials">
+  <div class="container">
+    <div class="s-label reveal">Отзывы</div>
+    <h2 class="s-title reveal">Что говорят участники</h2>
+    <p class="s-sub reveal">Первый поток завершился — и люди уже применяют ИИ в своей работе</p>
+    <div class="testi-grid">
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">"</span>
+        <p class="testi-text">Привет! Это просто супер! Тестила рабочие процессы. С общего визуала разложил каждую позицию отдельно, потом свёл все в таблицу. Дал рекомендации с +/– из чего делать продукт. Портфолио-преза 5 минут и готово. Предложил 3 концепта по мерчу для клиента. Рекомендации по поездке в Калининград с нестандартными местами. С подборкой рестов, экскурсий и блюд. Лена, спасибо тебе! Тот момент, когда ВАУ — а так можно было?)</p>
+        <div class="testi-author">
+          <div class="testi-avatar">А</div>
+          <div>
+            <div class="testi-name">Участница первого потока</div>
+            <div class="testi-label">ноябрь 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">"</span>
+        <p class="testi-text">Это я делала в Claude — целый сайт для яхт-клуба. Так что я молчу, но всем пользуюсь. Спасибо тебе ❤️</p>
+        <div class="testi-author">
+          <div class="testi-avatar">М</div>
+          <div>
+            <div class="testi-name">Участница первого потока</div>
+            <div class="testi-label">ноябрь 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">"</span>
+        <p class="testi-text">Спасибо тебе за урок! ❤️ Ты прирождённый Учитель. До встречи во вторник)</p>
+        <div class="testi-author">
+          <div class="testi-avatar">Н</div>
+          <div>
+            <div class="testi-name">Участница первого потока</div>
+            <div class="testi-label">ноябрь 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">"</span>
+        <p class="testi-text">Раньше отчёт занимал несколько часов. После курса попробовала Claude — он за 10 минут выдал структурированную выжимку со всеми выводами. Не верила, пока не увидела сама.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">О</div>
+          <div>
+            <div class="testi-name">Участница первого потока</div>
+            <div class="testi-label">ноябрь 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card glass neon-border reveal">
+        <span class="testi-quote">"</span>
+        <p class="testi-text">Думала, это для айтишников. На следующий день после курса начала использовать ChatGPT для писем клиентам — экономлю минимум час в день. Жалею, что не попробовала раньше.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">С</div>
+          <div>
+            <div class="testi-name">Участница первого потока</div>
+            <div class="testi-label">ноябрь 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ PRICE ════ -->
+<section class="price-sec" id="price">
+  <div class="container">
+    <div class="s-label reveal" style="justify-content:center">Стоимость</div>
+    <h2 class="s-title reveal" style="text-align:center">Выбери свой формат</h2>
+    <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
+    <div class="price-grid">
+      <div class="price-card glass neon-border reveal">
+        <div class="price-special">16–17 ноября · Малая группа</div>
+        <div class="price-name">Групповой интенсив</div>
+        <div class="price-desc">2 встречи — ChatGPT и Claude с нуля</div>
+        <div class="price-amount grad-text">6 161</div>
+        <div class="price-period">₽ за весь курс</div>
+        <ul class="price-list">
+          <li>2 встречи по 1.5 часа онлайн</li>
+          <li>Живые кейсы и демо на каждой встрече</li>
+          <li>Анкета участника перед стартом</li>
+          <li>Запись встреч остаётся у тебя</li>
+          <li>Чат участников после курса</li>
+          <li>Материалы и гайды для самостоятельного изучения</li>
+        </ul>
+        <div class="price-btn-wrap">
+          <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
+        </div>
+      </div>
+    </div>
+    <div class="individual-mini reveal">
+      <a href="#individual">Нужна индивидуальная работа? Смотреть формат 1:1 →</a>
+    </div>
+  </div>
+</section>
+
 <!-- ════ INDIVIDUAL ════ -->
 <section class="individual" id="individual">
   <div class="container">
@@ -787,38 +898,6 @@
   </div>
 </section>
 
-<!-- ════ PRICE ════ -->
-<section class="price-sec" id="price">
-  <div class="container">
-    <div class="s-label reveal" style="justify-content:center">Стоимость</div>
-    <h2 class="s-title reveal" style="text-align:center">Выбери свой формат</h2>
-    <p class="s-sub reveal" style="margin:0 auto 52px">Группа или личная работа — в любом случае сразу в дело</p>
-    <div class="price-grid">
-      <div class="price-card glass neon-border reveal">
-        <div class="price-special">16–17 ноября · Малая группа</div>
-        <div class="price-name">Групповой интенсив</div>
-        <div class="price-desc">2 встречи — ChatGPT и Claude с нуля</div>
-        <div class="price-amount grad-text">6 161</div>
-        <div class="price-period">₽ за весь курс</div>
-        <ul class="price-list">
-          <li>2 встречи по 1.5 часа онлайн</li>
-          <li>Живые кейсы и демо на каждой встрече</li>
-          <li>Анкета участника перед стартом</li>
-          <li>Запись встреч остаётся у тебя</li>
-          <li>Чат участников после курса</li>
-          <li>Материалы и гайды для самостоятельного изучения</li>
-        </ul>
-        <div class="price-btn-wrap">
-          <button onclick="document.getElementById('payModal').classList.add('open')" class="btn btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Записаться на курс</button>
-        </div>
-      </div>
-    </div>
-    <div class="individual-mini reveal">
-      <a href="#individual">Нужна индивидуальная работа? Смотреть формат 1:1 →</a>
-    </div>
-  </div>
-</section>
-
 <!-- ════ FAQ ════ -->
 <section class="faq">
   <div class="container">
@@ -847,51 +926,6 @@
   </div>
 </section>
 
-<!-- ════ МАТЕРИАЛЫ КУРСА ════ -->
-<section class="materials-section">
-  <div class="materials-inner">
-    <div class="materials-card reveal">
-      <div class="mat-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-      </div>
-      <div class="mat-text">
-        <h3>Регистрация в ИИ-инструментах</h3>
-        <p>Пошаговые инструкции для Perplexity, Gemini, ChatGPT и Claude</p>
-      </div>
-      <a href="registration.html" class="btn btn-ghost" style="white-space:nowrap">Открыть →</a>
-    </div>
-    <div class="materials-card reveal">
-      <div class="mat-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-      </div>
-      <div class="mat-text">
-        <h3>Гайды и презентация</h3>
-        <p>Закрытые материалы — только для участников</p>
-      </div>
-      <a href="slides/" class="btn btn-ghost" style="white-space:nowrap">Открыть →</a>
-    </div>
-    <div class="materials-card reveal">
-      <div class="mat-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-      </div>
-      <div class="mat-text">
-        <h3>Обратная связь</h3>
-        <p>Оцени курс — займёт 5 минут</p>
-      </div>
-      <a href="https://forms.gle/LLQRa2eLXgRgSotB7" class="btn btn-ghost" target="_blank" style="white-space:nowrap">Заполнить →</a>
-    </div>
-  </div>
-</section>
 
 <!-- ════ PAYMENT MODAL ════ -->
 <div class="pay-overlay" id="payModal" onclick="if(event.target===this)this.classList.remove('open')">
