@@ -413,7 +413,9 @@
     .individual-mini { text-align:center; margin-top:32px; }
     .individual-mini a { color:var(--muted); font-size:14px; text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.2); transition:color .2s; }
     .individual-mini a:hover { color:var(--text); }
-  </style>
+  
+.new-guides-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.new-guide-card{padding:26px;display:flex;flex-direction:column}.new-guide-card h3{font-size:20px;margin-bottom:13px}.new-guide-card p{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:22px}.new-guide-card>div{display:flex;flex-wrap:wrap;gap:15px;margin-top:auto}.new-guide-card a{color:var(--c);font-size:13px;text-underline-offset:4px}@media(max-width:900px){.new-guides-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.new-guides-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -428,7 +430,7 @@
     <a href="#program">Программа</a>
     <a href="#price">Цена</a>
     <a href="#" onclick="event.preventDefault();document.getElementById('indivModal').classList.add('open')">1:1</a>
-    <a href="slides/">Материалы</a>
+    <a href="guides/">Инструкции и PDF</a>
     <button onclick="document.getElementById('payModal').classList.add('open')" class="nav-cta" style="border:none;cursor:pointer;font-family:inherit">Записаться</button>
   </div>
 </nav>
@@ -438,7 +440,7 @@
   <div class="hero-inner">
     <div class="hero-badge">Онлайн-интенсив · Малая группа · 18–19 ноября 2026</div>
     <h1><span class="grad-text">ИИ в жизнь:</span><br>старт с нуля</h1>
-    <p class="hero-sub">За два вечера начнёшь решать свои задачи с помощью ИИ. Главный инструмент — ChatGPT (GPT), второй — Perplexity для поиска и проверки информации. По Claude, Gemini и NotebookLM получишь материалы для самостоятельного изучения.</p>
+    <p class="hero-sub">За два вечера начнёшь решать свои задачи с помощью ИИ. Главный инструмент — ChatGPT (GPT), второй — Perplexity для поиска и проверки информации. По Claude, Gemini и Gemini Notebook (бывшему NotebookLM) получишь материалы для самостоятельного изучения.</p>
     <div class="waitlist-banner">
       <div class="waitlist-card">
         <div class="waitlist-label">Набор открыт</div>
@@ -594,7 +596,7 @@
         </div>
       </div>
     </div>
-    <p class="reveal" style="margin-top:24px;color:var(--muted)">Claude, Gemini и NotebookLM — материалы для самостоятельного изучения после занятий. Основная практика проходит в ChatGPT и Perplexity.</p>
+    <p class="reveal" style="margin-top:24px;color:var(--muted)">Claude, Gemini и Gemini Notebook (бывший NotebookLM) — материалы для самостоятельного изучения после занятий. Основная практика проходит в ChatGPT и Perplexity.</p>
     <div class="reveal" style="margin-top:32px;display:flex;flex-wrap:wrap;align-items:center;gap:16px">
       <button class="btn btn-outline-p" onclick="document.getElementById('programModal').classList.add('open')">Посмотреть полную программу</button>
       <p style="font-size:14px;color:var(--muted)">Не можете в эти даты? Напишите мне — <a href="https://t.me/taiga_elena" style="color:var(--p2);text-decoration:none;font-weight:600">@taiga_elena</a></p>
@@ -640,7 +642,7 @@
     </div>
     <div class="modal-block">
       <div class="modal-block-title">Для самостоятельного изучения</div>
-      <p style="color:var(--muted)">Гайды по Claude, Gemini и NotebookLM. Эти инструменты не входят в обязательную практику двух встреч.</p>
+      <p style="color:var(--muted)">Гайды по Claude, Gemini и Gemini Notebook (бывшему NotebookLM). Эти инструменты не входят в обязательную практику двух встреч.</p>
     </div>
     <div class="modal-meta-grid">
       <div class="modal-meta-card"><div class="mm-label">Первая встреча</div><div class="mm-val">18 ноября 2026<br>19:00–21:00 МСК</div></div>
@@ -709,10 +711,12 @@
 <a href="https://notebooklm.google.com" target="_blank" rel="noopener noreferrer" class="tool-card glass neon-border reveal">
     <span class="tool-badge tool-badge-self">Самостоятельно</span>
     <img class="tool-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=64" alt="NotebookLM">
-    <h4>NotebookLM</h4><p>Гайд по работе с собственными источниками.</p><span class="tool-link">notebooklm.google.com</span></a></div>
+    <h4>Gemini Notebook</h4><p>Бывший NotebookLM. Гайд по работе с собственными источниками.</p><span class="tool-link">notebooklm.google.com</span></a></div>
 </div></section>
 
 <!-- ════ ABOUT ════ -->
+<!-- UPDATED GUIDES 2026-11-16 -->
+<section id="guides" style="padding:76px 0"><div class="container"><div class="s-label">Библиотека курса</div><h2 class="s-title">Инструкции, к которым<br><span class="grad-text">можно вернуться</span></h2><p class="s-sub">Шесть руководств: читай онлайн или скачивай PDF. Установка, модели, тарифы, готовые запросы и примеры из жизни. Обновлено 16.11.2026.</p><div class="new-guides-grid"><article class="new-guide-card glass neon-border"><h3>ChatGPT</h3><p>Chat, Work, Codex, модели, тарифы, файлы, голос, поиск и работа на компьютере.</p><div><a href="guides/chatgpt.html">Читать инструкцию →</a><a href="guides/pdf/01-chatgpt.pdf" download>PDF · 32 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>ChatGPT в Office</h3><p>Подключение к программам Microsoft, понятные кнопки, официальные изображения и упражнения.</p><div><a href="guides/office.html">Читать инструкцию →</a><a href="guides/pdf/02-office.pdf" download>PDF · 12 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Perplexity</h3><p>Поиск с источниками, Research, Computer, Comet и проверка найденной информации.</p><div><a href="guides/perplexity.html">Читать инструкцию →</a><a href="guides/pdf/03-perplexity.pdf" download>PDF · 11 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Claude</h3><p>Модели, Projects, Artifacts, Cowork и понятные задания для жизни и работы.</p><div><a href="guides/claude.html">Читать инструкцию →</a><a href="guides/pdf/04-claude.pdf" download>PDF · 11 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Gemini</h3><p>Модели, Live, Canvas, подключённые приложения и сравнение Google AI планов.</p><div><a href="guides/gemini.html">Читать инструкцию →</a><a href="guides/pdf/05-gemini.pdf" download>PDF · 10 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Gemini Notebook</h3><p>Бывший NotebookLM: источники, цитаты, Studio, аудиообзоры, карточки и практика.</p><div><a href="guides/notebooklm.html">Читать инструкцию →</a><a href="guides/pdf/06-notebooklm.pdf" download>PDF · 10 стр.</a></div></article></div><p style="margin-top:24px"><a href="registration.html" style="color:var(--c)">Подготовка к занятию и первый вход →</a> <span style="color:var(--muted)">·</span> <a href="slides/" style="color:var(--c)">Слайды курса →</a></p></div></section>
 <section class="about">
   <div class="container">
     <div class="about-wrap">
@@ -1004,4 +1008,5 @@
 </script>
 </body>
 </html>
+
 
