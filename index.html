@@ -65,11 +65,16 @@
     .nav-links a { font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .2s; }
     .nav-links a:hover { color: var(--text); }
     .nav-cta { background: linear-gradient(135deg,var(--p),#7c3aed) !important; color: white !important; padding: 9px 22px; border-radius: 999px; font-weight: 700 !important; font-size: 13px !important; }
+    .nav-reg-short { display: none; }
     .nav-cta:hover { opacity: .85; transform: translateY(-1px); }
     @media (max-width:640px) {
       nav { padding: 14px 18px; }
       .nav-links { gap: 12px; }
-      .nav-links a:not(.nav-cta) { display: none; }
+      .nav-links a:not(.nav-cta):not(.nav-registration) { display: none; }
+      .nav-reg-long { display: none; }
+      .nav-reg-short { display: inline; }
+      .nav-links .nav-registration { font-size: 12px; }
+      .nav-cta { padding: 9px 13px; }
       .nav-logo { font-size: 15px; }
     }
 
@@ -148,9 +153,11 @@
 
     /* ── FOR WHOM ─────────────────────────────── */
     .for-whom { background: var(--bg2); }
-    .fw-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 18px; }
+    .fw-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 18px; }
     .fw-card { padding: 30px; }
-    .fw-card-wide { grid-column: 1 / -1; }
+    @media (max-width:1100px) { .fw-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+    @media (max-width:760px) { .fw-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (max-width:480px) { .fw-grid { grid-template-columns: 1fr; } }
     .fw-card:hover { border-color: rgba(168,85,247,.35) !important; transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 30px rgba(168,85,247,.12); }
     .fw-num { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(168,85,247,.15); border: 1px solid rgba(168,85,247,.3); color: var(--p2); font-size: 15px; font-weight: 800; margin-bottom: 16px; }
     .fw-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
@@ -431,7 +438,8 @@
     <a href="#program">Программа</a>
     <a href="#price">Цена</a>
     <a href="#" onclick="event.preventDefault();document.getElementById('indivModal').classList.add('open')">1:1</a>
-    <a href="guides/">Инструкции и PDF</a>
+    <a href="slides/">Материалы</a>
+    <a href="registration.html" class="nav-registration" aria-label="Инструкция по регистрации в сервисах"><span class="nav-reg-long">Регистрация в сервисах</span><span class="nav-reg-short">Инструкция</span></a>
     <button onclick="document.getElementById('payModal').classList.add('open')" class="nav-cta" style="border:none;cursor:pointer;font-family:inherit">Записаться</button>
   </div>
 </nav>
@@ -503,23 +511,23 @@
       </div>
       <div class="fw-card glass neon-border reveal">
         <div class="fw-num">2</div>
+        <h3>Используешь ИИ только как чатик</h3>
+        <p>Уже общаешься с ИИ, но пока в основном болтаешь. Хочется понять, как применять его к конкретным задачам: письмам, планам и работе с информацией.</p>
+      </div>
+      <div class="fw-card glass neon-border reveal">
+        <div class="fw-num">3</div>
         <h3>Тратишь время на рутину</h3>
         <p>Есть задачи, которые съедают часы каждую неделю, и ты чувствуешь — это можно автоматизировать</p>
       </div>
       <div class="fw-card glass neon-border reveal">
-        <div class="fw-num">3</div>
+        <div class="fw-num">4</div>
         <h3>Боишься запутаться</h3>
         <p>Инструментов много, платные и бесплатные версии — хочется объяснения человеческим языком</p>
       </div>
       <div class="fw-card glass neon-border reveal">
-        <div class="fw-num">4</div>
+        <div class="fw-num">5</div>
         <h3>Хочешь результат сразу</h3>
         <p>Не теорию, а практику — разобрать свои конкретные задачи и уйти с готовыми решениями</p>
-      </div>
-      <div class="fw-card fw-card-wide glass neon-border reveal">
-        <div class="fw-num">5</div>
-        <h3>Используешь ИИ только как чатик</h3>
-        <p>Уже общаешься с ИИ, но пока в основном болтаешь. Хочется понять, как применять его к конкретным задачам: письмам, планам и работе с информацией.</p>
       </div>
     </div>
   </div>
@@ -578,7 +586,10 @@
           <h3>ChatGPT: от первого запроса до готового результата</h3>
           <div class="s-dur">25 ноября 2026 · 19:00–21:00 МСК · 2 часа · Онлайн</div>
           <ul>
-            <li>Знакомимся с ChatGPT: интерфейс, первый запрос и доступные функции</li>
+            <li><strong>Chat — разговор с ИИ.</strong> Разберём интерфейс, зададим первый вопрос, уточним ответ и попробуем подготовить письмо или план</li>
+            <li><strong>Work — работа над результатом.</strong> Обсудим, как поручить задачу из нескольких шагов: собрать информацию и подготовить документ, таблицу или презентацию. Разберём, что нужно объяснить помощнику и как проверить итог</li>
+            <li><strong>Codex — помощник для кода и технических задач.</strong> Познакомимся с работой над файлами и простым проектом: как описать желаемое изменение обычными словами, посмотреть результат и попросить правки</li>
+            <li><strong>Чем отличаются Chat, Work и Codex.</strong> На знакомых примерах выберем, когда достаточно диалога, когда нужна готовая работа, а когда — изменение кода или проекта. Обсудим доступность функций в разных аккаунтах</li>
             <li>Учимся ставить задачу: контекст, цель, ограничения и формат ответа</li>
             <li>Практика: превращаем заметки в письмо, план или список задач</li>
             <li>Дорабатываем результат: уточняем запрос, проверяем факты и убираем лишнее</li>
@@ -630,7 +641,10 @@
     <div class="modal-block">
       <div class="modal-block-title">Встреча 1 — ChatGPT · 25 ноября · 19:00–21:00 МСК</div>
       <ul>
-            <li>Знакомимся с ChatGPT: интерфейс, первый запрос и доступные функции</li>
+            <li><strong>Chat — разговор с ИИ.</strong> Разберём интерфейс, зададим первый вопрос, уточним ответ и попробуем подготовить письмо или план</li>
+            <li><strong>Work — работа над результатом.</strong> Обсудим, как поручить задачу из нескольких шагов: собрать информацию и подготовить документ, таблицу или презентацию. Разберём, что нужно объяснить помощнику и как проверить итог</li>
+            <li><strong>Codex — помощник для кода и технических задач.</strong> Познакомимся с работой над файлами и простым проектом: как описать желаемое изменение обычными словами, посмотреть результат и попросить правки</li>
+            <li><strong>Чем отличаются Chat, Work и Codex.</strong> На знакомых примерах выберем, когда достаточно диалога, когда нужна готовая работа, а когда — изменение кода или проекта. Обсудим доступность функций в разных аккаунтах</li>
             <li>Учимся ставить задачу: контекст, цель, ограничения и формат ответа</li>
             <li>Практика: превращаем заметки в письмо, план или список задач</li>
             <li>Дорабатываем результат: уточняем запрос, проверяем факты и убираем лишнее</li>
@@ -697,7 +711,7 @@
 
 <!-- ════ ABOUT ════ -->
 <!-- UPDATED GUIDES 2026-11-16 -->
-<section id="guides" style="padding:76px 0"><div class="container"><div class="s-label">Библиотека курса</div><h2 class="s-title">Инструкции, к которым<br><span class="grad-text">можно вернуться</span></h2><p class="s-sub">Шесть руководств: читай онлайн или скачивай PDF. Установка, модели, тарифы, готовые запросы и примеры из жизни. Обновлено 16.11.2026.</p><div class="new-guides-grid"><article class="new-guide-card glass neon-border"><h3>ChatGPT</h3><p>Chat, Work, Codex, модели, тарифы, файлы, голос, поиск и работа на компьютере.</p><div><a href="guides/chatgpt.html">Читать инструкцию →</a><a href="guides/pdf/01-chatgpt.pdf" download>PDF · 32 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>ChatGPT в Office</h3><p>Подключение к программам Microsoft, понятные кнопки, официальные изображения и упражнения.</p><div><a href="guides/office.html">Читать инструкцию →</a><a href="guides/pdf/02-office.pdf" download>PDF · 12 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Perplexity</h3><p>Поиск с источниками, Research, Computer, Comet и проверка найденной информации.</p><div><a href="guides/perplexity.html">Читать инструкцию →</a><a href="guides/pdf/03-perplexity.pdf" download>PDF · 11 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Claude</h3><p>Модели, Projects, Artifacts, Cowork и понятные задания для жизни и работы.</p><div><a href="guides/claude.html">Читать инструкцию →</a><a href="guides/pdf/04-claude.pdf" download>PDF · 11 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Gemini</h3><p>Модели, Live, Canvas, подключённые приложения и сравнение Google AI планов.</p><div><a href="guides/gemini.html">Читать инструкцию →</a><a href="guides/pdf/05-gemini.pdf" download>PDF · 10 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Gemini Notebook</h3><p>Бывший NotebookLM: источники, цитаты, Studio, аудиообзоры, карточки и практика.</p><div><a href="guides/notebooklm.html">Читать инструкцию →</a><a href="guides/pdf/06-notebooklm.pdf" download>PDF · 10 стр.</a></div></article></div><p style="margin-top:24px"><a href="registration.html" style="color:var(--c)">Подготовка к занятию и первый вход →</a> <span style="color:var(--muted)">·</span> <a href="slides/" style="color:var(--c)">Слайды курса →</a></p></div></section>
+
 <section class="about">
   <div class="container">
     <div class="about-wrap">
@@ -855,10 +869,17 @@
           </div>
         </div>
       </div>
+      <div class="testi-card glass reveal" aria-label="Иллюстративный пример, не отзыв участника">
+        <div style="font-size:12px;font-weight:700;color:var(--c);margin-bottom:16px">ПРИМЕР · НЕ ОТЗЫВ УЧАСТНИКА</div>
+        <p class="testi-text">«Раньше я заходила в ИИ просто поболтать. Теперь понимаю, как описать задачу, уточнить ответ и проверить результат. Начала с малого — письма и плана на неделю, и это уже пригодилось».</p>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Вымышленный пример возможного опыта. Не является свидетельством участника или обещанием результата.</div>
+      </div>
     </div>
   </div>
 </section>
 
+
+<section id="guides" style="padding:76px 0"><div class="container"><div class="s-label">Библиотека курса</div><h2 class="s-title">Инструкции, к которым<br><span class="grad-text">можно вернуться</span></h2><p class="s-sub">Инструкция по регистрации открыта для всех. Руководства, PDF и слайды собраны в привычном разделе материалов курса.</p><p style="margin:0 0 28px"><a href="registration.html" class="btn btn-ghost">Открытая инструкция по регистрации →</a></p><div class="new-guides-grid"><article class="new-guide-card glass neon-border"><h3>ChatGPT</h3><p>Chat, Work, Codex, модели, тарифы, файлы, голос, поиск и работа на компьютере.</p><div><a href="slides/">Перейти к материалам →</a><a href="slides/">PDF · 32 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>ChatGPT в Office</h3><p>Подключение к программам Microsoft, понятные кнопки, официальные изображения и упражнения.</p><div><a href="slides/">Перейти к материалам →</a><a href="slides/">PDF · 12 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Perplexity</h3><p>Поиск с источниками, Research, Computer, Comet и проверка найденной информации.</p><div><a href="slides/">Перейти к материалам →</a><a href="slides/">PDF · 11 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Claude</h3><p>Модели, Projects, Artifacts, Cowork и понятные задания для жизни и работы.</p><div><a href="slides/">Перейти к материалам →</a><a href="slides/">PDF · 11 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Gemini</h3><p>Модели, Live, Canvas, подключённые приложения и сравнение Google AI планов.</p><div><a href="slides/">Перейти к материалам →</a><a href="slides/">PDF · 10 стр.</a></div></article><article class="new-guide-card glass neon-border"><h3>Gemini Notebook</h3><p>Бывший NotebookLM: источники, цитаты, Studio, аудиообзоры, карточки и практика.</p><div><a href="slides/">Перейти к материалам →</a><a href="slides/">PDF · 10 стр.</a></div></article></div><p style="margin-top:24px"><a href="registration.html" style="color:var(--c)">Подготовка к занятию и первый вход →</a> <span style="color:var(--muted)">·</span> <a href="slides/" style="color:var(--c)">Слайды курса →</a></p></div></section>
 
 <!-- ════ FAQ ════ -->
 <section class="faq">
