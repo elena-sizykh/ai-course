@@ -166,14 +166,15 @@
     /* ── PROGRAM ──────────────────────────────── */
     .program { background: var(--bg); }
     .sessions { display: grid; gap: 24px; }
-    .session { padding: 40px 44px; display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: start; }
+    .session { padding: 40px 44px; display: grid; grid-template-columns: 60px minmax(0,1fr); gap: 28px; align-items: start; }
     .s-num { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: white; flex-shrink: 0; }
     .s-num-1 { background: linear-gradient(135deg,var(--p),#7c3aed); box-shadow: 0 0 24px rgba(168,85,247,.5); }
     .s-num-2 { background: linear-gradient(135deg,var(--c2),#0e7490); box-shadow: 0 0 24px rgba(34,211,238,.4); }
-    .session h3 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .session h3 { font-size: clamp(20px,2.4vw,26px); font-weight: 800; line-height: 1.25; margin-bottom: 10px; }
     .s-dur { font-size: 13px; font-weight: 600; color: var(--p2); margin-bottom: 18px; }
-    .session ul { list-style: none; display: grid; gap: 10px; }
-    .session ul li { font-size: 15px; color: var(--muted); position: relative; padding-left: 18px; }
+    .session ul { list-style: none; display: grid; gap: 18px; }
+    .session ul li { font-size: 15px; color: var(--muted); position: relative; padding-left: 20px; line-height: 1.6; }
+    .session ul li strong, .modal-block ul li strong { display: block; color: var(--text); font-size: 16px; line-height: 1.4; margin-bottom: 5px; }
     .session ul li::before { content:'▸'; color: var(--p2); position: absolute; left: 0; top: 1px; }
 
     /* ── MODAL ────────────────────────────────── */
@@ -187,7 +188,7 @@
     .modal-block { margin-bottom: 32px; }
     .modal-block-title { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--p2); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
     .modal-block-title::before { content:''; width:16px; height:2px; background:var(--p2); border-radius:999px; }
-    .modal-block ul { list-style: none; display: grid; gap: 10px; }
+    .modal-block ul { list-style: none; display: grid; gap: 18px; }
     .modal-block ul li { font-size: 15px; color: var(--muted); position: relative; padding-left: 18px; line-height: 1.55; }
     .modal-block ul li::before { content:'▸'; color: var(--p2); position: absolute; left: 0; top: 1px; }
     .modal-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
