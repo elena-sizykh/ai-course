@@ -173,8 +173,8 @@
     .session h3 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
     .s-dur { font-size: 13px; font-weight: 600; color: var(--p2); margin-bottom: 18px; }
     .session ul { list-style: none; display: grid; gap: 10px; }
-    .session ul li { font-size: 15px; color: var(--muted); display: flex; gap: 10px; align-items: flex-start; }
-    .session ul li::before { content:'▸'; color: var(--p2); flex-shrink: 0; margin-top: 1px; }
+    .session ul li { font-size: 15px; color: var(--muted); position: relative; padding-left: 18px; }
+    .session ul li::before { content:'▸'; color: var(--p2); position: absolute; left: 0; top: 1px; }
 
     /* ── MODAL ────────────────────────────────── */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity .3s; }
@@ -188,8 +188,8 @@
     .modal-block-title { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--p2); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
     .modal-block-title::before { content:''; width:16px; height:2px; background:var(--p2); border-radius:999px; }
     .modal-block ul { list-style: none; display: grid; gap: 10px; }
-    .modal-block ul li { font-size: 15px; color: var(--muted); display: flex; gap: 10px; align-items: flex-start; line-height: 1.55; }
-    .modal-block ul li::before { content:'▸'; color: var(--p2); flex-shrink: 0; margin-top: 1px; }
+    .modal-block ul li { font-size: 15px; color: var(--muted); position: relative; padding-left: 18px; line-height: 1.55; }
+    .modal-block ul li::before { content:'▸'; color: var(--p2); position: absolute; left: 0; top: 1px; }
     .modal-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .modal-meta-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 16px 18px; }
     .modal-meta-card .mm-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
